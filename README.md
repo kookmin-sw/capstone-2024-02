@@ -1,3 +1,7 @@
+## [Maru]()
+
+청년들의 주거비 경제적 어려움을 공유 경제를 통해 해결하고, 함께 살아가는 플랫폼. **'마루'**
+
 ## 1. 프로젝트 소개
 
 저희는 공간을 함께 공유하며 사용할 사람들을 찾아주는 플랫폼을 제공하고자 합니다.
@@ -26,9 +30,11 @@ By accommodating individual lifestyles, we intend to help find suitable roommate
 
 <div align="center">
 
-|                                                              **최정민 (FE)**                                                              |                                                          **조희정 (FE)**                                                          |                                                           **이준호 (BE)**                                                           |                                                                **정연수 (BE)**                                                                |
+|                                                              **최정민**                                                              |                                                          **조희정**                                                          |                                                           **이준호**                                                           |                                                                **정연수**                                                                |
 |:--------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------:|
 | [<img src="https://avatars.githubusercontent.com/u/55117867?v=4" height=150 width=150> <br/> @cjeongmin](https://github.com/cjeongmin) | [<img src="https://avatars.githubusercontent.com/u/66050038?v=4" height=150 width=150> <br/> @he2e2](https://github.com/he2e2) | [<img src="https://avatars.githubusercontent.com/u/39540595?v=4" height=150 width=150> <br/> @leejh7](https://github.com/leejh7) | [<img src="https://avatars.githubusercontent.com/u/52970725?v=4" height=150 width=150> <br/> @cheesecrust](https://github.com/cheesecrust) |
+|****1679|****3147|****1675|****1665|
+|Front-end|Front-end|Back-end|Back-end|
 
 </div>
 
