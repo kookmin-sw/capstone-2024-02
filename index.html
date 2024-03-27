@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Maru | capstone-2024-02</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      as="style"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
+    />
+    <style>
+      :root {
+        --main: #e15637;
+        --background: #f7f6f9;
+      }
+
+      * {
+        box-sizing: border-box;
+        padding: 0;
+        margin: 0;
+      }
+
+      html,
+      body {
+        height: 100dvh;
+        min-width: 1600px;
+        max-width: 100dvw;
+        overflow-x: hidden;
+      }
+
+      nav {
+        top: 0;
+        left: 0;
+        z-index: 1;
+        position: sticky;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      nav > div {
+        display: flex;
+        height: 4.5rem;
+        padding: 1rem 11.25rem;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: space-between;
+
+        border-bottom: 1px solid #f7f6f9;
+        background: #fff;
+        box-shadow: 0px 0px 20px -2px rgba(0, 0, 0, 0.05);
+      }
+
+      nav > div > a {
+        color: var(--main);
+        font-family: 'Baloo 2';
+        font-size: 1.875rem;
+        font-style: normal;
+        font-weight: 700;
+        line-height: normal;
+      }
+
+      main {
+        width: 100%;
+        height: fit-content;
+        padding: 2rem 240px;
+        background: var(--background, #f7f6f9);
+
+        color: #191919;
+        font-family: 'Pretendard';
+        font-size: 1rem;
+        font-style: normal;
+        line-height: 2rem;
+      }
+
+      main > div {
+        display: flex;
+        flex-direction: column;
+        gap: 3rem;
+
+        background-color: white;
+        height: fit-content;
+        border-radius: 16px;
+        padding: 3rem;
+      }
+
+      main > div h1,
+      main > div h2 {
+        border-bottom: 1px solid rgba(48, 54, 61, 0.7);
+        padding-bottom: 8px;
+        display: inline-block;
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+
+      main > div div {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .team {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 1rem;
+      }
+
+      .team > div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        width: 15rem;
+        height: 15rem;
+        padding: 2rem;
+        border-radius: 16px;
+        background-color: var(--background);
+      }
+
+      .team > div > div {
+        display: flex;
+        flex-direction: row;
+        flex-grow: 1;
+      }
+
+      .team > div > div > img {
+        width: 5rem;
+        height: 5rem;
+        border: 1px solid rgba(48, 54, 61, 0.7);
+        border-radius: 50%;
+      }
+
+      .info {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .name {
+        font-weight: bold;
+      }
+
+      .info > a {
+        color: #19191980;
+        font-size: 0.9rem;
+      }
+
+      .role {
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div>
+        <a href="https://github.com/kookmin-sw/capstone-2024-02">maru</a>
+      </div>
+    </nav>
+    <main>
+      <div>
+        <div>
+          <h1>Maru</h1>
+          <p>
+            청년들의 주거비 경제적 어려움을 공유 경제를 통해 해결하고, 함께
+            살아가는 플랫폼. <strong>'마루'</strong>
+          </p>
+        </div>
+        <div>
+          <h2>프로젝트 소개</h2>
+          <p>
+            저희는 공간을 함께 공유하며 사용할 사람들을 찾아주는 플랫폼을
+            제공하고자 합니다.
+            <br />
+            공급의 감소, 전셋값의 상승 등 도시에서 여러 이유로 주거비가 상승하고
+            있습니다. 이는 특히 경제적으로 어려운 젊은 세대에게 부담으로
+            다가오고 있습니다.
+            <br />
+            저희의 목표는 젊은 세대의 이러한 경제적 어려움을 공유 경제를 통해
+            해결하는 것입니다. 즉, 젊은 세대들이 함께 주거 비용을 나누고, 남는
+            공간을 효율적으로 활용하여 부담을 줄이는 것을 돕고자 합니다.
+            <br />
+            각자의 생활 방식에 따라 함께 살 룸메이트 또는 하우스메이트를 찾을 수
+            있도록 도와주며, 남는 공간을 공유하고 싶어하는 사람들을 연결시켜주어
+            비용 부담의 문제를 해결하고자 합니다.
+            <br />
+          </p>
+        </div>
+        <div>
+          <h2>Abstract</h2>
+          <p>
+            We aim to provide a platform that connects people willing to share
+            and use spaces together.
+            <br />
+            Due to various reasons, such as a decrease in supply and an increase
+            in lease prices, the cost of living in cities is rising. This is
+            particularly becoming a burden for the younger generation who are
+            economically challenged.
+            <br />
+            Our goal is to address these economic difficulties faced by the
+            younger generation through the sharing economy. That is, we aim to
+            assist the youth in sharing living expenses and efficiently
+            utilizing available space to reduce their burden.
+            <br />
+            By accommodating individual lifestyles, we intend to help find
+            suitable roommates or housemates and connect those who wish to share
+            their extra space, thereby solving the problem of financial burden.
+          </p>
+        </div>
+        <div>
+          <h2>소개 영상</h2>
+        </div>
+        <div>
+          <h2>팀 소개</h2>
+          <div class="team">
+            <div>
+              <div>
+                <img
+                  src="https://avatars.githubusercontent.com/u/55117867?v=4"
+                />
+                <div class="info">
+                  <p class="name">최정민</p>
+                  <a href="https://github.com/cjeongmin">@cjeongmin</a>
+                  <p>****1679</p>
+                </div>
+              </div>
+              <p class="role">Front-end</p>
+            </div>
+            <div>
+              <div>
+                <img
+                  src="https://avatars.githubusercontent.com/u/66050038?v=4"
+                />
+                <div class="info">
+                  <p class="name">조희정</p>
+                  <a href="https://github.com/he2e2">@he2e2</a>
+                  <p>****3147</p>
+                </div>
+              </div>
+              <p class="role">Front-end</p>
+            </div>
+            <div>
+              <div>
+                <img
+                  src="https://avatars.githubusercontent.com/u/39540595?v=4"
+                />
+                <div class="info">
+                  <p class="name">이준호</p>
+                  <a href="https://github.com/leejh7">@leejh7</a>
+                  <p>****1675</p>
+                </div>
+              </div>
+              <p class="role">Back-end</p>
+            </div>
+            <div>
+              <div>
+                <img
+                  src="https://avatars.githubusercontent.com/u/52970725?v=4"
+                />
+                <div class="info">
+                  <p class="name">정연수</p>
+                  <a href="https://github.com/cheesecrust">@cheesecrust</a>
+                  <p>****1665</p>
+                </div>
+              </div>
+              <p class="role">Back-end</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h2>사용법</h2>
+        </div>
+        <div>
+          <h2>기타</h2>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
