@@ -1,6 +1,8 @@
-## [Maru]()
+## [Maru](https://kookmin-sw.github.io/capstone-2024-02)
 
 청년들의 주거비 경제적 어려움을 공유 경제를 통해 해결하고, 함께 살아가는 플랫폼. **'마루'**
+
+[Github Pages로 이동](https://kookmin-sw.github.io/capstone-2024-02)
 
 ## 1. 프로젝트 소개
 
