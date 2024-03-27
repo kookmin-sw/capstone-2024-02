@@ -1,76 +1,42 @@
-# Welcome to GitHub
+## 1. 프로젝트 소개
 
-캡스톤 팀 생성을 축하합니다.
+저희는 공간을 함께 공유하며 사용할 사람들을 찾아주는 플랫폼을 제공하고자 합니다.
 
-## 팀소개 및 페이지를 꾸며주세요.
+공급의 감소, 전셋값의 상승 등 도시에서 여러 이유로 주거비가 상승하고 있습니다. 이는 특히 경제적으로 어려운 젊은 세대에게 부담으로 다가오고 있습니다.
 
-- 프로젝트 소개
-  - 프로젝트 설치방법 및 데모, 사용방법, 프리뷰등을 readme.md에 작성.
-  - Api나 사용방법등 내용이 많을경우 wiki에 꾸미고 링크 추가.
+저희의 목표는 젊은 세대의 이러한 경제적 어려움을 공유 경제를 통해 해결하는 것입니다. 즉, 젊은 세대들이 함께 주거 비용을 나누고, 남는 공간을 효율적으로 활용하여 부담을 줄이는 것을 돕고자 합니다.
 
-- 팀페이지 꾸미기
-  - 프로젝트 소개 및 팀원 소개
-  - index.md 예시보고 수정.
+각자의 생활 방식에 따라 함께 살 룸메이트 또는 하우스메이트를 찾을 수 있도록 도와주며, 남는 공간을 공유하고 싶어하는 사람들을 연결시켜주어 비용 부담의 문제를 해결하고자 합니다.
 
-- GitHub Pages 리파지토리 Settings > Options > GitHub Pages 
-  - Source를 marster branch
-  - Theme Chooser에서 태마선택
-  - 수정후 팀페이지 확인하여 점검.
+## 2. Abstract
 
-**팀페이지 주소** -> https://kookmin-sw.github.io/ '{{자신의 리파지토리 아이디}}'
+We aim to provide a platform that connects people willing to share and use spaces together.
 
-**예시)** 2023년 0조  https://kookmin-sw.github.io/capstone-2023-00/
+Due to various reasons, such as a decrease in supply and an increase in lease prices, the cost of living in cities is rising. This is particularly becoming a burden for the younger generation who are economically challenged.
 
+Our goal is to address these economic difficulties faced by the younger generation through the sharing economy. That is, we aim to assist the youth in sharing living expenses and efficiently utilizing available space to reduce their burden.
 
-## 내용에 아래와 같은 내용들을 추가하세요.
+By accommodating individual lifestyles, we intend to help find suitable roommates or housemates and connect those who wish to share their extra space, thereby solving the problem of financial burden.
 
-### 1. 프로잭트 소개
-
-프로젝트
-
-### 2. 소개 영상
+## 3. 소개 영상
 
 프로젝트 소개하는 영상을 추가하세요
 
-### 3. 팀 소개
+## 4. 팀 소개
 
-팀을 소개하세요.
+<div align="center">
 
-팀원정보 및 담당이나 사진 및 SNS를 이용하여 소개하세요.
+|                                                              **최정민 (FE)**                                                              |                                                          **조희정 (FE)**                                                          |                                                           **이준호 (BE)**                                                           |                                                                **정연수 (BE)**                                                                |
+|:--------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------:|
+| [<img src="https://avatars.githubusercontent.com/u/55117867?v=4" height=150 width=150> <br/> @cjeongmin](https://github.com/cjeongmin) | [<img src="https://avatars.githubusercontent.com/u/66050038?v=4" height=150 width=150> <br/> @he2e2](https://github.com/he2e2) | [<img src="https://avatars.githubusercontent.com/u/39540595?v=4" height=150 width=150> <br/> @leejh7](https://github.com/leejh7) | [<img src="https://avatars.githubusercontent.com/u/52970725?v=4" height=150 width=150> <br/> @cheesecrust](https://github.com/cheesecrust) |
 
-### 4. 사용법
+</div>
+
+## 5. 사용법
 
 소스코드제출시 설치법이나 사용법을 작성하세요.
 
-### 5. 기타
+## 6. 기타
 
 추가적인 내용은 자유롭게 작성하세요.
 
-
-## Markdown을 사용하여 내용꾸미기
-
-Markdown은 작문을 스타일링하기위한 가볍고 사용하기 쉬운 구문입니다. 여기에는 다음을위한 규칙이 포함됩니다.
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-자세한 내용은 [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Support or Contact
-
-readme 파일 생성에 추가적인 도움이 필요하면 [도움말](https://help.github.com/articles/about-readmes/) 이나 [contact support](https://github.com/contact) 을 이용하세요.
