@@ -28,15 +28,11 @@ By accommodating individual lifestyles, we intend to help find suitable roommate
 
 ## 4. 팀 소개
 
-<div align="center">
-
 |                                                              **최정민**                                                              |                                                          **조희정**                                                          |                                                           **이준호**                                                           |                                                                **정연수**                                                                |
 |:--------------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------:|:------------------------------------------------------------------------------------------------------------------------------------------:|
 | [<img src="https://avatars.githubusercontent.com/u/55117867?v=4" height=150 width=150> <br/> @cjeongmin](https://github.com/cjeongmin) | [<img src="https://avatars.githubusercontent.com/u/66050038?v=4" height=150 width=150> <br/> @he2e2](https://github.com/he2e2) | [<img src="https://avatars.githubusercontent.com/u/39540595?v=4" height=150 width=150> <br/> @leejh7](https://github.com/leejh7) | [<img src="https://avatars.githubusercontent.com/u/52970725?v=4" height=150 width=150> <br/> @cheesecrust](https://github.com/cheesecrust) |
 |****1679|****3147|****1675|****1665|
 |Front-end|Front-end|Back-end|Back-end|
-
-</div>
 
 ## 5. 사용법
 
