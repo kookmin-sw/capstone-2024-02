@@ -6,23 +6,21 @@
 
 ## 1. 프로젝트 소개
 
-저희는 공간을 함께 공유하며 사용할 사람들을 찾아주는 플랫폼을 제공하고자 합니다.
+공유하고 싶어하는 사람들을 연결시켜주어 비용 부담의 문제를 해결하고자 합니다.
 
-공급의 감소, 전셋값의 상승 등 도시에서 여러 이유로 주거비가 상승하고 있습니다. 이는 특히 경제적으로 어려운 젊은 세대에게 부담으로 다가오고 있습니다.
+저희는 공간을 함께 공유하며 사용할 사람들을 연결해주는 플랫폼을 제공하는 것을 목표로 합니다. 
 
-저희의 목표는 젊은 세대의 이러한 경제적 어려움을 공유 경제를 통해 해결하는 것입니다. 즉, 젊은 세대들이 함께 주거 비용을 나누고, 남는 공간을 효율적으로 활용하여 부담을 줄이는 것을 돕고자 합니다.
+도시 내 주거비의 상승, 전셋값의 증가 등 다양한 이유로 젊은 세대가 경제적 어려움을 겪고 있습니다. 저희의 핵심 목적은 공유 경제를 통해 이러한 문제를 해결하는 것입니다. 즉, 젊은 세대가 주거 비용을 분담하고 남는 공간을 효율적으로 사용함으로써 경제적 부담을 줄일 수 있도록 돕고자 합니다.
 
-각자의 생활 방식에 따라 함께 살 룸메이트 또는 하우스메이트를 찾을 수 있도록 도와주며, 남는 공간을 공유하고 싶어하는 사람들을 연결시켜주어 비용 부담의 문제를 해결하고자 합니다.
+이를 위해, 사용자 각자의 생활 방식에 맞는 룸메이트 또는 하우스메이트를 찾을 수 있도록 지원하며, 공간을 공유하고자 하는 이들을 연결하여 비용 부담 문제를 해결하려고 합니다.
 
 ## 2. Abstract
 
-We aim to provide a platform that connects people willing to share and use spaces together.
+We aim to provide a platform that connects people who want to share their space, helping to alleviate the financial burden associated with housing costs.
 
-Due to various reasons, such as a decrease in supply and an increase in lease prices, the cost of living in cities is rising. This is particularly becoming a burden for the younger generation who are economically challenged.
+With the rise in urban living costs and increased rent prices, the younger generation is facing economic difficulties. Our core purpose is to solve these problems through the sharing economy. In other words, we want to help the younger generation share housing costs and efficiently use available space to reduce their economic burden.
 
-Our goal is to address these economic difficulties faced by the younger generation through the sharing economy. That is, we aim to assist the youth in sharing living expenses and efficiently utilizing available space to reduce their burden.
-
-By accommodating individual lifestyles, we intend to help find suitable roommates or housemates and connect those who wish to share their extra space, thereby solving the problem of financial burden.
+To this end, we support finding roommates or housemates that match each user's lifestyle, connecting those who wish to share their space to solve the issue of financial burden.
 
 ## 3. 소개 영상
 
