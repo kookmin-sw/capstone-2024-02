@@ -1,0 +1,31 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  height: 100dvh;
+  max-width: 100dvw;
+  overflow-x: hidden;
+}
+
+nav {
+  top: 0;
+  left: 0;
+  z-index: 1;
+  position: sticky;
+}
+
+main {
+  width: 100%;
+  height: calc(100% - 72px);
+  max-height: fit-content;
+  padding: 0 15rem;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

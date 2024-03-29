@@ -1,0 +1,10 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="restaurant">
+<mask id="mask0_426_1632" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="48" height="48">
+<rect id="Bounding box" width="48" height="48" fill="#D9D9D9"/>
+</mask>
+<g mask="url(#mask0_426_1632)">
+<path id="restaurant_2" d="M14.25 44V25.6C12.5167 25.2333 11.0417 24.3583 9.825 22.975C8.60833 21.5917 8 19.9333 8 18V4H11V18H14.25V4H17.25V18H20.5V4H23.5V18C23.5 19.9333 22.8917 21.5917 21.675 22.975C20.4583 24.3583 18.9833 25.2333 17.25 25.6V44H14.25ZM35 44V28H29.25V12.75C29.25 10.1167 30.05 8 31.65 6.4C33.25 4.8 35.3667 4 38 4V44H35Z" fill="#1C1B1F"/>
+</g>
+</g>
+</svg>
