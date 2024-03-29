@@ -5,6 +5,7 @@
 [Github Pages로 이동](https://kookmin-sw.github.io/capstone-2024-02)
 
 [Front-end 저장소로 이동](https://github.com/capstone-maru/maru-front-end)
+
 [Back-end 저장소로 이동](https://github.com/capstone-maru/maru-back-end)
 
 ## 1. 프로젝트 소개
