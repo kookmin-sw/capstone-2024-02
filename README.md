@@ -4,6 +4,9 @@
 
 [Github Pages로 이동](https://kookmin-sw.github.io/capstone-2024-02)
 
+[Front-end 저장소로 이동](https://github.com/capstone-maru/maru-front-end)
+[Back-end 저장소로 이동](https://github.com/capstone-maru/maru-back-end)
+
 ## 1. 프로젝트 소개
 
 저희는 공간을 함께 공유하며 사용할 사람들을 연결해주는 플랫폼을 제공하는 것을 목표로 합니다. 
