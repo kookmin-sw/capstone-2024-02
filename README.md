@@ -12,6 +12,19 @@
 [<img  src="https://img.shields.io/badge/github pages-222222?style=for-the-badge&logo=githubpages&logoColor=white">](https://kookmin-sw.github.io/capstone-2024-02) [<img  src="https://img.shields.io/badge/front--end repository-181717?style=for-the-badge&logo=github&logoColor=white">](https://github.com/capstone-maru/maru-front-end) [<img  src="https://img.shields.io/badge/back--end repository-181717?style=for-the-badge&logo=github&logoColor=white">](https://github.com/capstone-maru/maru-back-end)
 
 </div>
+
+## 목차
+- [프로젝트 소개](#1-프로젝트-소개-🏠)
+- [Abstract](#2-abstract)
+- [주요 기눙](#3-주요-기능)
+- [보조 기능](#4-보조-기능)
+- [아키텍처](#5-아키텍처)
+- [소개 영상](#6-소개-영상-🎬)
+- [팀 소개](#7-팀-소개-🙇)
+- [사용법](#8-사용법-📋)
+- [기술 스택](#9-stacks-📚)
+- [기타](#10-기타)
+
 <br />
 
 ## 1. 프로젝트 소개 🏠
