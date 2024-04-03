@@ -14,7 +14,7 @@
 </div>
 <br />
 
-## 1. 프로젝트 소개🏠
+## 1. 프로젝트 소개 🏠
 
 저희는 공간을 함께 공유하며 사용할 사람들을 연결해주는 플랫폼을 제공하는 것을 목표로 합니다. 
 
@@ -32,12 +32,53 @@ With the rise in urban living costs and increased rent prices, the younger gener
 To this end, we support finding roommates or housemates that match each user's lifestyle, connecting those who wish to share their space to solve the issue of financial burden.
 <br />
 
-## 3. 소개 영상🎬
+## 3. 주요 기능 
+- 메이트 찾기
+    - 게시글을 통한 모집 기능과 추천 시스템을 통한 메이트 매칭 기능을 제공합니다.
+- 유저 인증 / 인가 기능
+    - 유저 간 신뢰 구축을 위해, 공인된 서비스(카카오, 네이버)를 이용한 로그인과 신분증 인증같은 유저 신원 확보 기능을 마련합니다.
+- 대학교 인증
+    - 대학생 사용자에게는 대학교 인증을 통해 기숙사 룸메이트 찾기와 같은 추가 기능을 제공합니다.
+- 회원(프로필) 기능	
+    - 사용자가 자신의 특성을 상세하고 쉽게 기술할 수 있도록 유도하여, 보다 정확한 추천을 받을 수 있게 합니다.
+- 채팅 기능
+    - 사용자 간의 원활한 소통을 위해, 서비스 내에 채팅 기능을 제공합니다.
+<br />
+
+## 4. 보조 기능
+하기 내용은 주요 기능 진행 상황에 따라, 다채로운 서비스를 위해 후순위로 개발할 예정인 기능들입니다.
+- MBTI 와 비슷한, 자신의 생활 타입 테스트 기능
+- 부동산 매물 조회 기능
+- 커뮤니티 기능
+- 자취, 동거인들의 커뮤니티 기능 제공
+<br />
+
+
+## 5. 아키텍처
+<br />
+
+
+## 5.1 Front-end
+
+<br />
+
+
+## 5.2 Back-end
+
+<br />
+
+
+## 5.3 Deployment
+
+<br />
+
+
+## 6. 소개 영상 🎬
 
 프로젝트 소개하는 영상을 추가하세요
 <br />
 
-## 4. 팀 소개🙇
+## 7. 팀 소개 🙇
 
 <div align="center">
 
@@ -50,12 +91,12 @@ To this end, we support finding roommates or housemates that match each user's l
 </div>
 <br />
 
-## 5. 사용법📋
+## 8. 사용법 📋
 
 소스코드제출시 설치법이나 사용법을 작성하세요.
 <br />
 
-## 6. Stacks📚
+## 9. Stacks 📚
 
 ### Front-end
 <img  src="https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=next.js&logoColor=white"> <img  src="https://img.shields.io/badge/sass-CC6699?style=for-the-badge&logo=sass&logoColor=white"> <img  src="https://img.shields.io/badge/styled--components-DB7093?style=for-the-badge&logo=styledcomponents&logoColor=white"> <br />
@@ -69,4 +110,4 @@ To this end, we support finding roommates or housemates that match each user's l
 <img  src="https://img.shields.io/badge/numpy-013243?style=for-the-badge&logo=numpy&logoColor=white"> <img  src="https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white"> <img  src="https://img.shields.io/badge/scikitlearn-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white"> 
 <br />
 
-## 7. 기타
+## 10. 기타
