@@ -55,21 +55,28 @@ To this end, we support finding roommates or housemates that match each user's l
 
 
 ## 5. 아키텍처
+프로젝트 내 각 파트의 아키텍처 구조와 시스템 구성도입니다.
 <br />
 
 
 ## 5.1 Front-end
-
+<div align="center">
+<img width="800" alt="스크린샷 2024-04-04 02 59 41" src="https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/70b11cdf-f5b8-4018-bdc4-f1796641c36e">
+</div>
 <br />
 
 
 ## 5.2 Back-end
-
+<div align="center">
+<img width="800" alt="스크린샷 2024-04-04 02 59 55" src="https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/dda418db-65ad-439d-951a-5dabd299d03c">
+</div>
 <br />
 
 
 ## 5.3 Deployment
-
+<div align="center">
+<img width="800" alt="스크린샷 2024-04-04 03 00 24" src="https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/e3c7bd19-a597-434c-a425-ea00925717ae">
+</div>
 <br />
 
 
