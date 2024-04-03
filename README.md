@@ -27,7 +27,7 @@
 
 <br />
 
-## 1. 프로젝트 소개 🏠
+## 1. 프로젝트 소개
 
 저희는 공간을 함께 공유하며 사용할 사람들을 연결해주는 플랫폼을 제공하는 것을 목표로 합니다. 
 
@@ -93,12 +93,12 @@ To this end, we support finding roommates or housemates that match each user's l
 <br />
 
 
-## 6. 소개 영상 🎬
+## 6. 소개 영상
 
 프로젝트 소개하는 영상을 추가하세요
 <br />
 
-## 7. 팀 소개 🙇
+## 7. 팀 소개
 
 <div align="center">
 
@@ -111,12 +111,12 @@ To this end, we support finding roommates or housemates that match each user's l
 </div>
 <br />
 
-## 8. 사용법 📋
+## 8. 사용법
 
 소스코드제출시 설치법이나 사용법을 작성하세요.
 <br />
 
-## 9. Stacks 📚
+## 9. 기술 스택
 
 ### Front-end
 <img  src="https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=next.js&logoColor=white"> <img  src="https://img.shields.io/badge/sass-CC6699?style=for-the-badge&logo=sass&logoColor=white"> <img  src="https://img.shields.io/badge/styled--components-DB7093?style=for-the-badge&logo=styledcomponents&logoColor=white"> <br />
