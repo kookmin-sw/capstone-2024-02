@@ -1,12 +1,16 @@
 <div align="center">
-
+  
 # MARU
 
 청년들의 주거비 경제적 어려움을 공유 경제를 통해 해결하고, 함께 살아가는 플랫폼.
 
 **'마루'**
 
+<img width="198" alt="logo" src="https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/ae817510-84cb-4163-8903-ba3d92c1b14f">
+<br /> <br />
+
 [<img  src="https://img.shields.io/badge/github pages-222222?style=for-the-badge&logo=githubpages&logoColor=white">](https://kookmin-sw.github.io/capstone-2024-02) [<img  src="https://img.shields.io/badge/front--end repository-181717?style=for-the-badge&logo=github&logoColor=white">](https://github.com/capstone-maru/maru-front-end) [<img  src="https://img.shields.io/badge/back--end repository-181717?style=for-the-badge&logo=github&logoColor=white">](https://github.com/capstone-maru/maru-back-end)
+
 </div>
 <br />
 
