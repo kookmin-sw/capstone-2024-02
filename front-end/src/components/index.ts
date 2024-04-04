@@ -7,3 +7,5 @@ export * from './VitalSection';
 export * from './FloatingChatting';
 export * from './HorizontalDivider';
 export * from './CircularProfileImage';
+export * from './CircularButton';
+export * from './RangeSlider';

@@ -6,12 +6,12 @@ import { useEffect } from 'react';
 import {
   postTokenRefresh,
   useAuthActions,
-  useAuthState,
+  useAuthValue,
 } from '@/features/auth';
-import { load } from '@/shared/persist';
+import { load } from '@/shared/storage';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [auth] = useAuthState();
+  const auth = useAuthValue();
   const { login } = useAuthActions();
 
   const router = useRouter();
@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     if (auth === null) {
-      const refreshToken = load({ type: 'local', key: 'refreshToken' });
+      const refreshToken = load<string>({ type: 'local', key: 'refreshToken' });
       if (refreshToken !== null) {
         postTokenRefresh(refreshToken)
           .then(({ data }) => {

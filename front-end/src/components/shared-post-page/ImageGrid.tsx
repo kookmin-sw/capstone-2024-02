@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 
-import { ImageIndexButton } from './ImageIndexButton';
+import { CircularButton } from '@/components';
 
 const styles = {
   container: styled.div`
@@ -82,14 +82,14 @@ export function ImageGrid({ images: imagesParam }: Props) {
   return (
     <styles.container>
       <styles.buttonContainer>
-        <ImageIndexButton
+        <CircularButton
           disabled={pageIndex - 1 < 0}
           direction="left"
           onClick={() => {
             handlePageChange(-1);
           }}
         />
-        <ImageIndexButton
+        <CircularButton
           disabled={pageIndex + 1 >= images.length}
           direction="right"
           onClick={() => {

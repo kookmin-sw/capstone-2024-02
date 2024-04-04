@@ -1,9 +1,9 @@
 'use client';
 
-import { type HTMLAttributes } from 'react';
 import styled from 'styled-components';
 
-import { DropDownList } from './DropDownList';
+import { DealTypeFilter } from './filter';
+import { SharedPostFilterItem } from './SharedPostFilterItem';
 
 import {
   SharedPostsFilterTypeValue,
@@ -17,12 +17,12 @@ const styles = {
   `,
 };
 
-export function SharedPostsFilter({
+export function SharedPostFilters({
   selected,
   className,
 }: {
   selected: SharedPostsType;
-} & HTMLAttributes<HTMLDivElement>) {
+} & React.ComponentProps<'div'>) {
   // TODO: 필터 정보 저장 코드 필요.
 
   const filterEntries = Object.entries(SharedPostsFilterTypeValue).map<
@@ -39,12 +39,9 @@ export function SharedPostsFilter({
       {filterEntries
         .filter(([, value]) => filter(value))
         .map(([key, value]) => (
-          <DropDownList
-            key={key}
-            title={value}
-            items={[]}
-            onSelect={() => {}}
-          />
+          <SharedPostFilterItem key={key} title={value}>
+            <DealTypeFilter />
+          </SharedPostFilterItem>
         ))}
     </styles.container>
   );

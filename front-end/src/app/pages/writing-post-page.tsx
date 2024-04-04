@@ -9,8 +9,7 @@ const styles = {
     background: var(--background, #f7f6f9);
 
     position: relative;
-    left: -11rem;
-    width: 100dvw;
+    width: 100%;
     min-height: 100%;
     height: fit-content;
 
@@ -143,7 +142,7 @@ const styles = {
     cursor: pointer;
     background-size: cover;
     ${props =>
-      props.isSelected
+      props.$isSelected
         ? {
             backgroundImage: `url('/button-icon/Radio button checked.svg')`,
           }
@@ -158,7 +157,7 @@ const styles = {
     cursor: pointer;
     background-size: cover;
     ${props =>
-      props.isSelected
+      props.$isSelected
         ? {
             backgroundImage: `url('/button-icon/Check box.svg')`,
           }
@@ -244,7 +243,7 @@ const AdditionalOptions = [
 ];
 
 interface ButtonActiveProps {
-  isSelected: boolean;
+  $isSelected: boolean;
 }
 
 interface SelectedStates {
@@ -349,7 +348,7 @@ export function WritingPostPage() {
               {DealOptions.map(option => (
                 <styles.checkButtonContainer key={option}>
                   <styles.customRadioButton
-                    isSelected={selectedStates.budget1 === option}
+                    $isSelected={selectedStates.budget1 === option}
                     onClick={() => {
                       handleClick('budget1', option);
                     }}
@@ -412,7 +411,7 @@ export function WritingPostPage() {
               {RoomOptions.map(option => (
                 <styles.checkButtonContainer key={option}>
                   <styles.customRadioButton
-                    isSelected={selectedStates.room1 === option}
+                    $isSelected={selectedStates.room1 === option}
                     onClick={() => {
                       handleClick('room1', option);
                     }}
@@ -428,7 +427,7 @@ export function WritingPostPage() {
               {StructureOptions.map(option => (
                 <styles.checkButtonContainer key={option}>
                   <styles.customRadioButton
-                    isSelected={selectedStates.room2 === option}
+                    $isSelected={selectedStates.room2 === option}
                     onClick={() => {
                       handleClick('room2', option);
                     }}
@@ -461,7 +460,7 @@ export function WritingPostPage() {
                   style={{ margin: option === '옥탑' ? '0' : '' }}
                 >
                   <styles.customRadioButton
-                    isSelected={selectedStates.room3 === option}
+                    $isSelected={selectedStates.room3 === option}
                     onClick={() => {
                       handleClick('room3', option);
                     }}
@@ -482,7 +481,7 @@ export function WritingPostPage() {
               {AdditionalOptions.map(option => (
                 <styles.checkButtonContainer key={option}>
                   <styles.customCheckBox
-                    isSelected={selectedOptions[option]}
+                    $isSelected={selectedOptions[option]}
                     onClick={() => {
                       handleOptionClick(option);
                     }}

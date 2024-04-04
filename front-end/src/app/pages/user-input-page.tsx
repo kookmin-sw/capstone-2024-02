@@ -43,21 +43,21 @@ const styles = {
     display: flex;
     flex-direction: column;
     background: ${props =>
-      props.active !== undefined && props.active !== null && props.active
+      props.$active !== undefined && props.$active !== null && props.$active
         ? 'var(--background, #f7f6f9)'
         : 'var(--White, #fff)'};
     box-shadow: ${props =>
-      props.active !== undefined && props.active !== null && props.active
+      props.$active !== undefined && props.$active !== null && props.$active
         ? '0px 4px 20px 0px rgba(0, 0, 0, 0.2)'
         : 'none'};
     border: ${props =>
-      props.active !== undefined && props.active !== null && props.active
+      props.$active !== undefined && props.$active !== null && props.$active
         ? 'none'
         : '2px solid var(--Light-gray, #DCDDEA)'};
   `,
   miniCardName: styled.p<CardActiveProps>`
     color: ${props =>
-      props.active !== undefined && props.active !== null && props.active
+      props.$active !== undefined && props.$active !== null && props.$active
         ? 'var(--Black, #35373A)'
         : 'var(--Gray-3, #888)'};
     font-family: 'Noto Sans KR';
@@ -106,7 +106,7 @@ const styles = {
     position: absolute;
 
     display: ${props =>
-      props.active !== undefined && props.active !== null && props.active
+      props.$active !== undefined && props.$active !== null && props.$active
         ? ''
         : 'none'};
   `,
@@ -149,7 +149,7 @@ const styles = {
 };
 
 interface CardActiveProps {
-  active?: boolean;
+  $active?: boolean;
 }
 
 export function UserInputPage() {
@@ -172,9 +172,9 @@ export function UserInputPage() {
         <styles.cardNameSection>
           <styles.miniCard
             onClick={handleMyCardClick}
-            active={activeContainer === 'my'}
+            $active={activeContainer === 'my'}
           >
-            <styles.miniCardName active={activeContainer === 'my'}>
+            <styles.miniCardName $active={activeContainer === 'my'}>
               내카드
             </styles.miniCardName>
             <styles.miniCardKeywordsContainer>
@@ -189,9 +189,9 @@ export function UserInputPage() {
           </styles.miniCard>
           <styles.miniCard
             onClick={handleMateCardClick}
-            active={activeContainer === 'mate'}
+            $active={activeContainer === 'mate'}
           >
-            <styles.miniCardName active={activeContainer === 'mate'}>
+            <styles.miniCardName $active={activeContainer === 'mate'}>
               메이트카드
             </styles.miniCardName>
             <styles.miniCardKeywordsContainer>
@@ -206,14 +206,14 @@ export function UserInputPage() {
           </styles.miniCard>
         </styles.cardNameSection>
         <styles.checkSection>
-          <styles.checkContainer active={activeContainer === 'my'}>
+          <styles.checkContainer $active={activeContainer === 'my'}>
             <VitalSection />
             <styles.lineContainer>
               <styles.horizontalLine />
             </styles.lineContainer>
             <OptionSection />
           </styles.checkContainer>
-          <styles.checkContainer active={activeContainer === 'mate'}>
+          <styles.checkContainer $active={activeContainer === 'mate'}>
             <VitalSection />
             <styles.lineContainer>
               <styles.horizontalLine />

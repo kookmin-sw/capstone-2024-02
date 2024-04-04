@@ -179,7 +179,7 @@ function ToggleSwitch({ isChecked, onToggle }: ToggleSwitchProps) {
 }
 
 interface CheckItemProps {
-  isSelected: boolean;
+  $isSelected: boolean;
 }
 
 const CheckItem = styled.div<CheckItemProps>`
@@ -202,7 +202,7 @@ const CheckItem = styled.div<CheckItemProps>`
   line-height: normal;
 
   ${props =>
-    props.isSelected
+    props.$isSelected
       ? {
           color: 'var(--Main-1, #E15637)',
           border: '2px solid var(--Main-1, #E15637)',
@@ -271,7 +271,7 @@ export function OptionSection() {
             {LivingPatternOptions.map(option => (
               <CheckItem
                 key={option}
-                isSelected={selectedOptions[option]}
+                $isSelected={selectedOptions[option]}
                 onClick={() => {
                   handleOptionClick(option);
                 }}
@@ -287,7 +287,7 @@ export function OptionSection() {
             {EatingOptions.map(option => (
               <CheckItem
                 key={option}
-                isSelected={selectedOptions[option]}
+                $isSelected={selectedOptions[option]}
                 onClick={() => {
                   handleOptionClick(option);
                 }}
@@ -303,7 +303,7 @@ export function OptionSection() {
             {HearingOptions.map(option => (
               <CheckItem
                 key={option}
-                isSelected={selectedOptions[option]}
+                $isSelected={selectedOptions[option]}
                 onClick={() => {
                   handleOptionClick(option);
                 }}
@@ -319,7 +319,7 @@ export function OptionSection() {
             {WeatherOptions.map(option => (
               <CheckItem
                 key={option}
-                isSelected={selectedOptions[option]}
+                $isSelected={selectedOptions[option]}
                 onClick={() => {
                   handleOptionClick(option);
                 }}
@@ -340,7 +340,7 @@ export function OptionSection() {
             {CleanOptions.map(option => (
               <CheckItem
                 key={option}
-                isSelected={selectedOptions[option]}
+                $isSelected={selectedOptions[option]}
                 onClick={() => {
                   handleOptionClick(option);
                 }}
@@ -356,7 +356,7 @@ export function OptionSection() {
             {PersonalOptions.map(option => (
               <CheckItem
                 key={option}
-                isSelected={selectedOptions[option]}
+                $isSelected={selectedOptions[option]}
                 onClick={() => {
                   handleOptionClick(option);
                 }}
@@ -418,7 +418,7 @@ export function OptionSection() {
             {BudgetOptions.map(option => (
               <styles.budgetContainer key={option}>
                 <CheckItem
-                  isSelected={selectedOptions[option]}
+                  $isSelected={selectedOptions[option]}
                   onClick={() => {
                     handleOptionClick(option);
                   }}

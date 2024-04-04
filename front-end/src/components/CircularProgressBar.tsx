@@ -1,6 +1,5 @@
 'use client';
 
-import { type HTMLAttributes } from 'react';
 import styled from 'styled-components';
 
 const styles = {
@@ -27,7 +26,7 @@ export function CircularProgressBar({
   percentage: number;
   strokeWidth: number;
   diameter: number;
-} & HTMLAttributes<HTMLDivElement>) {
+} & React.ComponentProps<'div'>) {
   const radius = (diameter - strokeWidth) / 2;
   const cx = diameter / 2;
   const cy = diameter / 2;

@@ -1,15 +1,17 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import React from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './globals.scss';
 
 import {
-  StyledComponentsRegistry,
-  RecoilRootProvider,
-  TanstackQueryProvider,
   AuthProvider,
+  RecoilRootProvider,
+  StyledComponentsRegistry,
+  TanstackQueryProvider,
 } from '@/app/lib/providers';
-import { NavigationBar, FloatingChatting } from '@/components';
+import { FloatingChatting, NavigationBar } from '@/components';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -26,25 +28,6 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap"
-          rel="stylesheet"
-        />
-        <link
-          rel="stylesheet"
-          as="style"
-          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap"
-          rel="stylesheet"
-        />
         <script
           async
           type="text/javascript"
@@ -59,6 +42,7 @@ export default function RootLayout({
                 <NavigationBar />
                 <main>{children}</main>
                 <FloatingChatting />
+                <ToastContainer />
               </AuthProvider>
             </StyledComponentsRegistry>
           </RecoilRootProvider>

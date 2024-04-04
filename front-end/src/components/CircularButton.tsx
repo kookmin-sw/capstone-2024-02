@@ -13,7 +13,7 @@ const styles = {
     height: 3.12481rem;
     flex-shrink: 0;
 
-    cursor: pointer;
+    cursor: ${({ $disabled }) => ($disabled ? 'auto' : 'pointer')};
 
     opacity: ${({ $disabled }) => ($disabled ? 0.25 : 1)};
 
@@ -24,17 +24,28 @@ const styles = {
   `,
 };
 
-export function ImageIndexButton({
-  direction,
-  disabled,
-  onClick,
-}: {
+interface Props {
   direction: 'left' | 'right';
   disabled: boolean;
   onClick: () => void;
-}) {
+  className?: string;
+}
+
+export function CircularButton({
+  direction,
+  disabled,
+  onClick,
+  className,
+}: Props) {
   return (
-    <styles.container onClick={onClick} $disabled={disabled}>
+    <styles.container
+      className={className}
+      onClick={() => {
+        if (disabled) return;
+        onClick();
+      }}
+      $disabled={disabled}
+    >
       <img alt="" src="/icon-ellipse.svg" />
       <img alt="" src={`/icon-${direction}.svg`} />
     </styles.container>

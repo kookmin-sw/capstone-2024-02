@@ -13,14 +13,12 @@ import {
   ImageGrid,
   MiniCircularProfileImage,
 } from '@/components/shared-post-page';
-import { type SharedPost } from '@/entities/shared-post';
 
 const styles = {
   container: styled.div`
     background: var(--background, #f7f6f9);
 
     position: relative;
-    left: -15rem;
     width: 100dvw;
     min-height: 100%;
     height: fit-content;
@@ -342,24 +340,16 @@ const styles = {
 };
 
 const dummyImages = [
-  'https://s3-alpha-sig.figma.com/img/efd0/12b5/6a0078a4aa75b0e9a9fb53a6d9a7c560?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=B4Aqn-hPJ0ihHPDfRzMOJKsIyqx03layytoxWWfcKWjb5Y99kfmk79oYrVGeBG1r9Upf2S4T9qEoYombOIKwE5BQ-uHa5bHjqSrrGN-Ki4V9uwv-FoINnD1-yK8DFE75XlMlQAWIw7c19End47NjTtAF7aZwN~votmj7HtmRK5~ftLRDqNL~SuLN0-LoMGpuDPhN2DMbafK1KOZeP5ur-dZKNfLQlg7KoOk8DcfS6p1IkoLY56tYQgrDmNG9YzXPSRsjrXAO1BDvYQRw0xdepU9cc63~lYlFbQu0j15PcUKGt9BjkjLwxB5sibmX6qG4Ct4tu161kpw3~urASb84eg__',
-  'https://s3-alpha-sig.figma.com/img/ff85/788d/96b4a3ec1b31b6baf36b11c772529753?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=cjUTegC0Ory6cMHPNzEqOS8K3anjn8DBCi~2j6hiEcZS1exKyuo3g0jfke26Y~HVjFa0YhUjW8tjxjd7KBmgLWHxow2U8YwP6bNJBHeNgKMwpDHk2aF1vUPO-nfDEM7ZCfZCSsWcUz~eNS5XP5XwFvd7aP8g~62hJnvdtkdMpP3qiCS70w~QUAdwBtb57TjBD3EWelFbKg2JcWTVlIxYd7qtj~uuP8-0HXrgmdssska9T3tCF0aT6REa4QFa7dYggiKL3rk8aLyjJ46RbOm9l~mqbIs9PqQakObhU~621G1PeAX9ZtkgzryhtNWG6EKyGTzhEvm4~-~AWriZFAVebw__',
-  'https://s3-alpha-sig.figma.com/img/0de8/113e/7a56e61d0a97703ddef68f41508a60f9?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=SMYm-FhubQ80cjTUJD3g2DJc17u7aOu8~vo7FDtQpmPh4yrJen0RmaxnLXKRLoz1NhcLEG~x65veb7hZcZBgjf5m~ayGDhEwKE4P7gKWPYh3uPT8vW1aGQsAi0JB~fw7qA7nlaVCpPANPIaQLo9LgiRvCEuTRaxxFgwSBXcHxFbGhZCDmUzKvSJgk6Z5TE6jDqOj2nDSDRGu2U0keA5nJu8nvyD4HwJGRDLfNyVDFMa19HDaT2Ma34wVhOSClS-7jUhr4UYwjgLVostmHaFH9OcTtgRWw~UHXSsW30Yrjao2YsDVbskurQ81cjr7SusT-RRXJUQoL1sT91utNz4oBw__',
-  'https://s3-alpha-sig.figma.com/img/2d52/bfda/0a900d41e2a6d77dd731fac06577540c?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=l0b7Up505QbH4ZH5Z0vATZlKNVq70rhtoZVCeabC7RT6kc9q-WQ5gGl4S2~s0JDCaB4lhVuvQMm3m0FxzvjTTmcW0il7~U1ozz2sdgOaxMpX35~0C0lS1nkVlnH6Karq4XQLCOVU1So~bjORg2CkS3mlXNbReSsNKgb-V594MzT25yZmaQ6Gnv3tS7f0pLH-QHRBvwqZRASrJ1ud8K2b1J-JD5KwUneP-gGi8-BKX36Is6VHdkAD1RwJnasfDee540UUCJzrxQAC4ODGFB8cnD0Mv4UsF4vtOncskz77EjclHb-FawpF2lLBYwsZDnSv21dGeF328LeNNS64a-wSCQ__',
-  'https://s3-alpha-sig.figma.com/img/2006/8205/5f945443386acf4bfb5a6853b361442f?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=W8SbDFzsK1gVBUcE~OxQdVW5EI7fRPGiBeGf7loAp73pnO4gVffx7xuTeMQB7CiTd~2mlRDws4vB-5-eQEzrqk4W2lCwAC27tyEMJ-Oh55Pzo0KGDQhQgcbGZ~FRlj9vvgvVK-4cZiK3UrBWgrYN8eSXb~3sp7HQBDY~U0YBCZh9W6bcqlkjZUhV1YIRjdDy~d-b81FvYAI-GIU5JiU5SC0-IGNU5X3l33mcgbADRaC4mdV~uKSCGpOGtDEXOdwTtAODlW2aY28-JAM84hOl6YFXmjjVJlHk13YPcnb~KWo-bX0DOYBnY3Ad3rf0BdgkYjL2ejUS6DE2l613agQKcA__',
+  'https://s3-alpha-sig.figma.com/img/efd0/12b5/6a0078a4aa75b0e9a9fb53a6d9a7c560?Expires=1713139200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=j5AnXWwmsSt8JfwV2YmUgVWZra-uiYrkstHv1k-vf7QbFqS7GcTVcpw~QBW71kNSOsYaaq5kkRYwWc2qUUnIk1oH9bu9DiKkRNPpinL3kvIL64OyfAyMR~RnNK7qQugTcQWTubGN3JdI9oGrIhiN2n7WolTee3Zrqy438Z3Q3pnIz-K3y4zQii6wB5H4-VscMpS8tKeY38I916mq1VOTRjoKxZlYWgOLuF7CPEMD4uUumMasXNL3IXhuCxqK05C7uzdglyQdDb93ZOZbbUrgw8kMuiyGAs83wxulvH5qPf-KMu5~M0jKV9QVErSEWzcRd4UWOtuCX1pM~FGCQy1Thg__',
+  'https://s3-alpha-sig.figma.com/img/ff85/788d/96b4a3ec1b31b6baf36b11c772529753?Expires=1713139200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=WNtT~WogqcFyD00ofTkqvIz7UE3Mrgew63-6NYCowB6E34X1zav19ZwjLahCxAzXa43cv90la3ODGaw1P6D-CdCC3wjXEJ3zq3JyUqjpqUOGcTpNyrL-O~CUtsaoQUQI-vixyiSxE7DcVMehfUwX~qvS4wdPAUGLHVcbsCHYRwZGr9aG8B0i~PKhu8E4gH3I72abjVUldajZ3uclc3CHcxR~wO8VIMCu3CYrw~SDcvLwD8XIyBWkSyX6NXFKDmH45PY9C7xcAd0yD~we7bPFljMs1e1LZTiexHfP34JTKGkdy2qKneadwz50oDcfMOvhl~aOZAdCul5um5TcGbC~UA__',
 ];
 
 const dummyParticipants = [
-  'https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=bS1lS~7-WQsD9x5vHJBOiMnhhFjI~VgCwJH6Bzz~IxFWob-PV-XZweWFIhU6yJC3XHv5qZKZxnP9RWT~0ciIbQfofuhbODEUxnMHe6oq8Dl45khsD30dnXOK~FLBPpWhMumJO-zPpuWjiRwsZ35mfWLbgyT7dND41I9yXCyRASQx9v2iAGzDoVzTfvtkjRyGw6es6fSXRsFGMqthnzYmv7DZT~FCz2avi3-NqXruXQpkijQHNEQUM61ThFiNYEIv8vb1wZWf-USbbJpE8bdbUneblY2T0cWwMRBtKbCrJ0Y~P9lvFbzqBv7h9WOzNyJW~~KeG9vVrBmLRRo1BsNdng__',
-  'https://s3-alpha-sig.figma.com/img/2d52/bfda/0a900d41e2a6d77dd731fac06577540c?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=l0b7Up505QbH4ZH5Z0vATZlKNVq70rhtoZVCeabC7RT6kc9q-WQ5gGl4S2~s0JDCaB4lhVuvQMm3m0FxzvjTTmcW0il7~U1ozz2sdgOaxMpX35~0C0lS1nkVlnH6Karq4XQLCOVU1So~bjORg2CkS3mlXNbReSsNKgb-V594MzT25yZmaQ6Gnv3tS7f0pLH-QHRBvwqZRASrJ1ud8K2b1J-JD5KwUneP-gGi8-BKX36Is6VHdkAD1RwJnasfDee540UUCJzrxQAC4ODGFB8cnD0Mv4UsF4vtOncskz77EjclHb-FawpF2lLBYwsZDnSv21dGeF328LeNNS64a-wSCQ__',
-  'https://s3-alpha-sig.figma.com/img/2006/8205/5f945443386acf4bfb5a6853b361442f?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=W8SbDFzsK1gVBUcE~OxQdVW5EI7fRPGiBeGf7loAp73pnO4gVffx7xuTeMQB7CiTd~2mlRDws4vB-5-eQEzrqk4W2lCwAC27tyEMJ-Oh55Pzo0KGDQhQgcbGZ~FRlj9vvgvVK-4cZiK3UrBWgrYN8eSXb~3sp7HQBDY~U0YBCZh9W6bcqlkjZUhV1YIRjdDy~d-b81FvYAI-GIU5JiU5SC0-IGNU5X3l33mcgbADRaC4mdV~uKSCGpOGtDEXOdwTtAODlW2aY28-JAM84hOl6YFXmjjVJlHk13YPcnb~KWo-bX0DOYBnY3Ad3rf0BdgkYjL2ejUS6DE2l613agQKcA__',
-  'https://s3-alpha-sig.figma.com/img/0de8/113e/7a56e61d0a97703ddef68f41508a60f9?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=SMYm-FhubQ80cjTUJD3g2DJc17u7aOu8~vo7FDtQpmPh4yrJen0RmaxnLXKRLoz1NhcLEG~x65veb7hZcZBgjf5m~ayGDhEwKE4P7gKWPYh3uPT8vW1aGQsAi0JB~fw7qA7nlaVCpPANPIaQLo9LgiRvCEuTRaxxFgwSBXcHxFbGhZCDmUzKvSJgk6Z5TE6jDqOj2nDSDRGu2U0keA5nJu8nvyD4HwJGRDLfNyVDFMa19HDaT2Ma34wVhOSClS-7jUhr4UYwjgLVostmHaFH9OcTtgRWw~UHXSsW30Yrjao2YsDVbskurQ81cjr7SusT-RRXJUQoL1sT91utNz4oBw__',
-  'https://s3-alpha-sig.figma.com/img/ff85/788d/96b4a3ec1b31b6baf36b11c772529753?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=cjUTegC0Ory6cMHPNzEqOS8K3anjn8DBCi~2j6hiEcZS1exKyuo3g0jfke26Y~HVjFa0YhUjW8tjxjd7KBmgLWHxow2U8YwP6bNJBHeNgKMwpDHk2aF1vUPO-nfDEM7ZCfZCSsWcUz~eNS5XP5XwFvd7aP8g~62hJnvdtkdMpP3qiCS70w~QUAdwBtb57TjBD3EWelFbKg2JcWTVlIxYd7qtj~uuP8-0HXrgmdssska9T3tCF0aT6REa4QFa7dYggiKL3rk8aLyjJ46RbOm9l~mqbIs9PqQakObhU~621G1PeAX9ZtkgzryhtNWG6EKyGTzhEvm4~-~AWriZFAVebw__',
-  'https://s3-alpha-sig.figma.com/img/efd0/12b5/6a0078a4aa75b0e9a9fb53a6d9a7c560?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=B4Aqn-hPJ0ihHPDfRzMOJKsIyqx03layytoxWWfcKWjb5Y99kfmk79oYrVGeBG1r9Upf2S4T9qEoYombOIKwE5BQ-uHa5bHjqSrrGN-Ki4V9uwv-FoINnD1-yK8DFE75XlMlQAWIw7c19End47NjTtAF7aZwN~votmj7HtmRK5~ftLRDqNL~SuLN0-LoMGpuDPhN2DMbafK1KOZeP5ur-dZKNfLQlg7KoOk8DcfS6p1IkoLY56tYQgrDmNG9YzXPSRsjrXAO1BDvYQRw0xdepU9cc63~lYlFbQu0j15PcUKGt9BjkjLwxB5sibmX6qG4Ct4tu161kpw3~urASb84eg__',
+  'https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1713139200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=UL1aEtuLGKayYQ5L9ORuMtrpAC9EkOdVY6s2yYhNVuMpzbgXJ0Umi48NzpdET9P6fgCeOxrrwPA9gUVlTpWXWMNPapo-SJmV-7h~kNl23ClcmQ0I1ybBXrNn7ywYZWbnuNvFjSaBmtqBPaWR1F-E69qwN6ohhNS2j3piYxrCuR~ep6iAxAyrGP7Bt9mvDg9NYw5R~HsYWkcyEIF7kdfeJMsZ~SKhJ5aQTfngxKZEW7eB31bO5bXxQcCXi3Qia~zNkUAysBPp8Tx-pZQafjLHGM-ZogjUgOcKT9TyEDufX436AQUx~cBooRbkfXJpyexKXzs20iU4Y8HswRwXVJyJuw__',
 ];
 
 interface Props {
-  post: SharedPost;
+  post: { title: string; content: string };
 }
 
 function Item({ label, data }: { label: string; data: string }) {
@@ -374,7 +364,7 @@ function Item({ label, data }: { label: string; data: string }) {
 export function SharedPostPage({ post }: Props) {
   const [map, setMap] = useState<naver.maps.Map | null>(null);
 
-  const onMoveToCenter = () => {
+  const handleClickTitle = () => {
     if (map === null) return;
 
     const center = new naver.maps.LatLng(37.6090857, 126.9966865);
@@ -383,7 +373,13 @@ export function SharedPostPage({ post }: Props) {
 
   useEffect(() => {
     const center = new naver.maps.LatLng(37.6090857, 126.9966865);
-    setMap(new naver.maps.Map('map', { center }));
+    setMap(
+      new naver.maps.Map('map', {
+        center,
+        disableKineticPan: false,
+        scrollWheel: false,
+      }),
+    );
   }, []);
 
   return (
@@ -441,7 +437,7 @@ export function SharedPostPage({ post }: Props) {
             <styles.locationInfoTitle>위치 정보</styles.locationInfoTitle>
             <styles.locationInfoContent
               onClick={() => {
-                onMoveToCenter();
+                handleClickTitle();
               }}
             >
               서울특별시 성북구 정릉로 104
@@ -475,7 +471,7 @@ export function SharedPostPage({ post }: Props) {
             <CircularProfileImage
               diameter={110}
               percentage={50}
-              url="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1711929600&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=bS1lS~7-WQsD9x5vHJBOiMnhhFjI~VgCwJH6Bzz~IxFWob-PV-XZweWFIhU6yJC3XHv5qZKZxnP9RWT~0ciIbQfofuhbODEUxnMHe6oq8Dl45khsD30dnXOK~FLBPpWhMumJO-zPpuWjiRwsZ35mfWLbgyT7dND41I9yXCyRASQx9v2iAGzDoVzTfvtkjRyGw6es6fSXRsFGMqthnzYmv7DZT~FCz2avi3-NqXruXQpkijQHNEQUM61ThFiNYEIv8vb1wZWf-USbbJpE8bdbUneblY2T0cWwMRBtKbCrJ0Y~P9lvFbzqBv7h9WOzNyJW~~KeG9vVrBmLRRo1BsNdng__"
+              url="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1713139200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=UL1aEtuLGKayYQ5L9ORuMtrpAC9EkOdVY6s2yYhNVuMpzbgXJ0Umi48NzpdET9P6fgCeOxrrwPA9gUVlTpWXWMNPapo-SJmV-7h~kNl23ClcmQ0I1ybBXrNn7ywYZWbnuNvFjSaBmtqBPaWR1F-E69qwN6ohhNS2j3piYxrCuR~ep6iAxAyrGP7Bt9mvDg9NYw5R~HsYWkcyEIF7kdfeJMsZ~SKhJ5aQTfngxKZEW7eB31bO5bXxQcCXi3Qia~zNkUAysBPp8Tx-pZQafjLHGM-ZogjUgOcKT9TyEDufX436AQUx~cBooRbkfXJpyexKXzs20iU4Y8HswRwXVJyJuw__"
             />
             <styles.hostInfoContent>
               <h1>김마루</h1>

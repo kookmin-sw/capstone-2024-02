@@ -1,6 +1,5 @@
 'use client';
 
-import { type HTMLAttributes } from 'react';
 import styled from 'styled-components';
 
 import { type SharedPostsType } from '@/entities/shared-posts-filter';
@@ -55,7 +54,7 @@ export function SharedPostsMenu({
   selected,
   handleSelect,
   className,
-}: Props & HTMLAttributes<HTMLDivElement>) {
+}: Props & React.ComponentProps<'div'>) {
   return (
     <styles.container className={className}>
       <styles.item

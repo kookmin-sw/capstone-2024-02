@@ -102,7 +102,7 @@ const styles = {
 };
 
 interface CheckItemProps {
-  isSelected: boolean;
+  $isSelected: boolean;
 }
 
 const CheckItem = styled.div<CheckItemProps>`
@@ -126,7 +126,7 @@ const CheckItem = styled.div<CheckItemProps>`
   line-height: normal;
 
   ${props =>
-    props.isSelected
+    props.$isSelected
       ? {
           color: 'var(--Main-1, #E15637)',
           border: '2px solid var(--Main-1, #E15637)',
@@ -181,7 +181,7 @@ export function VitalSection() {
         <styles.vitalCheckList>
           <styles.vitalCheckListItem>
             <CheckItem
-              isSelected={selectedState.gender === '남성'}
+              $isSelected={selectedState.gender === '남성'}
               onClick={() => {
                 handleOptionClick('gender', '남성');
               }}
@@ -189,7 +189,7 @@ export function VitalSection() {
               남성
             </CheckItem>
             <CheckItem
-              isSelected={selectedState.gender === '여성'}
+              $isSelected={selectedState.gender === '여성'}
               onClick={() => {
                 handleOptionClick('gender', '여성');
               }}
@@ -212,7 +212,7 @@ export function VitalSection() {
           </styles.vitalCheckListItem>
           <styles.vitalCheckListItem>
             <CheckItem
-              isSelected={selectedState.smoking === '흡연'}
+              $isSelected={selectedState.smoking === '흡연'}
               onClick={() => {
                 handleOptionClick('smoking', '흡연');
               }}
@@ -220,7 +220,7 @@ export function VitalSection() {
               흡연
             </CheckItem>
             <CheckItem
-              isSelected={selectedState.smoking === '비흡연'}
+              $isSelected={selectedState.smoking === '비흡연'}
               onClick={() => {
                 handleOptionClick('smoking', '비흡연');
               }}
@@ -230,7 +230,7 @@ export function VitalSection() {
           </styles.vitalCheckListItem>
           <styles.vitalCheckListItem>
             <CheckItem
-              isSelected={selectedState.room === '같은 방'}
+              $isSelected={selectedState.room === '같은 방'}
               onClick={() => {
                 handleOptionClick('room', '같은 방');
               }}
@@ -238,7 +238,7 @@ export function VitalSection() {
               같은 방
             </CheckItem>
             <CheckItem
-              isSelected={selectedState.room === '다른 방'}
+              $isSelected={selectedState.room === '다른 방'}
               onClick={() => {
                 handleOptionClick('room', '다른 방');
               }}
@@ -246,7 +246,7 @@ export function VitalSection() {
               다른 방
             </CheckItem>
             <CheckItem
-              isSelected={selectedState.room === '상관없어요'}
+              $isSelected={selectedState.room === '상관없어요'}
               onClick={() => {
                 handleOptionClick('room', '상관없어요');
               }}

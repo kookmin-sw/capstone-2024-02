@@ -1,6 +1,5 @@
 'use client';
 
-import { type HTMLAttributes } from 'react';
 import styled from 'styled-components';
 
 const styles = {
@@ -30,6 +29,6 @@ export function MiniCircularProfileImage({
 }: {
   isHost: boolean;
   url: string;
-} & HTMLAttributes<HTMLDivElement>) {
+} & React.ComponentProps<'div'>) {
   return <styles.container style={style} $isHost={isHost} alt="" src={url} />;
 }

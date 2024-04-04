@@ -1,12 +1,19 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
 
 import { SearchBox } from './SearchBox';
 
-import { getAuthLogout, useAuthActions, useAuthIsLogin } from '@/features/auth';
-import { load } from '@/shared/persist';
+import {
+  getAuthLogout,
+  useAuthActions,
+  useAuthIsLogin,
+  useAuthValue,
+  useUserData,
+} from '@/features/auth';
+import { load } from '@/shared/storage';
 
 const styles = {
   container: styled.nav`
@@ -63,8 +70,26 @@ const styles = {
 
 export function NavigationBar() {
   const isLogin = useAuthIsLogin();
+  const router = useRouter();
 
+  const auth = useAuthValue();
   const { logout } = useAuthActions();
+
+  const { data } = useUserData(auth?.accessToken !== undefined);
+
+  const handleLogout = () => {
+    const refreshToken = load<string>({ type: 'local', key: 'refreshToken' });
+    if (refreshToken !== null) {
+      getAuthLogout(refreshToken)
+        .then(() => {
+          router.replace('/');
+          logout();
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    }
+  };
 
   return (
     <styles.container>
@@ -77,20 +102,11 @@ export function NavigationBar() {
       <styles.links>
         <Link href="/shared">메이트찾기</Link>
         <Link href="/community">커뮤니티</Link>
-        <Link href="/my">마이페이지</Link>
+        <Link href={`/profile/${data?.memberId}`}>마이페이지</Link>
         {isLogin && (
           <styles.logout
             onClick={() => {
-              const refreshToken = load({ type: 'local', key: 'refreshToken' });
-              if (refreshToken !== null) {
-                getAuthLogout(refreshToken)
-                  .then(() => {
-                    logout();
-                  })
-                  .catch(err => {
-                    console.error(err);
-                  });
-              }
+              handleLogout();
             }}
           >
             로그아웃
