@@ -101,10 +101,35 @@
         margin-bottom: 0.5rem;
       }
 
+      main > div h3 {
+        display: inline-block;
+        width: 100%;
+      }
+
+      main > div .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      main > div .stack > div {
+        display: flex;
+        flex-direction: row;
+        gap: 0.25rem;
+      }
+
       main > div div {
         display: flex;
         flex-direction: column;
         gap: 1rem;
+      }
+
+      ul {
+        padding-left: 1rem;
+      }
+
+      ul ul {
+        padding-left: 2rem;
       }
 
       .team {
@@ -168,47 +193,166 @@
     </nav>
     <main>
       <div>
-        <div>
+        <div style="text-align: center">
           <h1>Maru</h1>
           <p>
             청년들의 주거비 경제적 어려움을 공유 경제를 통해 해결하고, 함께
-            살아가는 플랫폼. <strong>'마루'</strong>
+            살아가는 플랫폼. <br />
+            <br />
+            <strong>'마루'</strong>
           </p>
+          <div
+            style="
+              align-self: center;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+            "
+          >
+            <img
+              width="198"
+              alt="logo"
+              src="https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/ae817510-84cb-4163-8903-ba3d92c1b14f"
+            />
+
+            <div style="display: flex; flex-direction: row">
+              <a href="https://github.com/kookmin-sw/capstone-2024-02">
+                <img
+                  src="https://img.shields.io/badge/Capstone repository-181717?style=for-the-badge&logo=github&logoColor=white"
+                />
+              </a>
+              <a href="https://github.com/capstone-maru/maru-front-end">
+                <img
+                  src="https://img.shields.io/badge/front--end repository-181717?style=for-the-badge&logo=github&logoColor=white"
+                />
+              </a>
+              <a href="https://github.com/capstone-maru/maru-back-ends">
+                <img
+                  src="https://img.shields.io/badge/back--end repository-181717?style=for-the-badge&logo=github&logoColor=white"
+                />
+              </a>
+            </div>
+          </div>
         </div>
         <div>
           <h2>프로젝트 소개</h2>
           <p>
-            저희는 공간을 함께 공유하며 사용할 사람들을 연결해주는 플랫폼을 제공하는 것을
-            목표로 합니다.
+            저희는 공간을 함께 공유하며 사용할 사람들을 연결해주는 플랫폼을
+            제공하는 것을 목표로 합니다.
             <br />
-            도시 내 주거비의 상승, 전셋값의 증가 등 다양한 이유로 젊은 세대가 경제적 
-            어려움을 겪고 있습니다. 저희의 핵심 목적은 공유 경제를 통해 이러한 문제를
-            해결하는 것입니다. 즉, 젊은 세대가 주거 비용을 분담하고 남는 공간을 효율적으로
-            사용함으로써 경제적 부담을 줄일 수 있도록 돕고자 합니다.
+            도시 내 주거비의 상승, 전셋값의 증가 등 다양한 이유로 젊은 세대가
+            경제적 어려움을 겪고 있습니다. 저희의 핵심 목적은 공유 경제를 통해
+            이러한 문제를 해결하는 것입니다. 즉, 젊은 세대가 주거 비용을
+            분담하고 남는 공간을 효율적으로 사용함으로써 경제적 부담을 줄일 수
+            있도록 돕고자 합니다.
             <br />
-            이를 위해, 사용자 각자의 생활 방식에 맞는 룸메이트 또는 하우스메이트를 찾을 수
-            있도록 지원하며, 공간을 공유하고자 하는 이들을 연결하여 비용 부담 문제를 해결하려고
-            합니다.
+            이를 위해, 사용자 각자의 생활 방식에 맞는 룸메이트 또는
+            하우스메이트를 찾을 수 있도록 지원하며, 공간을 공유하고자 하는
+            이들을 연결하여 비용 부담 문제를 해결하려고 합니다.
           </p>
         </div>
         <div>
           <h2>Abstract</h2>
           <p>
-            We aim to provide a platform that connects people who want to 
-            share their space, helping to alleviate the financial burden
-            associated with housing costs.
+            We aim to provide a platform that connects people who want to share
+            their space, helping to alleviate the financial burden associated
+            with housing costs.
             <br />
-            With the rise in urban living costs and increased rent prices,
-            the younger generation is facing economic difficulties. 
-            Our core purpose is to solve these problems through the sharing
-            economy. In other words, we want to help the younger generation 
-            share housing costs and efficiently use available space to reduce
-            their economic burden.
+            With the rise in urban living costs and increased rent prices, the
+            younger generation is facing economic difficulties. Our core purpose
+            is to solve these problems through the sharing economy. In other
+            words, we want to help the younger generation share housing costs
+            and efficiently use available space to reduce their economic burden.
             <br />
-            To this end, we support finding roommates or housemates that 
-            match each user's lifestyle, connecting those who wish to share
-            their space to solve the issue of financial burden.
+            To this end, we support finding roommates or housemates that match
+            each user's lifestyle, connecting those who wish to share their
+            space to solve the issue of financial burden.
           </p>
+        </div>
+        <div>
+          <h2>주요 기능</h2>
+          <ul>
+            <li>
+              메이트 찾기
+              <ul>
+                <li>
+                  게시글을 통한 모집 기능과 추천 시스템을 통한 메이트 매칭
+                  기능을 제공합니다.
+                </li>
+              </ul>
+            </li>
+            <li>
+              유저 인증 / 인가 기능
+              <ul>
+                <li>
+                  유저 간 신뢰 구축을 위해, 공인된 서비스(카카오, 네이버)를
+                  이용한 로그인과 신분증 인증같은 유저 신원 확보 기능을
+                  마련합니다.
+                </li>
+              </ul>
+            </li>
+            <li>
+              대학교 인증
+              <ul>
+                <li>
+                  대학생 사용자에게는 대학교 인증을 통해 기숙사 룸메이트 찾기와
+                  같은 추가 기능을 제공합니다.
+                </li>
+              </ul>
+            </li>
+            <li>
+              회원(프로필) 기능
+              <ul>
+                <li>
+                  사용자가 자신의 특성을 상세하고 쉽게 기술할 수 있도록
+                  유도하여, 보다 정확한 추천을 받을 수 있게 합니다.
+                </li>
+              </ul>
+            </li>
+            <li>
+              채팅 기능
+              <ul>
+                <li>
+                  사용자 간의 원활한 소통을 위해, 서비스 내에 채팅 기능을
+                  제공합니다.
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h2>보조 기능</h2>
+          <p>
+            하기 내용은 주요 기능 진행 상황에 따라, 다채로운 서비스를 위해
+            후순위로 개발할 예정인 기능들입니다.
+          </p>
+          <ul>
+            <li>MBTI 와 비슷한, 자신의 생활 타입 테스트 기능</li>
+            <li>부동산 매물 조회 기능</li>
+            <li>커뮤니티 기능</li>
+            <li>자취, 동거인들의 커뮤니티 기능 제공</li>
+          </ul>
+        </div>
+        <div>
+          <h2>Front-end Architecture</h2>
+          <img
+            style="border: 1px solid #ededed"
+            src="https://private-user-images.githubusercontent.com/55117867/319302113-70b11cdf-f5b8-4018-bdc4-f1796641c36e.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTIyMDE2NzMsIm5iZiI6MTcxMjIwMTM3MywicGF0aCI6Ii81NTExNzg2Ny8zMTkzMDIxMTMtNzBiMTFjZGYtZjViOC00MDE4LWJkYzQtZjE3OTY2NDFjMzZlLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDA0MDQlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwNDA0VDAzMjkzM1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWY0MTk2ZTY5NjY0OWNjZGVkMWM0MTA2ZTkwNzE3ZWE2Yjk2YzQ5ZDFhNmEzZjM5Y2U0ZDM4NGQ3NjZkMjA1N2EmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.MqPFChqcvQ4DWYOVDDrJSPu9rUeTBlKvxF3e-TX_T6Q"
+          />
+        </div>
+        <div>
+          <h2>Back-end Architecture</h2>
+          <img
+            style="border: 1px solid #ededed"
+            src="https://private-user-images.githubusercontent.com/55117867/319302138-dda418db-65ad-439d-951a-5dabd299d03c.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTIyMDE2NzMsIm5iZiI6MTcxMjIwMTM3MywicGF0aCI6Ii81NTExNzg2Ny8zMTkzMDIxMzgtZGRhNDE4ZGItNjVhZC00MzlkLTk1MWEtNWRhYmQyOTlkMDNjLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDA0MDQlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwNDA0VDAzMjkzM1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTY3OTc1MzZhNTk0ODc2NWFmODJlOWQ1YzEzZmIzNGU1YjVjMGJhNWRjN2EyMTcwNjJjNTI1MmMwNmZiYmI5ZTEmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.Fpn6zpdAn5wAIHIupM--RyA6-ELvjabz_oIpNa14WAQ"
+          />
+        </div>
+        <div>
+          <h2>Deployment</h2>
+          <img
+            style="border: 1px solid #ededed"
+            src="https://private-user-images.githubusercontent.com/55117867/319302165-e3c7bd19-a597-434c-a425-ea00925717ae.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MTIyMDE2NzMsIm5iZiI6MTcxMjIwMTM3MywicGF0aCI6Ii81NTExNzg2Ny8zMTkzMDIxNjUtZTNjN2JkMTktYTU5Ny00MzRjLWE0MjUtZWEwMDkyNTcxN2FlLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDA0MDQlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQwNDA0VDAzMjkzM1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWY4MWRkN2JmMjUyNmRmODVjODc0NTA4MGI4NzgyY2ExMDk5MzE2NDUwODNiZDI0YmQxZWEyYjAyNzQ5NWRjZDcmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.WxeWYrl8T77uhjttwhOhL2zfF_xvpaNvfJWxXP54nPY"
+          />
         </div>
         <div>
           <h2>소개 영상</h2>
@@ -272,6 +416,92 @@
         </div>
         <div>
           <h2>사용법</h2>
+        </div>
+        <div>
+          <h2>기술 스택</h2>
+          <h3>Front-end</h3>
+          <div class="stack">
+            <div>
+              <img
+                src="https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=next.js&logoColor=white"
+              />
+            </div>
+            <div>
+              <img
+                src="https://img.shields.io/badge/sass-CC6699?style=for-the-badge&logo=sass&logoColor=white"
+              />
+              <img
+                src="https://img.shields.io/badge/styled--components-DB7093?style=for-the-badge&logo=styledcomponents&logoColor=white"
+              />
+            </div>
+            <div>
+              <img
+                src="https://img.shields.io/badge/recoil-3578E5?style=for-the-badge&logo=recoil&logoColor=white"
+              />
+              <img
+                src="https://img.shields.io/badge/react--query-FF4154?style=for-the-badge&logo=react query&logoColor=white"
+              />
+            </div>
+            <div>
+              <img
+                src="https://img.shields.io/badge/axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white"
+              />
+            </div>
+            <div>
+              <img
+                src="https://img.shields.io/badge/vercel-000000?style=for-the-badge&logo=vercel&logoColor=white"
+              />
+            </div>
+          </div>
+          <h3>Back-end</h3>
+          <div class="stack">
+            <div>
+              <img
+                src="https://img.shields.io/badge/spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white"
+              />
+              <img
+                src="https://img.shields.io/badge/spring boot-6DB33F?style=for-the-badge&logo=spring boot&logoColor=white"
+              />
+            </div>
+            <div>
+              <img
+                src="https://img.shields.io/badge/postgresql-4169E1?style=for-the-badge&logo=postgresql&logoColor=white"
+              />
+              <img
+                src="https://img.shields.io/badge/H2-0000BB?style=for-the-badge&logo=&logoColor=white"
+              />
+            </div>
+            <div>
+              <img
+                src="https://img.shields.io/badge/jpa-6DB33F?style=for-the-badge&logo=jpa&logoColor=white"
+              />
+              <img
+                src="https://img.shields.io/badge/querydsl-0181CB?style=for-the-badge&logo=querydsl&logoColor=white"
+              />
+            </div>
+            <div>
+              <img
+                src="https://img.shields.io/badge/amazon aws-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white"
+              />
+              <img
+                src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white"
+              />
+            </div>
+          </div>
+          <h3>Rec Sys</h3>
+          <div class="stack">
+            <div>
+              <img
+                src="https://img.shields.io/badge/numpy-013243?style=for-the-badge&logo=numpy&logoColor=white"
+              />
+              <img
+                src="https://img.shields.io/badge/pandas-150458?style=for-the-badge&logo=pandas&logoColor=white"
+              />
+              <img
+                src="https://img.shields.io/badge/scikitlearn-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white"
+              />
+            </div>
+          </div>
         </div>
         <div>
           <h2>기타</h2>
