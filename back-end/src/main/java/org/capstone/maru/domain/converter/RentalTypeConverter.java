@@ -5,15 +5,15 @@ import jakarta.persistence.Converter;
 import org.capstone.maru.domain.constant.RentalType;
 
 @Converter
-public class RentalTypeConverter implements AttributeConverter<RentalType, String> {
+public class RentalTypeConverter implements AttributeConverter<RentalType, Integer> {
 
     @Override
-    public String convertToDatabaseColumn(RentalType rentalType) {
-        return rentalType.getDescription();
+    public Integer convertToDatabaseColumn(RentalType rentalType) {
+        return rentalType.getCode();
     }
 
     @Override
-    public RentalType convertToEntityAttribute(String description) {
-        return RentalType.of(description);
+    public RentalType convertToEntityAttribute(Integer code) {
+        return RentalType.of(code);
     }
 }

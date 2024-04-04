@@ -35,15 +35,15 @@ public class Address {
 
     private String schoolName; // 학교
 
-    private String schoolTime; // 학교까지 걸리는 시간
+    private Short schoolTime; // 학교까지 걸리는 시간
 
-    private String convenienceStoreTime; // 편의점까지 걸리는 시간
+    private Short convenienceStoreTime; // 편의점까지 걸리는 시간
 
     // -- 생성 메서드 -- //
     private Address(CITY city, String oldAddress, String roadAddress, String detailAddress,
         String stationName, Short stationTime, Short busStopTime, String schoolName,
-        String schoolTime,
-        String convenienceStoreTime) {
+        Short schoolTime,
+        Short convenienceStoreTime) {
         this.city = city;
         this.oldAddress = oldAddress;
         this.roadAddress = roadAddress;
@@ -65,8 +65,8 @@ public class Address {
         Short stationTime,
         Short busStopTime,
         String schoolName,
-        String schoolTime,
-        String convenienceStoreTime
+        Short schoolTime,
+        Short convenienceStoreTime
     ) {
         return new Address(
             city,

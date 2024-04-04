@@ -3,6 +3,8 @@ package org.capstone.maru.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.capstone.maru.domain.MemberAccount;
+import org.capstone.maru.dto.response.APIResponse;
 import org.capstone.maru.security.principal.MemberPrincipal;
 import org.capstone.maru.dto.response.AuthResponse;
 import org.capstone.maru.security.token.TokenDto;
@@ -25,9 +27,9 @@ public class AuthController {
     private final MemberAccountService memberAccountService;
 
     @PostMapping("/token/refresh")
-    public ResponseEntity<TokenDto> refreshToken(HttpServletRequest request) {
+    public ResponseEntity<APIResponse> refreshToken(HttpServletRequest request) {
         TokenDto newAccessToken = tokenReIssuer.reissueTokens(request);
-        return ResponseEntity.ok(newAccessToken);
+        return ResponseEntity.ok(APIResponse.success(newAccessToken));
     }
 
     /**
@@ -37,10 +39,12 @@ public class AuthController {
      * @return 로그인한 사용자의 정보
      */
     @GetMapping("/initial/info")
-    public ResponseEntity<AuthResponse> initialInfo(
+    public ResponseEntity<APIResponse> initialInfo(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal) {
-        Boolean initialized = memberAccountService.isInitialized(memberPrincipal.memberId());
-        return ResponseEntity.ok(AuthResponse.from(memberPrincipal, initialized));
+        MemberAccount memberAccount = memberAccountService.searchMemberAccount(
+            memberPrincipal.memberId());
+        AuthResponse data = AuthResponse.from(memberAccount);
+        return ResponseEntity.ok(APIResponse.success(data));
     }
 
     /**
@@ -51,9 +55,10 @@ public class AuthController {
      * @return 로그인한 사용자의 정보
      */
     @GetMapping("/info")
-    public ResponseEntity<AuthResponse> info(
+    public ResponseEntity<APIResponse> info(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal) {
-        return ResponseEntity.ok(AuthResponse.from(memberPrincipal, false));
+        AuthResponse data = AuthResponse.from(memberPrincipal, false);
+        return ResponseEntity.ok(APIResponse.success(data));
     }
 
 }

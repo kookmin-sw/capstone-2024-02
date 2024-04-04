@@ -67,7 +67,7 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers(
                     HttpMethod.POST,
-                    "/auth/token/refresh", "/oauth2/**"
+                    "/auth/token/refresh", "/oauth2/**", "/upload"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

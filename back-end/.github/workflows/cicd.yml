@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
     types: [ closed ]
   workflow_dispatch:
-  
+
 jobs:
   build:
     if: github.event.pull_request.merged == true
@@ -26,12 +26,18 @@ jobs:
           cd ./src/main/resources
           touch ./application-oauth.yml
           echo "${{ secrets.APPLICATION_PROD }}" > ./application-oauth.yml
-          
+
       - name: make application-datasource.yaml
         run: |
           cd ./src/main/resources
           touch ./application-datasource.yaml
           echo "${{ secrets.APPLICATION_DATASOURCE }}" > ./application-datasource.yaml
+
+      - name: make application-cloud.yaml
+        run: |
+          cd ./src/main/resources
+          touch ./application-cloud.yaml
+          echo "${{ secrets.APPLICATION_CLOUD }}" > ./application-cloud.yaml
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5

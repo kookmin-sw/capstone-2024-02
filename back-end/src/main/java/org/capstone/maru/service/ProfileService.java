@@ -1,13 +1,17 @@
 package org.capstone.maru.service;
 
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.domain.MemberCard;
+import org.capstone.maru.domain.ProfileImage;
 import org.capstone.maru.dto.MemberCardDto;
 import org.capstone.maru.dto.MemberProfileDto;
 import org.capstone.maru.dto.response.AuthResponse;
+import org.capstone.maru.repository.MemberCardRepository;
+import org.capstone.maru.repository.ProfileImageRepository;
 import org.capstone.maru.security.principal.MemberPrincipal;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,29 +24,53 @@ public class ProfileService {
 
     private final MemberAccountService memberAccountService;
 
+    private final S3FileService s3FileService;
+
+    private final MemberCardRepository memberCardRepository;
+
+    private final ProfileImageRepository profileImageRepository;
+
     @Transactional
-    public MemberCardDto updateMyCard(String memberId, List<String> myFeatures) {
-        log.info("updateMyCard - memberId: {}, myFeatures: {}", memberId, myFeatures);
+    public MemberCardDto updateMyCard(String memberId, Long cardId, String location,
+        List<String> features) {
+        log.info("updateMyCard - memberId: {}, myFeatures: {}", memberId, features);
 
         MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
+        MemberCard memberCard = memberCardRepository.findById(cardId)
+            .orElseThrow(() -> new IllegalArgumentException("invaild cardId"));
+
         MemberCard myCard = memberAccount.getMyCard();
+        MemberCard mateCard = memberAccount.getMateCard();
 
-        memberAccount.updateInitialized(myFeatures);
-        myCard.updateMemberFeatures(myFeatures);
+        if (!myCard.equals(memberCard) && !mateCard.equals(memberCard)) {
+            throw new IllegalArgumentException("MemberCard not found");
+        }
 
-        return MemberCardDto.from(myCard);
+        memberCard.updateLocation(location);
+        memberCard.updateMemberFeatures(features);
+
+        return MemberCardDto.from(memberCard);
     }
 
     @Transactional(readOnly = true)
-    public MemberProfileDto getMemberCard(String memberId, MemberPrincipal memberPrincipal) {
+    public MemberProfileDto getMemberProfile(String memberId) {
+
         log.info("getMyCard - memberId: {}", memberId);
 
-        MemberCard memberCard = memberAccountService.searchMemberAccount(memberId).getMyCard();
-        log.info("memberCard: {}", memberCard.getMemberFeatures());
-        AuthResponse authResponse = AuthResponse.from(memberPrincipal,
-            memberCard.getMemberFeatures() == null || memberCard.getMemberFeatures().isEmpty());
+        MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
+        MemberCard myCard = memberAccount.getMyCard();
+        MemberCard mateCard = memberAccount.getMateCard();
+        ProfileImage profileImage = memberAccount.getProfileImage();
 
-        return MemberProfileDto.from(memberCard, authResponse);
+        log.info("myCard: {}", myCard.getMemberFeatures());
+        log.info("mateCard: {}", mateCard.getMemberFeatures());
+        log.info("profileImage: {}", profileImage.getFileName());
+
+        String imgURL = s3FileService.getPreSignedUrlForLoad(profileImage.getFileName());
+
+        AuthResponse authResponse = AuthResponse.from(memberAccount);
+
+        return MemberProfileDto.from(imgURL, myCard, mateCard, authResponse);
     }
 
     @Transactional
@@ -60,4 +88,33 @@ public class ProfileService {
         return MemberCardDto.builder().build();
     }
 
+    @Transactional
+    public MemberCardDto getCard(Long cardId) {
+        log.info("getCard - cardId: {}", cardId);
+
+        MemberCard memberCard = memberCardRepository.findById(cardId)
+            .orElseThrow(() -> new IllegalArgumentException("MemberCard not found"));
+
+        return MemberCardDto.from(memberCard);
+
+    }
+
+    /*
+     * 프로필 이미지 업데이트
+     * 이때는 이미지가 이미 업로드 되어 있는 시점이다.
+     */
+    @Transactional
+    public void updateProfileImage(String memberId, String fileName) {
+        log.info("updateProfileImage - memberId: {}, fileName: {}", memberId, fileName);
+
+        MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
+
+        Optional<ProfileImage> profileImage = profileImageRepository.findById(fileName);
+
+        if (profileImage.isEmpty()) {
+            throw new IllegalArgumentException("ProfileImage not found");
+        }
+
+        memberAccount.updateProfileImage(profileImage.get());
+    }
 }

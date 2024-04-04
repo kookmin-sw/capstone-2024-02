@@ -203,6 +203,7 @@ gradle-app.setting
 ### YAML File
 src/main/resources/application-oauth.*
 src/main/resources/application-datasource.*
+src/main/resources/application-cloud.*
 
 ### Initial Dummy Data
 src/main/resources/data.sql

@@ -6,6 +6,7 @@ import java.util.List;
 import org.capstone.maru.config.TestJpaConfig;
 import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.domain.MemberCard;
+import org.capstone.maru.util.EntityCreator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +18,12 @@ import org.springframework.test.context.TestPropertySource;
 @Import(TestJpaConfig.class)
 @DataJpaTest
 @TestPropertySource(locations = "classpath:application-test.yaml")
-class JpaRepositoryTest {
+class MemberAccountRepositoryTest {
 
     private final MemberAccountRepository memberAccountRepository;
     private final MemberCardRepository memberCardRepository;
 
-    public JpaRepositoryTest(
+    public MemberAccountRepositoryTest(
         @Autowired MemberAccountRepository memberAccountRepository,
         @Autowired MemberCardRepository memberCardRepository
     ) {
@@ -34,7 +35,10 @@ class JpaRepositoryTest {
     @Test
     void givenNothing_whenQueryingSelect_thenReturnMembers() throws Exception {
         // given
-        int expected = 4;
+        int expected = 100;
+        for (int i = 1; i <= expected; i++) {
+            memberAccountRepository.save(EntityCreator.createMemberAccount(i));
+        }
 
         // when
         List<MemberAccount> members = memberAccountRepository.findAll();
@@ -54,15 +58,13 @@ class JpaRepositoryTest {
 
         // when
 
-        MemberAccount memberAccount = MemberAccount.of("tester", "test@email.com", "test123",
-            "2024", "MALE",
-            "010-1234-5678");
+        MemberAccount memberAccount = EntityCreator.createMemberAccount(1);
 
         var memberAccountTest = memberAccountRepository.save(memberAccount);
 
         // then
         assertThat(memberAccountTest.getMemberId())
-            .isEqualTo("tester");
+            .isEqualTo("test_1");
         assertThat(memberAccountRepository.count())
             .isEqualTo(previousCount + 1);
         assertThat(memberCardRepository.count())
@@ -78,10 +80,7 @@ class JpaRepositoryTest {
         // given
 
         // when
-
-        MemberAccount memberAccount = MemberAccount.of("tester", "test@email.com", "test123",
-            "2024", "MALE",
-            "010-1234-5678");
+        MemberAccount memberAccount = EntityCreator.createMemberAccount(1);
 
         var memberAccountTest = memberAccountRepository.save(memberAccount);
 
