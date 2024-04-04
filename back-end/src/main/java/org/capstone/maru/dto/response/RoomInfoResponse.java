@@ -10,11 +10,11 @@ import org.capstone.maru.dto.RoomInfoDto;
 public record RoomInfoResponse(
     Long id,
     Address address,
-    RoomType roomType,
+    String roomType,
     Short size,
     Short numberOfRoom,
     Short recruitmentCapacity,
-    RentalType rentalType,
+    String rentalType,
     Long price,
     Long managementFee,
     Long expectedPayment,
@@ -26,11 +26,11 @@ public record RoomInfoResponse(
             .builder()
             .id(dto.id())
             .address(dto.address())
-            .roomType(dto.roomType())
+            .roomType(dto.roomType().getDescription())
             .size(dto.size())
             .numberOfRoom(dto.numberOfRoom())
             .recruitmentCapacity(dto.recruitmentCapacity())
-            .rentalType(dto.rentalType())
+            .rentalType(dto.rentalType().getDescription())
             .price(dto.price())
             .managementFee(dto.managementFee())
             .expectedPayment(dto.expectedPayment())

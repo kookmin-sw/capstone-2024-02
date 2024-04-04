@@ -1,6 +1,7 @@
 package org.capstone.maru.domain;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -13,64 +14,57 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.springframework.core.annotation.AnnotationUtils;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@ToString(exclude = {"studioRoomPost"})
+@ToString(callSuper = true, exclude = {"studioRoomPost"})
 @Entity
-public class RoomImage extends AuditingFields {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column
-    private String fileName;
-
-    @Column
-    private String storeImagePath;
+public class RoomImage extends Image {
 
     @Column
     private Boolean isThumbnail;
 
+    @Column
+    private Short orderNumber;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "studio_room_post_id")
+    @JoinColumn(name = "studio_room_post_id", nullable = false)
     private StudioRoomPost studioRoomPost;
 
     // -- 생성자 메서드 -- //
-    private RoomImage(String fileName, String storeImagePath,
-        Boolean isThumbnail, StudioRoomPost studioRoomPost) {
-        this.fileName = fileName;
-        this.storeImagePath = storeImagePath;
+    private RoomImage(String fileName, Boolean isThumbnail, Short orderNumber,
+        StudioRoomPost studioRoomPost) {
+        super(fileName);
         this.isThumbnail = isThumbnail;
+        this.orderNumber = orderNumber;
         this.studioRoomPost = studioRoomPost;
     }
 
     public static RoomImage of(
         String fileName,
-        String storeImagePath,
         Boolean isThumbnail,
+        Short orderNumber,
         StudioRoomPost studioRoomPost
     ) {
-        return new RoomImage(
-            fileName, storeImagePath, isThumbnail, studioRoomPost
+        RoomImage result = new RoomImage(
+            fileName, isThumbnail, orderNumber, studioRoomPost
         );
+
+        studioRoomPost.addRoomImage(result);
+        return result;
     }
+
+    // -- 비지니스 로직 -- //
 
     // -- Equals & Hash -- //
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof RoomImage roomImage)) {
-            return false;
-        }
-        return id != null && id.equals(roomImage.id);
+        return super.equals(o);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return super.hashCode();
     }
 }

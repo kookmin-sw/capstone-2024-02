@@ -55,20 +55,6 @@ public abstract class SharedRoomPost extends AuditingFields {
     @Column
     private String publisherGender;
 
-    @PrePersist
-    public void fillInPublisherGender() {
-        publisherGender =
-            Optional.of(SecurityContextHolder.getContext())
-                    .map(SecurityContext::getAuthentication)
-                    .filter(Authentication::isAuthenticated)
-                    .map(Authentication::getPrincipal)
-                    .map(MemberPrincipal.class::cast)
-                    .map(MemberPrincipal::gender)
-                    .orElseThrow(
-                        () -> new IllegalArgumentException("인증되지 않은 방식의 사용자가 게시글을 작성하려 하였습니다.")
-                    );
-    }
-
 
     // -- 생성자 메서드 -- //
     protected SharedRoomPost(String title, String content, String publisherGender) {

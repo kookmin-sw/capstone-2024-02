@@ -1,6 +1,7 @@
 package org.capstone.maru.dto.response;
 
 import lombok.Builder;
+import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.security.principal.MemberPrincipal;
 
 @Builder
@@ -11,7 +12,9 @@ public record AuthResponse(
     String birthYear,
     String gender,
     String phoneNumber,
-    Boolean initialized
+    Boolean initialized,
+    Long myCardId,
+    Long mateCardId
 ) {
 
     public static AuthResponse from(MemberPrincipal memberPrincipal, Boolean initialized) {
@@ -24,6 +27,20 @@ public record AuthResponse(
             .gender(memberPrincipal.gender())
             .phoneNumber(memberPrincipal.phoneNumber())
             .initialized(initialized)
+            .build();
+    }
+
+    public static AuthResponse from(MemberAccount memberAccount) {
+        return AuthResponse.builder()
+            .memberId(memberAccount.getMemberId())
+            .email(memberAccount.getEmail())
+            .name(memberAccount.getNickname())
+            .birthYear(memberAccount.getBirthYear())
+            .gender(memberAccount.getGender())
+            .phoneNumber(memberAccount.getPhoneNumber())
+            .initialized(memberAccount.getInitialized())
+            .myCardId(memberAccount.getMyCard().getId())
+            .mateCardId(memberAccount.getMateCard().getId())
             .build();
     }
 }

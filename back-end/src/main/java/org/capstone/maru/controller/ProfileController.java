@@ -13,6 +13,7 @@ import org.capstone.maru.service.ProfileService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,16 +30,22 @@ public class ProfileController {
     private final ProfileService profileService;
     private final FollowService followService;
 
-    @PutMapping
-    public ResponseEntity<APIResponse> updateMyProfile(
+    @PutMapping("/{cardId}")
+    public ResponseEntity<APIResponse> updateMemberCard(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
+        @PathVariable Long cardId,
         @RequestBody MemberFeatureRequest memberFeatureRequest
     ) {
         log.info("call updateProfile : {}", memberFeatureRequest);
 
         String memberId = memberPrincipal.memberId();
-        MemberCardDto result = profileService.updateMyCard(memberId,
-            memberFeatureRequest.myFeatures());
+
+        MemberCardDto result = profileService.updateMyCard(
+            memberId,
+            cardId,
+            memberFeatureRequest.location(),
+            memberFeatureRequest.features()
+        );
 
         return ResponseEntity.ok(APIResponse.success(result));
     }
@@ -49,12 +56,23 @@ public class ProfileController {
         @PathVariable String memberId
     ) {
         log.info("call getProfile : {}", memberId);
-        MemberProfileDto result = profileService.getMemberCard(memberId, memberPrincipal);
+
+        MemberProfileDto result = profileService.getMemberProfile(memberId);
 
         return ResponseEntity.ok(APIResponse.success(result));
     }
 
-    @PutMapping("/{roomCardId}")
+    @GetMapping("/card/{cardId}")
+    public ResponseEntity<APIResponse> getCardData(
+        @PathVariable Long cardId
+    ) {
+        log.info("call getCardData : {}", cardId);
+        MemberCardDto result = profileService.getCard(cardId);
+
+        return ResponseEntity.ok(APIResponse.success(result));
+    }
+
+    @PutMapping("/room/{roomCardId}")
     public ResponseEntity<APIResponse> updateRoomCardProfile(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
         @PathVariable String roomCardId,
@@ -64,7 +82,7 @@ public class ProfileController {
         String memberId = memberPrincipal.memberId();
 
         MemberCardDto result = profileService.updateRoomCard(memberId, roomCardId,
-            memberFeatureRequest.myFeatures());
+            memberFeatureRequest.features());
 
         return ResponseEntity.ok(APIResponse.success(result));
     }
@@ -91,5 +109,20 @@ public class ProfileController {
         FollowingDto result = followService.getFollowings(memberPrincipal.memberId());
 
         return ResponseEntity.ok(APIResponse.success(result));
+    }
+
+    /*
+     * 프로필 이미지 수정
+     */
+    @PatchMapping("/image")
+    public ResponseEntity<APIResponse> updateProfileImage(
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
+        @RequestBody String fileName
+    ) {
+        log.info("call updateProfileImage : {}", fileName);
+
+        profileService.updateProfileImage(memberPrincipal.memberId(), fileName);
+
+        return ResponseEntity.ok(APIResponse.success());
     }
 }

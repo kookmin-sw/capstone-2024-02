@@ -5,16 +5,16 @@ import jakarta.persistence.Converter;
 import org.capstone.maru.domain.constant.RoomType;
 
 @Converter
-public class RoomTypeConverter implements AttributeConverter<RoomType, String> {
+public class RoomTypeConverter implements AttributeConverter<RoomType, Integer> {
 
 
     @Override
-    public String convertToDatabaseColumn(RoomType roomType) {
-        return roomType.getDescription();
+    public Integer convertToDatabaseColumn(RoomType roomType) {
+        return roomType.getCode();
     }
 
     @Override
-    public RoomType convertToEntityAttribute(String description) {
-        return RoomType.of(description);
+    public RoomType convertToEntityAttribute(Integer code) {
+        return RoomType.of(code);
     }
 }

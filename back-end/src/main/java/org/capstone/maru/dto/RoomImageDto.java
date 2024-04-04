@@ -7,10 +7,9 @@ import org.capstone.maru.domain.StudioRoomPost;
 
 @Builder
 public record RoomImageDto(
-    Long id,
     String fileName,
-    String storeImagePath,
     Boolean isThumbnail,
+    Short order,
     LocalDateTime createdAt,
     String createdBy,
     LocalDateTime modifiedAt,
@@ -20,10 +19,9 @@ public record RoomImageDto(
     public static RoomImageDto from(RoomImage entity) {
         return RoomImageDto
             .builder()
-            .id(entity.getId())
             .fileName(entity.getFileName())
-            .storeImagePath(entity.getStoreImagePath())
             .isThumbnail(entity.getIsThumbnail())
+            .order(entity.getOrderNumber())
             .createdAt(entity.getCreatedAt())
             .createdBy(entity.getCreatedBy())
             .modifiedAt(entity.getModifiedAt())
@@ -32,7 +30,7 @@ public record RoomImageDto(
     }
 
     public RoomImage toEntity(StudioRoomPost studioRoomPost) {
-        return RoomImage.of(fileName, storeImagePath, isThumbnail, studioRoomPost);
+        return RoomImage.of(fileName, isThumbnail, order, studioRoomPost);
     }
 
 }

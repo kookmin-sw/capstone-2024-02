@@ -74,8 +74,7 @@ class MemberAccountServiceTest {
             memberAccount.getNickname(),
             memberAccount.getBirthYear(),
             memberAccount.getGender(),
-            memberAccount.getPhoneNumber(),
-            memberAccount.getMemberId()
+            memberAccount.getPhoneNumber()
         );
 
         // when
@@ -113,8 +112,7 @@ class MemberAccountServiceTest {
             "nickname",
             "2024",
             "MALE",
-            "010-1234-5678",
-            createdBy
+            "010-1234-5678"
         );
     }
 }

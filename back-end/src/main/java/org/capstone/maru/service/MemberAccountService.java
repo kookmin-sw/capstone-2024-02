@@ -1,8 +1,14 @@
 package org.capstone.maru.service;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.capstone.maru.domain.Follow;
+import org.capstone.maru.domain.MemberCard;
+import org.capstone.maru.domain.ProfileImage;
 import org.capstone.maru.exception.RestErrorCode;
 import org.capstone.maru.security.exception.MemberAccountExistentException;
 import org.capstone.maru.domain.MemberAccount;
@@ -55,6 +61,15 @@ public class MemberAccountService {
         Optional<MemberAccount> memberAccount = memberAccountRepository.findByEmail(email);
 
         if (memberAccount.isEmpty()) {
+
+            MemberCard myCard = MemberCard.of(null, List.of());
+            MemberCard mateCard = MemberCard.of(null, List.of());
+
+            Set<Follow> followers = new HashSet<>();
+            Set<Follow> followings = new HashSet<>();
+
+            ProfileImage profileImage = ProfileImage.defaultImage(memberId);
+
             MemberAccount member = MemberAccount.of(
                 memberId,
                 email,
@@ -62,7 +77,13 @@ public class MemberAccountService {
                 birthYear,
                 gender,
                 phoneNumber,
-                memberId
+                memberId,
+                true,
+                myCard,
+                mateCard,
+                followers,
+                followings,
+                profileImage
             );
 
             return MemberAccountDto.from(

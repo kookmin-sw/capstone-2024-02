@@ -64,6 +64,9 @@ dependencies {
     annotationProcessor "jakarta.persistence:jakarta.persistence-api"
     // java.lang.NoClassDefFoundError (javax.annotation.Entity) 대응 코드
 
+    // validation 설정
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
     // p6spy 설정
     testImplementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.9.0'
 
@@ -71,6 +74,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     runtimeOnly 'com.h2database:h2:1.4.197'
+
+    // amazon s3 설정
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
 }
 
 tasks.named('test') {

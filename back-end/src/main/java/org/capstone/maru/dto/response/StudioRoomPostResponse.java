@@ -2,10 +2,7 @@ package org.capstone.maru.dto.response;
 
 import java.time.LocalDateTime;
 import lombok.Builder;
-import org.capstone.maru.dto.RoomImageDto;
 import org.capstone.maru.dto.StudioRoomPostDto;
-
-// TODO: 방 이미지 추가하기
 
 /**
  * 게시판에서 보는 게시글 response
@@ -18,6 +15,7 @@ public record StudioRoomPostResponse(
     RoomImageResponse thumbnail,
     MemberAccountResponse publisherAccount,
     RoomInfoResponse roomInfo,
+    Boolean isScrapped,
     LocalDateTime createdAt,
     String createdBy,
     LocalDateTime modifiedAt,
@@ -33,6 +31,7 @@ public record StudioRoomPostResponse(
             .thumbnail(RoomImageResponse.from(dto.thumbnail()))
             .publisherAccount(MemberAccountResponse.from(dto.publisherAccount()))
             .roomInfo(RoomInfoResponse.from(dto.roomInfo()))
+            .isScrapped(dto.isScrapped())
             .createdAt(dto.createdAt())
             .createdBy(dto.createdBy())
             .modifiedAt(dto.modifiedAt())
