@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 import os
 
 
-import numpy
 import pandas as pd
 from sklearn.cluster import DBSCAN
 from sklearn.metrics.pairwise import cosine_similarity
@@ -201,9 +200,12 @@ async def recommendation(member_id):
         recommendation = []
         for other in male_cluster[male_cluster_target[user_id]]:
             similarity = member_cosine_similarity(user_id, other, user_gender)
-            recommendation.append({"user_id": other, "similarity": similarity})
+            recommendation.append({"userId": other, "similarity": similarity})
 
-        return {"user": user, "recommendation": recommendation}
+        return {
+            "user": {"id": user_id, "gender": user_gender},
+            "recommendation": recommendation,
+        }
     else:
         if user_id not in female_cluster_target:
             await fetch_data()
@@ -214,4 +216,7 @@ async def recommendation(member_id):
             similarity = member_cosine_similarity(user_id, other, user_gender)
             recommendation.append({"user_id": other, "similarity": similarity})
 
-        return {"user": user, "recommendation": recommendation}
+        return {
+            "user": {"id": user_id, "gender": user_gender},
+            "recommendation": recommendation,
+        }
