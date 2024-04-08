@@ -201,7 +201,7 @@ async def recommendation(member_id):
         recommendation = []
         for other in male_cluster[male_cluster_target[user_id]]:
             similarity = member_cosine_similarity(user_id, other, user_gender)
-            recommendation.append((other, similarity))
+            recommendation.append({"user_id": other, "similarity": similarity})
 
         return {"user": user, "recommendation": recommendation}
     else:
@@ -212,6 +212,6 @@ async def recommendation(member_id):
         recommendation = []
         for other in female_cluster[female_cluster_target[user_id]]:
             similarity = member_cosine_similarity(user_id, other, user_gender)
-            recommendation.append((other, similarity))
+            recommendation.append({"user_id": other, "similarity": similarity})
 
         return {"user": user, "recommendation": recommendation}
