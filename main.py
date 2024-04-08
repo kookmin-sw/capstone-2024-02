@@ -81,7 +81,7 @@ def generate_df_data(data):
 
 
 def convert_fit_data(df_data):
-    result = df_data.drop(columns=["member_id", "gender"], axis=1)
+    result = df_data.drop(columns=["nickname", "member_id", "gender"], axis=1)
     return result
 
 
@@ -108,7 +108,7 @@ async def fetch_data():
     global male_data, male_data_dict, female_data, female_data_dict
 
     query = """
-            SELECT member_id, member_features, birth_year, gender
+            SELECT member_id, member_features, birth_year, gender, nickname
             FROM member_account
             JOIN member_card ON member_account.my_card_id = member_card.member_card_id
             WHERE gender ILIKE 'male'
@@ -117,7 +117,7 @@ async def fetch_data():
     male_data_dict = {user["member_id"]: user for user in male_data}
 
     query = """
-            SELECT member_id, member_features, birth_year, gender
+            SELECT member_id, member_features, birth_year, gender, nickname
             FROM member_account
             JOIN member_card ON member_account.my_card_id = member_card.member_card_id
             WHERE gender ILIKE 'female'
@@ -180,9 +180,7 @@ async def recommendation(member_id):
         await fetch_data()
         await clustering()
 
-    query = (
-        f"SELECT member_id, gender FROM member_account WHERE member_id = '{member_id}'"
-    )
+    query = f"SELECT member_id, gender, nickname FROM member_account WHERE member_id = '{member_id}'"
 
     record = await database.fetch_one(query)
     if record == None:
@@ -200,7 +198,13 @@ async def recommendation(member_id):
         recommendation = []
         for other in male_cluster[male_cluster_target[user_id]]:
             similarity = member_cosine_similarity(user_id, other, user_gender)
-            recommendation.append({"userId": other, "similarity": similarity})
+            recommendation.append(
+                {
+                    "userId": other,
+                    "name": male_data_dict[other]["nickname"],
+                    "similarity": similarity,
+                }
+            )
 
         return {
             "user": {"id": user_id, "gender": user_gender},
@@ -214,7 +218,13 @@ async def recommendation(member_id):
         recommendation = []
         for other in female_cluster[female_cluster_target[user_id]]:
             similarity = member_cosine_similarity(user_id, other, user_gender)
-            recommendation.append({"user_id": other, "similarity": similarity})
+            recommendation.append(
+                {
+                    "userId": other,
+                    "name": female_data_dict[other]["nickname"],
+                    "similarity": similarity,
+                }
+            )
 
         return {
             "user": {"id": user_id, "gender": user_gender},
