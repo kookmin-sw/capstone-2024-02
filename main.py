@@ -15,9 +15,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 load_dotenv()  # .env 파일에서 환경 변수 로드
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-
 DATABASE_URL = f"postgresql://{os.getenv('USER_NAME')}:{os.getenv('PASSWORD')}@{os.getenv('HOST')}/{os.getenv('DATABASE')}"
 database = Database(DATABASE_URL)
 
