@@ -172,7 +172,7 @@ async def clustering():
                 female_cluster[cluster] = [(user, card_type)]
 
 
-@app.get("/update")
+@app.get("/recommendation/update")
 async def update():
     await fetch_data()
     await clustering()
