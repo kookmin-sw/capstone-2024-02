@@ -82,7 +82,9 @@ def generate_df_data(data):
 
 
 def convert_fit_data(df_data):
-    result = df_data.drop(columns=["nickname", "member_id", "gender"], axis=1)
+    result = df_data.drop(
+        columns=["nickname", "member_id", "gender", "card_type"], axis=1
+    )
     return result
 
 
@@ -122,6 +124,10 @@ async def fetch_data():
         male_data = [user for user in all_data if user["gender"].lower() == "male"]
         female_data = [user for user in all_data if user["gender"].lower() == "female"]
 
+        global male_data_dict, female_data_dict
+        male_data_dict = {user["member_id"]: user for user in male_data}
+        female_data_dict = {user["member_id"]: user for user in female_data}
+
 
 async def clustering():
     global male_cluster, male_cluster_model, male_cluster_target, female_cluster, female_cluster_model, female_cluster_target
@@ -142,12 +148,13 @@ async def clustering():
         ):
             cluster = cluster.item()
             user = male_data[index]["member_id"]
+            card_type = male_data[index]["card_type"]
 
             male_cluster_target[user] = cluster
             if cluster in male_cluster:
-                male_cluster[cluster].append(user)
+                male_cluster[cluster].append((user, card_type))
             else:
-                male_cluster[cluster] = [user]
+                male_cluster[cluster] = [(user, card_type)]
 
         female_cluster = {}
         female_cluster_target = {}
@@ -156,12 +163,13 @@ async def clustering():
         ):
             cluster = cluster.item()
             user = female_data[index]["member_id"]
+            card_type = female_data[index]["card_type"]
 
             female_cluster_target[user] = cluster
             if cluster in female_cluster:
-                female_cluster[cluster].append(user)
+                female_cluster[cluster].append((user, card_type))
             else:
-                female_cluster[cluster] = [user]
+                female_cluster[cluster] = [(user, card_type)]
 
 
 @app.get("/update")
@@ -171,8 +179,8 @@ async def update():
     return {"detail": "ok"}
 
 
-@app.get("/recommendation/{member_id}")
-async def recommendation(member_id):
+@app.get("/recommendation/{member_id}/{card_type}")
+async def recommendation(member_id, card_type):
     if male_cluster_model == None or female_cluster_model == None:
         await fetch_data()
         await clustering()
@@ -193,13 +201,16 @@ async def recommendation(member_id):
             await clustering()
 
         recommendation = []
-        for other in male_cluster[male_cluster_target[user_id]]:
+        for other, other_card_type in male_cluster[male_cluster_target[user_id]]:
+            if card_type == other_card_type or user_id == other:
+                continue
             similarity = member_cosine_similarity(user_id, other, user_gender)
             recommendation.append(
                 {
                     "userId": other,
                     "name": male_data_dict[other]["nickname"],
                     "similarity": similarity,
+                    "cardType": other_card_type,
                 }
             )
 
@@ -213,13 +224,16 @@ async def recommendation(member_id):
             await clustering()
 
         recommendation = []
-        for other in female_cluster[female_cluster_target[user_id]]:
+        for other, other_card_type in female_cluster[female_cluster_target[user_id]]:
+            if card_type == other_card_type or user_id == other:
+                continue
             similarity = member_cosine_similarity(user_id, other, user_gender)
             recommendation.append(
                 {
                     "userId": other,
                     "name": female_data_dict[other]["nickname"],
                     "similarity": similarity,
+                    "cardType": other_card_type,
                 }
             )
 
