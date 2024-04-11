@@ -106,25 +106,21 @@ def member_cosine_similarity(member_id1, member_id2, gender):
 
 
 async def fetch_data():
-    global male_data, male_data_dict, female_data, female_data_dict
     async with state_lock:
         query = """
-                SELECT member_id, member_features, birth_year, gender, nickname
+                SELECT member_id, member_features, birth_year, gender, nickname, 'my' AS card_type
                 FROM member_account
                 JOIN member_card ON member_account.my_card_id = member_card.member_card_id
-                WHERE gender ILIKE 'male'
+                UNION ALL
+                SELECT member_id, member_features, birth_year, gender, nickname, 'mate' AS card_type
+                FROM member_account
+                JOIN member_card ON member_account.mate_card_id = member_card.member_card_id
                 """
-        male_data = [dict(record) for record in await database.fetch_all(query)]
-        male_data_dict = {user["member_id"]: user for user in male_data}
+        all_data = [dict(record) for record in await database.fetch_all(query)]
 
-        query = """
-                SELECT member_id, member_features, birth_year, gender, nickname
-                FROM member_account
-                JOIN member_card ON member_account.my_card_id = member_card.member_card_id
-                WHERE gender ILIKE 'female'
-                """
-        female_data = [dict(record) for record in await database.fetch_all(query)]
-        female_data_dict = {user["member_id"]: user for user in female_data}
+        global male_data, female_data
+        male_data = [user for user in all_data if user["gender"].lower() == "male"]
+        female_data = [user for user in all_data if user["gender"].lower() == "female"]
 
 
 async def clustering():
