@@ -10,6 +10,10 @@ import pandas as pd
 from sklearn.cluster import DBSCAN
 from sklearn.metrics.pairwise import cosine_similarity
 
+from asyncio import Lock
+
+state_lock = Lock()
+
 
 # uvicorn main:app --reload
 
@@ -103,65 +107,65 @@ def member_cosine_similarity(member_id1, member_id2, gender):
 
 async def fetch_data():
     global male_data, male_data_dict, female_data, female_data_dict
+    async with state_lock:
+        query = """
+                SELECT member_id, member_features, birth_year, gender, nickname
+                FROM member_account
+                JOIN member_card ON member_account.my_card_id = member_card.member_card_id
+                WHERE gender ILIKE 'male'
+                """
+        male_data = [dict(record) for record in await database.fetch_all(query)]
+        male_data_dict = {user["member_id"]: user for user in male_data}
 
-    query = """
-            SELECT member_id, member_features, birth_year, gender, nickname
-            FROM member_account
-            JOIN member_card ON member_account.my_card_id = member_card.member_card_id
-            WHERE gender ILIKE 'male'
-            """
-    male_data = [dict(record) for record in await database.fetch_all(query)]
-    male_data_dict = {user["member_id"]: user for user in male_data}
-
-    query = """
-            SELECT member_id, member_features, birth_year, gender, nickname
-            FROM member_account
-            JOIN member_card ON member_account.my_card_id = member_card.member_card_id
-            WHERE gender ILIKE 'female'
-            """
-    female_data = [dict(record) for record in await database.fetch_all(query)]
-    female_data_dict = {user["member_id"]: user for user in female_data}
+        query = """
+                SELECT member_id, member_features, birth_year, gender, nickname
+                FROM member_account
+                JOIN member_card ON member_account.my_card_id = member_card.member_card_id
+                WHERE gender ILIKE 'female'
+                """
+        female_data = [dict(record) for record in await database.fetch_all(query)]
+        female_data_dict = {user["member_id"]: user for user in female_data}
 
 
 async def clustering():
     global male_cluster, male_cluster_model, male_cluster_target, female_cluster, female_cluster_model, female_cluster_target
+    async with state_lock:
+        male_df_data = generate_df_data(male_data)
+        female_df_data = generate_df_data(female_data)
 
-    male_df_data = generate_df_data(male_data)
-    female_df_data = generate_df_data(female_data)
+        male_cluster_model = DBSCAN(eps=0.2, min_samples=2)
+        male_cluster_model.fit(convert_fit_data(male_df_data))
 
-    male_cluster_model = DBSCAN(eps=0.2, min_samples=2)
-    male_cluster_model.fit(convert_fit_data(male_df_data))
+        female_cluster_model = DBSCAN(eps=0.2, min_samples=2)
+        female_cluster_model.fit(convert_fit_data(female_df_data))
 
-    female_cluster_model = DBSCAN(eps=0.2, min_samples=2)
-    female_cluster_model.fit(convert_fit_data(female_df_data))
+        male_cluster = {}
+        male_cluster_target = {}
+        for index, cluster in enumerate(
+            male_cluster_model.fit_predict(convert_fit_data(male_df_data))
+        ):
+            cluster = cluster.item()
+            user = male_data[index]["member_id"]
 
-    male_cluster = {}
-    male_cluster_target = {}
-    for index, cluster in enumerate(
-        male_cluster_model.fit_predict(convert_fit_data(male_df_data))
-    ):
-        cluster = cluster.item()
-        user = male_data[index]["member_id"]
+            male_cluster_target[user] = cluster
+            if cluster in male_cluster:
+                male_cluster[cluster].append(user)
+            else:
+                male_cluster[cluster] = [user]
 
-        male_cluster_target[user] = cluster
-        if cluster in male_cluster:
-            male_cluster[cluster].append(user)
-        else:
-            male_cluster[cluster] = [user]
+        female_cluster = {}
+        female_cluster_target = {}
+        for index, cluster in enumerate(
+            female_cluster_model.fit_predict(convert_fit_data(female_df_data))
+        ):
+            cluster = cluster.item()
+            user = female_data[index]["member_id"]
 
-    female_cluster = {}
-    female_cluster_target = {}
-    for index, cluster in enumerate(
-        female_cluster_model.fit_predict(convert_fit_data(female_df_data))
-    ):
-        cluster = cluster.item()
-        user = female_data[index]["member_id"]
-
-        female_cluster_target[user] = cluster
-        if cluster in female_cluster:
-            female_cluster[cluster].append(user)
-        else:
-            female_cluster[cluster] = [user]
+            female_cluster_target[user] = cluster
+            if cluster in female_cluster:
+                female_cluster[cluster].append(user)
+            else:
+                female_cluster[cluster] = [user]
 
 
 @app.get("/update")
