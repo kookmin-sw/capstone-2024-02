@@ -1,5 +1,6 @@
 import ast
 from contextlib import asynccontextmanager
+from tkinter import simpledialog
 from databases import Database
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -188,30 +189,26 @@ async def clustering():
             (female_cluster, female_similarity, "female"),
         ]:
             for user_list in cluster.values():
-                for user1, _ in user_list:
-                    similarity_list[user1] = []
-                    for user2, _ in user_list:
+                for user1, card_type1 in user_list:
+                    similarity_list[(user1, card_type1)] = []
+                    for user2, card_type2 in user_list:
                         if user1 == user2:
                             continue
 
                         similarity = member_cosine_similarity(user1, user2, gender)
-                        similarity_list.append((user2, similarity))
-                    similarity_list[user1].sort(key=lambda x: x[1])
+                        similarity_list.append((user2, similarity, card_type2))
+                    similarity_list[(user1, card_type1)].sort(key=lambda x: x[1])
 
 
 @app.get("/recommendation/update")
 async def update():
     await fetch_data()
     await clustering()
-    return {
-        "detail": "ok",
-        "female_similarity": female_similarity,
-        "male_similarity": male_similarity,
-    }
+    return {"detail": "ok"}
 
 
 @app.get("/recommendation/{member_id}/{card_type}")
-async def recommendation(member_id, card_type):
+async def recommendation(member_id, card_type, page: int, size: int = 10):
     if male_cluster_model == None or female_cluster_model == None:
         await fetch_data()
         await clustering()
@@ -225,6 +222,7 @@ async def recommendation(member_id, card_type):
     user = dict(record)
     user_id = user["member_id"]
     user_gender = user["gender"]
+    find_card_type = "mate" if card_type == "my" else "my"
 
     if user_gender in ("male", "MALE"):
         if user_id not in male_cluster_target:
@@ -232,18 +230,17 @@ async def recommendation(member_id, card_type):
             await clustering()
 
         recommendation = []
-        for other, other_card_type in male_cluster[male_cluster_target[user_id]]:
-            if card_type == other_card_type or user_id == other:
-                continue
-            similarity = member_cosine_similarity(user_id, other, user_gender)
-            recommendation.append(
-                {
-                    "userId": other,
-                    "name": male_data_dict[other]["nickname"],
-                    "similarity": similarity,
-                    "cardType": other_card_type,
-                }
-            )
+        if (user_id, find_card_type) in male_similarity:
+            for other_user_id, similarity, other_card_type in male_similarity[
+                (user_id, find_card_type)
+            ]:
+                recommendation.append(
+                    {
+                        "userId": other_user_id,
+                        "similarity": similarity,
+                        "cardType": other_card_type,
+                    }
+                )
 
         return {
             "user": {"id": user_id, "gender": user_gender},
@@ -255,18 +252,17 @@ async def recommendation(member_id, card_type):
             await clustering()
 
         recommendation = []
-        for other, other_card_type in female_cluster[female_cluster_target[user_id]]:
-            if card_type == other_card_type or user_id == other:
-                continue
-            similarity = member_cosine_similarity(user_id, other, user_gender)
-            recommendation.append(
-                {
-                    "userId": other,
-                    "name": female_data_dict[other]["nickname"],
-                    "similarity": similarity,
-                    "cardType": other_card_type,
-                }
-            )
+        if (user_id, find_card_type) in female_similarity:
+            for other_user_id, similarity, other_card_type in female_similarity[
+                (user_id, find_card_type)
+            ][page * size : (page + 1) * size]:
+                recommendation.append(
+                    {
+                        "userId": other_user_id,
+                        "similarity": similarity,
+                        "cardType": other_card_type,
+                    }
+                )
 
         return {
             "user": {"id": user_id, "gender": user_gender},
