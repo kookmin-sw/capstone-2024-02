@@ -1,6 +1,5 @@
 import ast
 from contextlib import asynccontextmanager
-from tkinter import simpledialog
 from databases import Database
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
