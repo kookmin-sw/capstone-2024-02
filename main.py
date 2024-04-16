@@ -1,3 +1,4 @@
+import ast
 from contextlib import asynccontextmanager
 from databases import Database
 from fastapi import FastAPI, HTTPException
@@ -35,6 +36,7 @@ app = FastAPI(lifespan=lifespan)
 origins = [
     "http://localhost",
     "http://localhost:3000",
+    "https://capstone-maru.vercel.app/",
 ]
 
 app.add_middleware(
@@ -50,25 +52,30 @@ male_data_dict = {}
 male_cluster = {}
 male_cluster_target = {}
 male_cluster_model = None
+male_similarity = {}  # { user: { other_id: number } }
 
 female_data = []
 female_data_dict = {}
 female_cluster = {}
 female_cluster_target = {}
 female_cluster_model = None
+female_similarity = {}  # { user: { other_id: number } }
 
 
 def generate_df_data(data):
     df = pd.DataFrame(data)
 
-    if "member_features" in df.columns:
+    if "features" in df.columns:
+        df["features"] = df["features"].apply(ast.literal_eval)
+
         features = (
-            df["member_features"]
+            df["features"]
             .apply(pd.Series)
             .stack()
             .reset_index(level=1, drop=True)
             .to_frame("features")
         )
+
         dummies = (
             pd.get_dummies(features, prefix="", prefix_sep="").groupby(level=0).sum()
         )
@@ -76,7 +83,8 @@ def generate_df_data(data):
             dummies.drop("[]", axis=1, inplace=True)
         if "null" in dummies:
             dummies.drop("null", axis=1, inplace=True)
-        df = pd.concat([df, dummies], axis=1).drop("member_features", axis=1)
+
+        df = pd.concat([df, dummies], axis=1).drop("features", axis=1)
 
     return df
 
@@ -110,13 +118,13 @@ def member_cosine_similarity(member_id1, member_id2, gender):
 async def fetch_data():
     async with state_lock:
         query = """
-                SELECT member_id, member_features, birth_year, gender, nickname, 'my' AS card_type
+                SELECT member_id, features, birth_year, gender, nickname, 'my' AS card_type
                 FROM member_account
-                JOIN member_card ON member_account.my_card_id = member_card.member_card_id
+                JOIN feature_card ON member_account.my_card_id = feature_card.feature_card_id
                 UNION ALL
-                SELECT member_id, member_features, birth_year, gender, nickname, 'mate' AS card_type
+                SELECT member_id, features, birth_year, gender, nickname, 'mate' AS card_type
                 FROM member_account
-                JOIN member_card ON member_account.mate_card_id = member_card.member_card_id
+                JOIN feature_card ON member_account.mate_card_id = feature_card.feature_card_id
                 """
         all_data = [dict(record) for record in await database.fetch_all(query)]
 
@@ -130,7 +138,9 @@ async def fetch_data():
 
 
 async def clustering():
-    global male_cluster, male_cluster_model, male_cluster_target, female_cluster, female_cluster_model, female_cluster_target
+    global male_cluster, male_cluster_model, male_cluster_target, male_similarity
+    global female_cluster, female_cluster_model, female_cluster_target, female_similarity
+
     async with state_lock:
         male_df_data = generate_df_data(male_data)
         female_df_data = generate_df_data(female_data)
@@ -171,12 +181,33 @@ async def clustering():
             else:
                 female_cluster[cluster] = [(user, card_type)]
 
+        male_similarity = {}
+        female_similarity = {}
+        for cluster, similarity_list, gender in [
+            (male_cluster, male_similarity, "male"),
+            (female_cluster, female_similarity, "female"),
+        ]:
+            for user_list in cluster.values():
+                for user1, _ in user_list:
+                    similarity_list[user1] = []
+                    for user2, _ in user_list:
+                        if user1 == user2:
+                            continue
+
+                        similarity = member_cosine_similarity(user1, user2, gender)
+                        similarity_list.append((user2, similarity))
+                    similarity_list[user1].sort(key=lambda x: x[1])
+
 
 @app.get("/recommendation/update")
 async def update():
     await fetch_data()
     await clustering()
-    return {"detail": "ok"}
+    return {
+        "detail": "ok",
+        "female_similarity": female_similarity,
+        "male_similarity": male_similarity,
+    }
 
 
 @app.get("/recommendation/{member_id}/{card_type}")
