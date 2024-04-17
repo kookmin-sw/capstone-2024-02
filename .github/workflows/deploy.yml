@@ -42,5 +42,5 @@ jobs:
           # 도커 작업
           script: |
             git clone https://github.com/capstone-maru/maru-rec-sys.git
-            # docker build --no-cache -t maru-rec-sys-image .
-            # docker run -d --name maru-rec-sys-container -p 8000:8000 maru-rec-sys-image
+            docker build --no-cache -t maru-rec-sys-image .
+            docker run -d --name maru-rec-sys-container -p 8000:8000 maru-rec-sys-image
