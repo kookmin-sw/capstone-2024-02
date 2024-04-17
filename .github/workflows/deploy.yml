@@ -10,23 +10,22 @@ name: Upload Python Package
 
 on:
   pull_request:
-    branches: [ "main" ]
-    types: [ closed ]
+    branches: ["main"]
+    types: [closed]
   workflow_dispatch:
     inputs:
-         logLevel:
-            description: 'Log level'     
-            required: true
-            default: 'warning'
-         tags:
-            description: 'Test scenario tags'
-            
+      logLevel:
+        description: "Log level"
+        required: true
+        default: "warning"
+      tags:
+        description: "Test scenario tags"
+
 permissions:
   contents: read
 
 jobs:
   deploy:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -38,5 +37,6 @@ jobs:
           key: ${{ secrets.AWS_ACCESS_SECRET_KEY }} # pem 키
           # 도커 작업
           script: |
-            docker build --no-cache -t maru-rec-sys-image .
-            docker run -d --name maru-rec-sys-container -p 8000:8000 maru-rec-sys-image
+            whoami
+            # docker build --no-cache -t maru-rec-sys-image .
+            # docker run -d --name maru-rec-sys-container -p 8000:8000 maru-rec-sys-image
