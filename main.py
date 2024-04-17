@@ -232,7 +232,7 @@ async def recommendation(member_id, card_type, page: int, size: int = 10):
         if (user_id, find_card_type) in male_similarity:
             for other_user_id, similarity, other_card_type in male_similarity[
                 (user_id, find_card_type)
-            ]:
+            ][page * size : (page + 1) * size]:
                 recommendation.append(
                     {
                         "userId": other_user_id,
