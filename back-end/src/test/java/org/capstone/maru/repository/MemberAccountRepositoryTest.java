@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import org.capstone.maru.config.TestJpaConfig;
+import org.capstone.maru.domain.FeatureCard;
 import org.capstone.maru.domain.MemberAccount;
-import org.capstone.maru.domain.MemberCard;
 import org.capstone.maru.util.EntityCreator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -84,12 +84,12 @@ class MemberAccountRepositoryTest {
 
         var memberAccountTest = memberAccountRepository.save(memberAccount);
 
-        MemberCard memberCard = memberAccountTest.getMyCard();
-        memberCard.updateMemberFeatures(List.of("아침형", "흡연", "음주"));
+        FeatureCard featureCard = memberAccountTest.getMyCard();
+        featureCard.updateMemberFeatures(List.of("아침형", "흡연", "음주"));
 
         long previousCardCount = memberCardRepository.count();
 
-        var memberCardTest = memberCardRepository.save(memberCard);
+        var memberCardTest = memberCardRepository.save(featureCard);
 
         // then
         assertThat(memberCardTest.getMemberFeatures())

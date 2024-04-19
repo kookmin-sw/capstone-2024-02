@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.capstone.maru.domain.FeatureCard;
 import org.capstone.maru.domain.MemberAccount;
-import org.capstone.maru.domain.MemberCard;
 import org.capstone.maru.domain.ProfileImage;
 import org.capstone.maru.dto.MemberCardDto;
 import org.capstone.maru.dto.MemberProfileDto;
@@ -36,30 +36,41 @@ public class ProfileService {
         log.info("updateMyCard - memberId: {}, myFeatures: {}", memberId, features);
 
         MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
-        MemberCard memberCard = memberCardRepository.findById(cardId)
+
+        FeatureCard featureCard = memberCardRepository.findById(cardId)
             .orElseThrow(() -> new IllegalArgumentException("invaild cardId"));
 
-        MemberCard myCard = memberAccount.getMyCard();
-        MemberCard mateCard = memberAccount.getMateCard();
+        FeatureCard myCard = memberAccount.getMyCard();
+        FeatureCard mateCard = memberAccount.getMateCard();
 
-        if (!myCard.equals(memberCard) && !mateCard.equals(memberCard)) {
+        if (!myCard.equals(featureCard) && !mateCard.equals(featureCard)) {
             throw new IllegalArgumentException("MemberCard not found");
         }
 
-        memberCard.updateLocation(location);
-        memberCard.updateMemberFeatures(features);
+        /*
+         initialized 값 변경
+        */
+        memberAccount.updateInitialized(features);
 
-        return MemberCardDto.from(memberCard);
+        featureCard.updateLocation(location);
+        featureCard.updateMemberFeatures(features);
+
+        return MemberCardDto.from(featureCard);
     }
 
     @Transactional(readOnly = true)
-    public MemberProfileDto getMemberProfile(String memberId) {
+    public MemberProfileDto getMemberProfile(String memberId, String gender) {
 
         log.info("getMyCard - memberId: {}", memberId);
 
         MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
-        MemberCard myCard = memberAccount.getMyCard();
-        MemberCard mateCard = memberAccount.getMateCard();
+
+        if (!memberAccount.getGender().equals(gender)) {
+            throw new IllegalArgumentException("MemberCard not found");
+        }
+
+        FeatureCard myCard = memberAccount.getMyCard();
+        FeatureCard mateCard = memberAccount.getMateCard();
         ProfileImage profileImage = memberAccount.getProfileImage();
 
         log.info("myCard: {}", myCard.getMemberFeatures());
@@ -84,7 +95,6 @@ public class ProfileService {
          * 해당 roomCardId의 글이 존재하는지 확인, 존재하는 경우 그 카드를 가져옵니다.
          * 가져온 카드의 정보를 업데이트하고 저장합니다.
          * */
-
         return MemberCardDto.builder().build();
     }
 
@@ -92,11 +102,10 @@ public class ProfileService {
     public MemberCardDto getCard(Long cardId) {
         log.info("getCard - cardId: {}", cardId);
 
-        MemberCard memberCard = memberCardRepository.findById(cardId)
+        FeatureCard featureCard = memberCardRepository.findById(cardId)
             .orElseThrow(() -> new IllegalArgumentException("MemberCard not found"));
 
-        return MemberCardDto.from(memberCard);
-
+        return MemberCardDto.from(featureCard);
     }
 
     /*
@@ -116,5 +125,14 @@ public class ProfileService {
         }
 
         memberAccount.updateProfileImage(profileImage.get());
+    }
+
+    @Transactional
+    public Boolean updateRecommend(String memberId, Boolean recommendOn) {
+        /*
+        내 카드인지 확인
+         */
+        MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
+        return memberAccount.updateRecommendOn(recommendOn);
     }
 }

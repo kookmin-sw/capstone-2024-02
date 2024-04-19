@@ -23,7 +23,7 @@ public class GlobalExceptionHandler {
         log.error("[Error] NoResourceFoundException occur!: {}", ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                             .body(RestErrorResponse.of(RestErrorCode.NOT_FOUND));
+            .body(RestErrorResponse.of(RestErrorCode.NOT_FOUND));
     }
 
     @ExceptionHandler({PageSizeOutOfBoundsException.class})
@@ -31,18 +31,18 @@ public class GlobalExceptionHandler {
         PageSizeOutOfBoundsException ex
     ) {
         return ResponseEntity.status(ex.getErrorCode().getStatus())
-                             .body(RestErrorResponse.of(ex.getErrorCode(), ex.getReason()));
+            .body(RestErrorResponse.of(ex.getErrorCode(), ex.getReason()));
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
     public ResponseEntity<RestErrorResponse> handleValidationExceptions(
         MethodArgumentNotValidException ex) {
         List<String> errorMessages = ex.getBindingResult().getAllErrors().stream()
-                                       .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                                       .toList();
+            .map(DefaultMessageSourceResolvable::getDefaultMessage)
+            .toList();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                             .body(RestErrorResponse.of(HttpStatus.BAD_REQUEST, errorMessages));
+            .body(RestErrorResponse.of(HttpStatus.BAD_REQUEST, errorMessages));
     }
 
     @ExceptionHandler(MalformedJsonException.class)
@@ -50,7 +50,15 @@ public class GlobalExceptionHandler {
         MalformedJsonException ex
     ) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                             .body(RestErrorResponse.of(HttpStatus.BAD_REQUEST,
-                                 "사용자 입력 form data가 잘못 되었습니다."));
+            .body(RestErrorResponse.of(HttpStatus.BAD_REQUEST,
+                "사용자 입력 form data가 잘못 되었습니다."));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<RestErrorResponse> handleIllegalArgumentException(
+        IllegalArgumentException ex
+    ) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(RestErrorResponse.of(HttpStatus.BAD_REQUEST, ex.getMessage()));
     }
 }

@@ -22,6 +22,7 @@ import org.springframework.security.web.authentication.AuthenticationFailureHand
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
 @Slf4j
 @Order(0)
@@ -32,8 +33,8 @@ public class SecurityConfig {
     private final AuthenticationEntryPoint authEntryPoint;
     private final AuthenticationFailureHandler authFailureHandler;
     private final AuthenticationSuccessHandler authSuccessHandler;
-    private final LogoutHandler logoutHandler;
     private final TokenAuthenticationProcessingFilter tokenAuthenticationProcessingFilter;
+    private final LogoutSuccessHandler logoutSuccessHandler;
 
     private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
@@ -41,15 +42,15 @@ public class SecurityConfig {
         @Qualifier("customAuthenticationEntryPoint") AuthenticationEntryPoint authEntryPoint,
         @Qualifier("customOAuth2AuthenticationFailureHandler") AuthenticationFailureHandler authFailureHandler,
         @Qualifier("customOAuth2AuthenticationSuccessHandler") AuthenticationSuccessHandler authenticationSuccessHandler,
-        @Qualifier("customLogoutHandler") LogoutHandler logoutHandler,
         @Qualifier("tokenAuthenticationProcessingFilter") TokenAuthenticationProcessingFilter tokenAuthenticationProcessingFilter,
+        @Qualifier("customLogoutHandler") LogoutSuccessHandler logoutSuccessHandler,
         @Autowired HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository
     ) {
         this.authEntryPoint = authEntryPoint;
         this.authFailureHandler = authFailureHandler;
         this.authSuccessHandler = authenticationSuccessHandler;
-        this.logoutHandler = logoutHandler;
         this.tokenAuthenticationProcessingFilter = tokenAuthenticationProcessingFilter;
+        this.logoutSuccessHandler = logoutSuccessHandler;
         this.httpCookieOAuth2AuthorizationRequestRepository = httpCookieOAuth2AuthorizationRequestRepository;
     }
 
@@ -60,7 +61,9 @@ public class SecurityConfig {
     ) throws Exception {
         return httpSecurity
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
+                .requestMatchers(
+                    PathRequest.toStaticResources().atCommonLocations()
+                ).permitAll()
                 .requestMatchers(
                     HttpMethod.GET,
                     "/", "/oauth2/**"
@@ -68,6 +71,10 @@ public class SecurityConfig {
                 .requestMatchers(
                     HttpMethod.POST,
                     "/auth/token/refresh", "/oauth2/**", "/upload"
+                ).permitAll()
+                // ws 연결을 위한 /ws url 모두 허용
+                .requestMatchers(
+                    "/ws"
                 ).permitAll()
                 .anyRequest().authenticated()
             )
@@ -101,9 +108,8 @@ public class SecurityConfig {
             )
             .logout(logout -> logout
                 .logoutUrl("/auth/logout")
-                .addLogoutHandler(logoutHandler)
+                .logoutSuccessHandler(logoutSuccessHandler)
                 .deleteCookies("JSESSIONID")
-                .logoutSuccessUrl("/").permitAll()
             )
             .exceptionHandling(hc -> hc
                 .authenticationEntryPoint(authEntryPoint)

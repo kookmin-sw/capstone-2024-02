@@ -50,6 +50,19 @@ public class ProfileController {
         return ResponseEntity.ok(APIResponse.success(result));
     }
 
+    @PatchMapping("/recommend/{recommendOn}")
+    public ResponseEntity<APIResponse> updateMyCardRecommend(
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
+        @PathVariable Boolean recommendOn
+    ) {
+        String memberId = memberPrincipal.memberId();
+        log.info("call updateMyRecommend : {}", memberId);
+
+        Boolean result = profileService.updateRecommend(memberId, recommendOn);
+
+        return ResponseEntity.ok(APIResponse.success(result));
+    }
+
     @GetMapping("/{memberId}")
     public ResponseEntity<APIResponse> getMemberProfile(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
@@ -57,7 +70,8 @@ public class ProfileController {
     ) {
         log.info("call getProfile : {}", memberId);
 
-        MemberProfileDto result = profileService.getMemberProfile(memberId);
+        MemberProfileDto result = profileService.getMemberProfile(memberId,
+            memberPrincipal.gender());
 
         return ResponseEntity.ok(APIResponse.success(result));
     }

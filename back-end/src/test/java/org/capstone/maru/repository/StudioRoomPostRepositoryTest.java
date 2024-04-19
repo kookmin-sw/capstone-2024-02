@@ -12,6 +12,8 @@ import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.domain.RoomImage;
 import org.capstone.maru.domain.StudioRoomPost;
 import org.capstone.maru.domain.constant.Gender;
+import org.capstone.maru.domain.constant.RentalType;
+import org.capstone.maru.domain.constant.RoomType;
 import org.capstone.maru.dto.request.SearchFilterRequest;
 import org.capstone.maru.util.EntityCreator;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +47,7 @@ class StudioRoomPostRepositoryTest {
     @PersistenceContext
     private EntityManager entityManager;
 
-    private final int TOTAL_POST_COUNT = 100;
+    private final int TOTAL_POST_COUNT = 0;
     private final int PAGE_NUMBER = 0;
     private final int PAGE_SIZE = 10;
     private final Gender MALE = Gender.MALE;

@@ -8,6 +8,7 @@ import java.util.Set;
 
 import java.util.stream.Collectors;
 import lombok.Builder;
+import org.capstone.maru.domain.FeatureCard;
 import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.domain.RoomImage;
 import org.capstone.maru.domain.RoomInfo;
@@ -63,12 +64,16 @@ public record StudioRoomPostDto(
             .build();
     }
 
-    public StudioRoomPost toEntity(MemberAccount publisherAccountEntity,
-        RoomInfo roomInfoEntity) {
+    public StudioRoomPost toEntity(
+        FeatureCard roomMateCardEntity,
+        MemberAccount publisherAccountEntity,
+        RoomInfo roomInfoEntity
+    ) {
         return StudioRoomPost.of(
             title,
             content,
             publisherGender,
+            roomMateCardEntity,
             publisherAccountEntity,
             roomInfoEntity
         );

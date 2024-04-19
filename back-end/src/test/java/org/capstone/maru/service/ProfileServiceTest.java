@@ -6,11 +6,9 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import org.capstone.maru.domain.FeatureCard;
 import org.capstone.maru.domain.MemberAccount;
-import org.capstone.maru.domain.MemberCard;
 import org.capstone.maru.domain.ProfileImage;
-import org.capstone.maru.dto.MemberAccountDto;
 import org.capstone.maru.dto.MemberProfileDto;
 import org.capstone.maru.repository.MemberAccountRepository;
 import org.capstone.maru.repository.MemberCardRepository;
@@ -21,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
 @DisplayName("Service - 프로필")
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +28,8 @@ class ProfileServiceTest {
     ProfileService sut;
     @Mock
     MemberAccountService memberAccountService;
+    @Mock
+    S3FileService s3FileService;
 
     @Mock
     MemberCardRepository memberCardRepository;
@@ -50,22 +49,22 @@ class ProfileServiceTest {
         when(memberAccountService.searchMemberAccount(memberId)).thenReturn(memberAccount);
 
         // then
-        MemberProfileDto memberProfile = sut.getMemberProfile(memberId);
+        MemberProfileDto memberProfile = sut.getMemberProfile(memberId, "MALE");
 
         assertThat(memberProfile).isNotNull();
         assertThat(memberProfile.myCard().id()).isEqualTo(1L);
         assertThat(memberProfile.mateCard().id()).isEqualTo(2L);
     }
 
-    private MemberCard createMyCard() {
-        return MemberCard.of(
+    private FeatureCard createMyCard() {
+        return FeatureCard.of(
             1L,
             List.of("feature1", "feature2", "feature3")
         );
     }
 
-    private MemberCard createMateCard() {
-        return MemberCard.of(
+    private FeatureCard createMateCard() {
+        return FeatureCard.of(
             2L,
             List.of("feature1", "feature2", "feature3")
         );
@@ -80,6 +79,7 @@ class ProfileServiceTest {
             "MALE",
             "010-1234-5678",
             "nickname",
+            true,
             true,
             createMyCard(),
             createMateCard(),

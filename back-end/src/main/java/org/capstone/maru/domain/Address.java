@@ -27,58 +27,25 @@ public class Address {
 
     private String detailAddress; // 상세 주소
 
-    private String stationName; // 주변 지하철역
-
-    private Short stationTime; // 지하철역까지 걸리는 시간
-
-    private Short busStopTime; // 버스 정류장까지 걸리는 시간
-
-    private String schoolName; // 학교
-
-    private Short schoolTime; // 학교까지 걸리는 시간
-
-    private Short convenienceStoreTime; // 편의점까지 걸리는 시간
-
     // -- 생성 메서드 -- //
-    private Address(CITY city, String oldAddress, String roadAddress, String detailAddress,
-        String stationName, Short stationTime, Short busStopTime, String schoolName,
-        Short schoolTime,
-        Short convenienceStoreTime) {
+    private Address(CITY city, String oldAddress, String roadAddress, String detailAddress) {
         this.city = city;
         this.oldAddress = oldAddress;
         this.roadAddress = roadAddress;
         this.detailAddress = detailAddress;
-        this.stationName = stationName;
-        this.stationTime = stationTime;
-        this.busStopTime = busStopTime;
-        this.schoolName = schoolName;
-        this.schoolTime = schoolTime;
-        this.convenienceStoreTime = convenienceStoreTime;
     }
 
     public static Address of(
         CITY city,
         String oldAddress,
         String roadAddress,
-        String detailAddress,
-        String stationName,
-        Short stationTime,
-        Short busStopTime,
-        String schoolName,
-        Short schoolTime,
-        Short convenienceStoreTime
+        String detailAddress
     ) {
         return new Address(
             city,
             oldAddress,
             roadAddress,
-            detailAddress,
-            stationName,
-            stationTime,
-            busStopTime,
-            schoolName,
-            schoolTime,
-            convenienceStoreTime
+            detailAddress
         );
     }
 

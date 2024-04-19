@@ -7,7 +7,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.capstone.maru.domain.Follow;
-import org.capstone.maru.domain.MemberCard;
+import org.capstone.maru.domain.FeatureCard;
 import org.capstone.maru.domain.ProfileImage;
 import org.capstone.maru.exception.RestErrorCode;
 import org.capstone.maru.security.exception.MemberAccountExistentException;
@@ -28,7 +28,8 @@ public class MemberAccountService {
 
     @Transactional(readOnly = true)
     public MemberAccountDto searchMember(String memberId) {
-        Optional<MemberAccountDto> memberAccount = memberAccountRepository.findById(memberId)
+        Optional<MemberAccountDto> memberAccount = memberAccountRepository
+            .findById(memberId)
             .map(MemberAccountDto::from);
 
         if (memberAccount.isEmpty()) {
@@ -62,8 +63,8 @@ public class MemberAccountService {
 
         if (memberAccount.isEmpty()) {
 
-            MemberCard myCard = MemberCard.of(null, List.of());
-            MemberCard mateCard = MemberCard.of(null, List.of());
+            FeatureCard myCard = FeatureCard.of(null, List.of());
+            FeatureCard mateCard = FeatureCard.of(null, List.of());
 
             Set<Follow> followers = new HashSet<>();
             Set<Follow> followings = new HashSet<>();
@@ -78,6 +79,7 @@ public class MemberAccountService {
                 gender,
                 phoneNumber,
                 memberId,
+                true,
                 true,
                 myCard,
                 mateCard,
