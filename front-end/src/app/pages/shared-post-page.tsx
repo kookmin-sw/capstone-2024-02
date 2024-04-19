@@ -3,77 +3,87 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import {
-  Bookmark,
-  CircularProfileImage,
-  HorizontalDivider,
-} from '@/components';
-import {
-  CardToggleButton,
-  ImageGrid,
-  MiniCircularProfileImage,
-} from '@/components/shared-post-page';
+import { Bookmark, CircularProfileImage } from '@/components';
+import { ImageGrid } from '@/components/shared-post-page';
+import { useAuthValue } from '@/features/auth';
+import { useScrapSharedPost, useSharedPost } from '@/features/shared';
+import { getAge } from '@/shared';
 
 const styles = {
   container: styled.div`
+    width: 100%;
+
+    display: flex;
+    padding-block: 2rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+
     background: var(--background, #f7f6f9);
-
-    position: relative;
-    width: 100dvw;
-    min-height: 100%;
-    height: fit-content;
-
+  `,
+  contentContainer: styled.div`
     display: flex;
     justify-content: center;
-    align-items: stretch;
-    padding: 3rem 0;
+    align-items: flex-start;
     gap: 1rem;
 
-    overflow: auto;
+    max-width: min-content;
   `,
-  houseInfo: styled.div`
+  postContainer: styled.div`
     display: flex;
+    padding: 2rem;
     flex-direction: column;
-    gap: 1.5rem;
+    align-items: flex-start;
+    gap: 2rem;
 
-    width: 50%;
-    min-height: 80dvh;
-    height: 100%;
     border-radius: 16px;
     background: #fff;
-    padding: 1.5rem;
   `,
-  hostInfo: styled.div`
+  mateContainer: styled.div`
     display: flex;
     flex-direction: column;
-
-    position: relative;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1rem;
+  `,
+  ImageGrid: styled(ImageGrid)`
+    width: 667px;
+  `,
+  postInfoContainer: styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
 
     width: 100%;
-    height: 100%;
-    border-radius: 16px;
-    background: #fff;
 
-    padding: 2rem 3.5rem;
+    div {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      align-self: stretch;
+
+      h1 {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+
+        overflow: hidden;
+        color: #000;
+        text-overflow: ellipsis;
+        font-family: 'Noto Sans KR';
+        font-size: 1.5rem;
+        font-style: normal;
+        font-weight: 700;
+        line-height: normal;
+      }
+    }
   `,
-  titleRow: styled.div`
+  postInfoContent: styled.div`
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-right: 1.125rem;
-  `,
-  title: styled.h1`
-    color: #000;
-    font-family: 'Noto Sans KR';
-    font-size: 1.5rem;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
-  `,
-  briefInfoContainer: styled.div`
-    display: flex;
-    align-items: end;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
 
     color: var(--Black, #35373a);
     font-family: 'Noto Sans KR';
@@ -82,294 +92,300 @@ const styles = {
     font-weight: 500;
     line-height: normal;
 
+    & > span {
+      width: 100%;
+    }
+
     div {
       display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
+      width: 100%;
+      justify-content: space-between;
+      align-items: center;
     }
   `,
-  viewCount: styled.p`
-    color: var(--Black, #35373a);
-    font-family: 'Noto Sans KR';
-    font-size: 1rem;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    margin-right: 1rem;
-  `,
-  content: styled.div`
+  postContentContainer: styled.div`
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-  `,
-  dealInfo: styled.div`
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-  `,
-  dealTitle: styled.h2`
-    color: #000;
-    font-family: 'Noto Sans KR';
-    font-size: 1.25rem;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1rem;
+    align-self: stretch;
 
-    margin-bottom: 1.25rem;
-  `,
-  dealContent: styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-    margin: 0 0.63rem;
-  `,
-  dealItemContainer: styled.div`
-    display: flex;
-    justify-content: space-between;
+    h2 {
+      align-self: stretch;
 
-    color: var(--Black, #35373a);
-    font-family: 'Noto Sans KR';
-    font-size: 1rem;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-  `,
-  roomInfo: styled.div`
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100%;
-  `,
-  roomInfoTitle: styled.h2`
-    color: #000;
-    font-family: 'Noto Sans KR';
-    font-size: 1.25rem;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
+      color: #000;
+      font-family: 'Noto Sans KR';
+      font-size: 1.25rem;
+      font-style: normal;
+      font-weight: 700;
+      line-height: normal;
+    }
 
-    margin-bottom: 1.25rem;
+    p {
+      align-self: stretch;
+
+      color: var(--Black, #35373a);
+      font-family: 'Noto Sans KR';
+      font-size: 1rem;
+      font-style: normal;
+      font-weight: 400;
+      line-height: normal;
+    }
   `,
-  roomInfoContent: styled.div`
+  divider: styled.div`
+    width: 41.6875rem;
+    height: 0.0625rem;
+    background: #d3d0d7;
+  `,
+  dealInfoContainer: styled.div`
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    margin: 0 0.63rem;
+    align-items: flex-start;
+    gap: 1rem;
+    align-self: stretch;
+
+    h2 {
+      color: #000;
+      font-family: 'Noto Sans KR';
+      font-size: 1.25rem;
+      font-style: normal;
+      font-weight: 700;
+      line-height: normal;
+    }
+
+    div {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      align-self: stretch;
+
+      color: var(--Black, #35373a);
+      font-family: 'Noto Sans KR';
+      font-size: 1rem;
+      font-style: normal;
+      font-weight: 400;
+      line-height: normal;
+    }
   `,
-  detailInfoContanier: styled.div`
+  roomInfoContainer: styled.div`
     display: flex;
     flex-direction: column;
-  `,
-  detailInfoTitle: styled.h2`
-    color: #000;
-    font-family: 'Noto Sans KR';
-    font-size: 1.25rem;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
-    margin-bottom: 1.25rem;
-  `,
-  detailInfoContent: styled.p`
-    color: var(--Black, #35373a);
-    font-family: 'Noto Sans KR';
-    font-size: 1rem;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
+    align-items: flex-start;
+    gap: 1rem;
+    align-self: stretch;
+
+    h2 {
+      color: #000;
+      font-family: 'Noto Sans KR';
+      font-size: 1.25rem;
+      font-style: normal;
+      font-weight: 700;
+      line-height: normal;
+    }
+
+    div {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      align-self: stretch;
+
+      color: var(--Black, #35373a);
+      font-family: 'Noto Sans KR';
+      font-size: 1rem;
+      font-style: normal;
+      font-weight: 400;
+      line-height: normal;
+    }
   `,
   locationInfoContainer: styled.div`
     display: flex;
     flex-direction: column;
-    gap: 1.31rem;
-  `,
-  locationInfoTitle: styled.h2`
-    color: #000;
-    font-family: 'Noto Sans KR';
-    font-size: 1.25rem;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
-  `,
-  locationInfoContent: styled.p`
-    color: var(--Black, #35373a);
-    font-family: 'Noto Sans KR';
-    font-size: 1rem;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1rem;
+    align-self: stretch;
 
-    cursor: pointer;
-  `,
-  map: styled.div`
-    width: 100%;
-    height: 21.125rem;
-  `,
-  locationEnvInfo: styled.div`
-    color: var(--Black, #35373a);
-    font-family: 'Noto Sans KR';
-    font-size: 1rem;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
+    h2 {
+      align-self: stretch;
 
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
-  `,
-  hostInfoContainer: styled.div`
-    display: flex;
-    align-items: center;
-    gap: 3.125rem;
-    margin-bottom: 3.125rem;
-  `,
-  roomParticipantsContainer: styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+      color: #000;
+      font-family: 'Noto Sans KR';
+      font-size: 1.25rem;
+      font-style: normal;
+      font-weight: 700;
+      line-height: normal;
+    }
 
-    width: 25%;
-    min-height: 50dvh;
-    height: 50%;
-  `,
-  roomParticipants: styled.div`
-    display: flex;
+    p {
+      align-self: stretch;
+      color: var(--Black, #35373a);
+      font-family: 'Noto Sans KR';
+      font-size: 1rem;
+      font-style: normal;
+      font-weight: 400;
+      line-height: normal;
+    }
 
-    width: 100%;
-    height: 6.125rem;
-    flex-shrink: 0;
+    #map {
+      height: 21.125rem;
+      align-self: stretch;
+    }
+  `,
+  mates: styled.div`
+    display: flex;
+    width: 23rem;
+    padding: 1rem;
+    align-items: flex-start;
+
     border-radius: 16px;
     background: #fff;
-
-    padding: 0.44rem 1.56rem;
-    overflow-x: auto;
   `,
-  hostInfoContent: styled.div`
+  mate: styled.img<{ $selected?: boolean; $zIndex?: number }>`
+    cursor: pointer;
+
+    display: flex;
+    width: 5.25rem;
+    height: 5.25rem;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+
+    border-radius: 50%;
+    border: 1px solid
+      ${({ $selected }) =>
+        $selected != null && $selected ? '#e15637' : '#DCDDEA'};
+    background: #c4c4c4;
+
+    box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.2);
+
+    z-index: ${({ $zIndex }) => $zIndex};
+
+    &:not(:first-child) {
+      margin-left: -1rem;
+    }
+  `,
+  selectedMateContainer: styled.div`
+    display: flex;
+    padding: 2rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2rem;
+    align-self: stretch;
+
+    border-radius: 16px;
+    background: #fff;
+  `,
+  profile: styled.div`
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    align-self: stretch;
+  `,
+  profileInfo: styled.div`
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    align-self: stretch;
 
-    h1 {
+    .name {
       color: #000;
       font-family: 'Noto Sans KR';
       font-size: 1.5rem;
       font-style: normal;
       font-weight: 500;
       line-height: normal;
-      margin-bottom: 1rem;
     }
 
-    p {
+    div {
       color: #000;
       font-family: 'Noto Sans KR';
       font-size: 1rem;
       font-style: normal;
       font-weight: 500;
       line-height: normal;
-      margin-bottom: 0.25rem;
     }
   `,
-  hostCardContent: styled.div`
+  buttons: styled.div`
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-
-    color: #000;
-    font-family: 'Noto Sans KR';
-    font-size: 1rem;
-    font-style: normal;
-    font-weight: 500;
-    line-height: normal;
-
-    margin-bottom: 3.12rem;
-
-    .essential {
-      color: #e15637;
-    }
-  `,
-  hostButtonsContainer: styled.div`
-    display: flex;
-    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     gap: 1rem;
+    align-self: stretch;
 
     div {
       display: flex;
+      align-items: flex-start;
       gap: 1rem;
+      align-self: stretch;
     }
-
-    button {
-      all: unset;
-      cursor: pointer;
-
-      flex-grow: 1;
-
-      display: flex;
-      padding: 0.5rem 1.5rem;
-      justify-content: center;
-      align-items: center;
-
-      border-radius: 8px;
-      border: 1px solid var(--Gray-3, #888);
-      background: var(--White, #fff);
-
-      color: var(--Gray-3, #888);
-      font-family: Pretendard;
-      font-size: 1.125rem;
-      font-style: normal;
-      font-weight: 600;
-      line-height: 1.5rem;
-    }
-
-    .color {
-      background: var(--Main-1, #35373a);
-      border: 1px solid var(--Main-1);
-      color: #fff;
-    }
-
-    margin-bottom: 2.69rem;
   `,
-  cardToggleButtonContainer: styled.div`
+  chattingButton: styled.button`
+    all: unset;
+    cursor: pointer;
+
     display: flex;
-    position: relative;
-    flex-direction: column;
-    gap: 1.06rem;
+    padding: 0.5rem 1.5rem;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+    align-self: stretch;
 
-    left: -2.25rem;
+    border-radius: 8px;
+    background: var(--Black, #35373a);
 
-    width: calc(100% + 2.25rem);
+    color: #fff;
+    font-family: Pretendard;
+    font-size: 1.125rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.5rem;
+  `,
+  showProfileButton: styled.button`
+    all: unset;
+    cursor: pointer;
+
+    display: flex;
+    padding: 0.5rem 1.5rem;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+    flex: 1 0 0;
+
+    border-radius: 8px;
+    border: 1px solid var(--Gray-3, #888);
+    background: var(--White, #fff);
+
+    color: var(--Gray-3, #888);
+    font-family: Pretendard;
+    font-size: 1.125rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.5rem;
   `,
 };
 
 const dummyImages = [
-  'https://s3-alpha-sig.figma.com/img/efd0/12b5/6a0078a4aa75b0e9a9fb53a6d9a7c560?Expires=1713139200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=j5AnXWwmsSt8JfwV2YmUgVWZra-uiYrkstHv1k-vf7QbFqS7GcTVcpw~QBW71kNSOsYaaq5kkRYwWc2qUUnIk1oH9bu9DiKkRNPpinL3kvIL64OyfAyMR~RnNK7qQugTcQWTubGN3JdI9oGrIhiN2n7WolTee3Zrqy438Z3Q3pnIz-K3y4zQii6wB5H4-VscMpS8tKeY38I916mq1VOTRjoKxZlYWgOLuF7CPEMD4uUumMasXNL3IXhuCxqK05C7uzdglyQdDb93ZOZbbUrgw8kMuiyGAs83wxulvH5qPf-KMu5~M0jKV9QVErSEWzcRd4UWOtuCX1pM~FGCQy1Thg__',
-  'https://s3-alpha-sig.figma.com/img/ff85/788d/96b4a3ec1b31b6baf36b11c772529753?Expires=1713139200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=WNtT~WogqcFyD00ofTkqvIz7UE3Mrgew63-6NYCowB6E34X1zav19ZwjLahCxAzXa43cv90la3ODGaw1P6D-CdCC3wjXEJ3zq3JyUqjpqUOGcTpNyrL-O~CUtsaoQUQI-vixyiSxE7DcVMehfUwX~qvS4wdPAUGLHVcbsCHYRwZGr9aG8B0i~PKhu8E4gH3I72abjVUldajZ3uclc3CHcxR~wO8VIMCu3CYrw~SDcvLwD8XIyBWkSyX6NXFKDmH45PY9C7xcAd0yD~we7bPFljMs1e1LZTiexHfP34JTKGkdy2qKneadwz50oDcfMOvhl~aOZAdCul5um5TcGbC~UA__',
+  'https://s3-alpha-sig.figma.com/img/efd0/12b5/6a0078a4aa75b0e9a9fb53a6d9a7c560?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=ciMXf2L3kV1XzY76T5Ak5h2Ii1fEeZvK7KAykXxq3BIrlhdagKrN13jKM7UcWH5KgkEkHQjTDTHgII6Wv9Ffzswzz1ZabaSwefdVk9~NveeheHxjY2asCCinzAyQOtSXSqFavmapvkqIsc3YKmtqm6ic13PHPfaKEkoqm9lIrpb2fE60VY9A9gWTK1JycwjACH4hy4R44fDTNWaji9ItzR4Ch-vzDWd3rqINyRRFYbnIFj-ow6CSsBDqKWu-5X3Bq2teT9N8Xj2mULZjQtfd7pLtd55QoMHtRzzqtR-M-Pf4cLpmBZYN-0hkC4XHY3rq2HKQHOSd16k~azGjBkOBqQ__',
+  'https://s3-alpha-sig.figma.com/img/ff85/788d/96b4a3ec1b31b6baf36b11c772529753?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=nvS2kVR-bHmV41ZhIADPEQMxhHJcFPtvDB2S4-h6IVQRRaRrzmPfYac5YIKkghcQELjIqKfePgsmRO-jVIQj-k6GVCcMQPkXxYJjT7x6UVeygGkBx5AVkmgE4yBgrpv~UzCIPKMY5TrK1KnCkZp9N9rus-8ooKMenzuYjbqqNS41WzYkQQvHD9KHafnRU7nb7pgA0fMe88teFauhpW3sCAgJvEWdkQQTtBgedIiphLU7vX9Kww54tCoNZ3vshSbggZW6L4wG39ztH5oSpjiRyviYmZ6z5WXUCno3YPGSVQLfzpfBYYh-tPEaicdxyUD5QhP9rDTee1aU3DDkPCwx1g__',
 ];
 
-const dummyParticipants = [
-  'https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1713139200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=UL1aEtuLGKayYQ5L9ORuMtrpAC9EkOdVY6s2yYhNVuMpzbgXJ0Umi48NzpdET9P6fgCeOxrrwPA9gUVlTpWXWMNPapo-SJmV-7h~kNl23ClcmQ0I1ybBXrNn7ywYZWbnuNvFjSaBmtqBPaWR1F-E69qwN6ohhNS2j3piYxrCuR~ep6iAxAyrGP7Bt9mvDg9NYw5R~HsYWkcyEIF7kdfeJMsZ~SKhJ5aQTfngxKZEW7eB31bO5bXxQcCXi3Qia~zNkUAysBPp8Tx-pZQafjLHGM-ZogjUgOcKT9TyEDufX436AQUx~cBooRbkfXJpyexKXzs20iU4Y8HswRwXVJyJuw__',
-];
+// const dummyMates = [
+//   'https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Ou47yOoRJ57c0QqtWD~w0S6BP1UYWpmpCOCgsq9YTqfbNq~TmwfAI2T24-fYxpKSiBDv8y1Tkup68OTc5v2ZHIG~~CLwn6NCBF7QqTu7sQB0oPCvdRFdBm~y4wI8VEIErYhPsCuV2k7L0GVlJss4KkeM1tt1RX0kwfINvh03yzFf8wtjd0xsUJjMaKjNxU3muS2Cj8BZymckjgNGrTvafiGbAfHt0Bw2fTkH8tctfNNXpnZgqrEeDldEuENV~g-fSsLSFbMceZGN5ILEd9gd6fnY2YYeB7qtb9xozvczwTbz6kYIzzHJc7veYTsvxjqx~qTiKF2Yrn45cn5pXvOv1w__',
+// ];
 
-interface Props {
-  post: { title: string; content: string };
-}
+export function SharedPostPage({ postId }: { postId: number }) {
+  const auth = useAuthValue();
+  const [, setMap] = useState<naver.maps.Map | null>(null);
 
-function Item({ label, data }: { label: string; data: string }) {
-  return (
-    <styles.dealItemContainer>
-      <p>{label}</p>
-      <p>{data}</p>
-    </styles.dealItemContainer>
-  );
-}
+  const { data: sharedPost } = useSharedPost({
+    postId,
+    enabled: auth?.accessToken !== undefined,
+  });
 
-export function SharedPostPage({ post }: Props) {
-  const [map, setMap] = useState<naver.maps.Map | null>(null);
-
-  const handleClickTitle = () => {
-    if (map === null) return;
-
-    const center = new naver.maps.LatLng(37.6090857, 126.9966865);
-    map.setCenter(center);
-  };
+  const { mutate: scrapPost } = useScrapSharedPost();
 
   useEffect(() => {
     const center = new naver.maps.LatLng(37.6090857, 126.9966865);
@@ -384,127 +400,132 @@ export function SharedPostPage({ post }: Props) {
 
   return (
     <styles.container>
-      <styles.houseInfo>
-        <ImageGrid images={dummyImages} />
-        <styles.titleRow>
-          <styles.title>{post.title}</styles.title>
-          <Bookmark
-            hasBorder={false}
-            color="#000"
-            marked={false}
-            onToggle={() => {}}
-          />
-        </styles.titleRow>
-        <styles.briefInfoContainer>
-          <div>
-            <p>모집 1명 / 총원 2명</p>
-            <p>원룸 · 방1</p>
-            <p>500 / 50 / 5</p>
-          </div>
-          <styles.viewCount>저장 4 · 조회 22</styles.viewCount>
-        </styles.briefInfoContainer>
-        <HorizontalDivider />
-        <styles.content>
-          <styles.dealInfo>
-            <styles.dealTitle>거래 정보</styles.dealTitle>
-            <styles.dealContent>
-              <Item label="거래방식" data="월세" />
-              <Item label="보증금" data="500만원" />
-              <Item label="월세" data="50만원" />
-              <Item label="관리비" data="5만원" />
-            </styles.dealContent>
-          </styles.dealInfo>
-          <styles.roomInfo>
-            <styles.roomInfoTitle>방 정보</styles.roomInfoTitle>
-            <styles.roomInfoContent>
-              <Item label="방 종류" data="원룸" />
-              <Item label="구조" data="방 1" />
-              <Item label="면적" data="10평" />
-              <Item label="층수" data="지상 / 2층" />
-              <Item label="추가 옵션" data="주차가능, 에어컨" />
-            </styles.roomInfoContent>
-          </styles.roomInfo>
-          <styles.detailInfoContanier>
-            <styles.detailInfoTitle>상세 정보</styles.detailInfoTitle>
-            <styles.detailInfoContent>
+      <styles.contentContainer>
+        <styles.postContainer>
+          <styles.ImageGrid images={dummyImages} />
+          <styles.postInfoContainer>
+            <div>
+              <h1>{sharedPost?.data.title}</h1>
+              <Bookmark
+                hasBorder={false}
+                marked={sharedPost?.data.isScrapped ?? false}
+                onToggle={() => {
+                  scrapPost(postId);
+                }}
+                color="black"
+              />
+            </div>
+            <styles.postInfoContent>
+              <span>모집 1명 / 총원 2명</span>
+              <span>원룸 / 방 1</span>
+              <div>
+                <span>희망 월 분담금 65만원</span>
+                <span>저장 4 · 조회 22</span>
+              </div>
+            </styles.postInfoContent>
+          </styles.postInfoContainer>
+          <styles.postContentContainer>
+            <h2>상세 정보</h2>
+            <p>
               안녕하세요! 저는 현재 룸메이트를 찾고 있는 정연수입니다. 서울시
               정릉동에서 함께 살아갈 룸메이트를 구하고 있습니다. 주로 밤에
               작업을 하며 새벽 2시~3시쯤에 취침합니다. 관심있으신 분들 연락
               주세요!
-            </styles.detailInfoContent>
-          </styles.detailInfoContanier>
-          <styles.locationInfoContainer>
-            <styles.locationInfoTitle>위치 정보</styles.locationInfoTitle>
-            <styles.locationInfoContent
-              onClick={() => {
-                handleClickTitle();
-              }}
-            >
-              서울특별시 성북구 정릉로 104
-            </styles.locationInfoContent>
-            <styles.map id="map" />
-            <styles.locationEnvInfo>
-              <Item label="정릉역" data="10분" />
-              <Item label="버스정류장" data="5분" />
-              <Item label="국민대학교" data="20분" />
-              <Item label="편의점" data="1분" />
-            </styles.locationEnvInfo>
-          </styles.locationInfoContainer>
-        </styles.content>
-      </styles.houseInfo>
-      <styles.roomParticipantsContainer>
-        <styles.roomParticipants>
-          {dummyParticipants.map((participant, index) => (
-            <MiniCircularProfileImage
-              isHost={index === 0}
-              key={participant}
-              url={participant}
-              style={{
-                zIndex: dummyParticipants.length - index - 1,
-                transform: `translateX(-${1.31 * index}rem)`,
-              }}
-            />
-          ))}
-        </styles.roomParticipants>
-        <styles.hostInfo>
-          <styles.hostInfoContainer>
-            <CircularProfileImage
-              diameter={110}
-              percentage={50}
-              url="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1713139200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=UL1aEtuLGKayYQ5L9ORuMtrpAC9EkOdVY6s2yYhNVuMpzbgXJ0Umi48NzpdET9P6fgCeOxrrwPA9gUVlTpWXWMNPapo-SJmV-7h~kNl23ClcmQ0I1ybBXrNn7ywYZWbnuNvFjSaBmtqBPaWR1F-E69qwN6ohhNS2j3piYxrCuR~ep6iAxAyrGP7Bt9mvDg9NYw5R~HsYWkcyEIF7kdfeJMsZ~SKhJ5aQTfngxKZEW7eB31bO5bXxQcCXi3Qia~zNkUAysBPp8Tx-pZQafjLHGM-ZogjUgOcKT9TyEDufX436AQUx~cBooRbkfXJpyexKXzs20iU4Y8HswRwXVJyJuw__"
-            />
-            <styles.hostInfoContent>
-              <h1>김마루</h1>
-              <p>24세</p>
-              <p>성북 길음동</p>
-            </styles.hostInfoContent>
-          </styles.hostInfoContainer>
-          <styles.hostCardContent>
-            <p className="essential">비흡연</p>
-            <p>새벽형</p>
-            <p>친구초대 괜찮아요</p>
-            <p className="essential">실내취식 괜찮아요</p>
-          </styles.hostCardContent>
-          <styles.hostButtonsContainer>
-            <button type="button" className="color">
-              채팅하기
-            </button>
+            </p>
+          </styles.postContentContainer>
+          <styles.divider />
+          <styles.dealInfoContainer>
+            <h2>거래 정보</h2>
             <div>
-              <button type="button">프로필 보기</button>
-              <Bookmark
-                color="#888"
-                hasBorder
-                marked={false}
-                onToggle={() => {}}
-              />
+              <span>거래 방식</span>
+              <span>월세</span>
             </div>
-          </styles.hostButtonsContainer>
-          <styles.cardToggleButtonContainer>
-            <CardToggleButton label="마이카드" />
-            <CardToggleButton label="메이트카드" />
-          </styles.cardToggleButtonContainer>
-        </styles.hostInfo>
-      </styles.roomParticipantsContainer>
+            <div>
+              <span>희망 월 분담금</span>
+              <span>65만원</span>
+            </div>
+          </styles.dealInfoContainer>
+          <styles.roomInfoContainer>
+            <h2>방 정보</h2>
+            <div>
+              <span>방 종류</span>
+              <span>원룸</span>
+            </div>
+            <div>
+              <span>거실 보유</span>
+              <span>있음</span>
+            </div>
+            <div>
+              <span>방 개수</span>
+              <span>2개</span>
+            </div>
+            <div>
+              <span>화장실 개수</span>
+              <span>1개</span>
+            </div>
+            <div>
+              <span>평수</span>
+              <span>14평</span>
+            </div>
+          </styles.roomInfoContainer>
+          <styles.locationInfoContainer>
+            <h2>위치 정보</h2>
+            <p>{sharedPost?.data.roomInfo.address.roadAddress}</p>
+            <div id="map" />
+          </styles.locationInfoContainer>
+        </styles.postContainer>
+        <styles.mateContainer>
+          <styles.mates>
+            <styles.mate
+              $selected
+              $zIndex={3}
+              src="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Ou47yOoRJ57c0QqtWD~w0S6BP1UYWpmpCOCgsq9YTqfbNq~TmwfAI2T24-fYxpKSiBDv8y1Tkup68OTc5v2ZHIG~~CLwn6NCBF7QqTu7sQB0oPCvdRFdBm~y4wI8VEIErYhPsCuV2k7L0GVlJss4KkeM1tt1RX0kwfINvh03yzFf8wtjd0xsUJjMaKjNxU3muS2Cj8BZymckjgNGrTvafiGbAfHt0Bw2fTkH8tctfNNXpnZgqrEeDldEuENV~g-fSsLSFbMceZGN5ILEd9gd6fnY2YYeB7qtb9xozvczwTbz6kYIzzHJc7veYTsvxjqx~qTiKF2Yrn45cn5pXvOv1w__"
+            />
+            <styles.mate
+              $zIndex={2}
+              src="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Ou47yOoRJ57c0QqtWD~w0S6BP1UYWpmpCOCgsq9YTqfbNq~TmwfAI2T24-fYxpKSiBDv8y1Tkup68OTc5v2ZHIG~~CLwn6NCBF7QqTu7sQB0oPCvdRFdBm~y4wI8VEIErYhPsCuV2k7L0GVlJss4KkeM1tt1RX0kwfINvh03yzFf8wtjd0xsUJjMaKjNxU3muS2Cj8BZymckjgNGrTvafiGbAfHt0Bw2fTkH8tctfNNXpnZgqrEeDldEuENV~g-fSsLSFbMceZGN5ILEd9gd6fnY2YYeB7qtb9xozvczwTbz6kYIzzHJc7veYTsvxjqx~qTiKF2Yrn45cn5pXvOv1w__"
+            />
+            <styles.mate
+              $zIndex={1}
+              src="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Ou47yOoRJ57c0QqtWD~w0S6BP1UYWpmpCOCgsq9YTqfbNq~TmwfAI2T24-fYxpKSiBDv8y1Tkup68OTc5v2ZHIG~~CLwn6NCBF7QqTu7sQB0oPCvdRFdBm~y4wI8VEIErYhPsCuV2k7L0GVlJss4KkeM1tt1RX0kwfINvh03yzFf8wtjd0xsUJjMaKjNxU3muS2Cj8BZymckjgNGrTvafiGbAfHt0Bw2fTkH8tctfNNXpnZgqrEeDldEuENV~g-fSsLSFbMceZGN5ILEd9gd6fnY2YYeB7qtb9xozvczwTbz6kYIzzHJc7veYTsvxjqx~qTiKF2Yrn45cn5pXvOv1w__"
+            />
+          </styles.mates>
+          <styles.selectedMateContainer>
+            <styles.profile>
+              <CircularProfileImage
+                diameter={110}
+                percentage={50}
+                url="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Ou47yOoRJ57c0QqtWD~w0S6BP1UYWpmpCOCgsq9YTqfbNq~TmwfAI2T24-fYxpKSiBDv8y1Tkup68OTc5v2ZHIG~~CLwn6NCBF7QqTu7sQB0oPCvdRFdBm~y4wI8VEIErYhPsCuV2k7L0GVlJss4KkeM1tt1RX0kwfINvh03yzFf8wtjd0xsUJjMaKjNxU3muS2Cj8BZymckjgNGrTvafiGbAfHt0Bw2fTkH8tctfNNXpnZgqrEeDldEuENV~g-fSsLSFbMceZGN5ILEd9gd6fnY2YYeB7qtb9xozvczwTbz6kYIzzHJc7veYTsvxjqx~qTiKF2Yrn45cn5pXvOv1w__"
+              />
+              <styles.profileInfo>
+                <p className="name">
+                  {sharedPost?.data.publisherAccount.nickname}
+                </p>
+                <div>
+                  <p>
+                    {sharedPost?.data.publisherAccount.birthYear != null
+                      ? getAge(+sharedPost.data.publisherAccount.birthYear)
+                      : new Date().getFullYear()}
+                  </p>
+                  <p>서웉특별시 성북구</p>
+                </div>
+              </styles.profileInfo>
+            </styles.profile>
+            <styles.buttons>
+              <styles.chattingButton>채팅하기</styles.chattingButton>
+              <div>
+                <styles.showProfileButton>프로필 보기</styles.showProfileButton>
+                <Bookmark
+                  hasBorder
+                  color="#888"
+                  marked={false}
+                  onToggle={() => {}}
+                />
+              </div>
+            </styles.buttons>
+          </styles.selectedMateContainer>
+        </styles.mateContainer>
+      </styles.contentContainer>
     </styles.container>
   );
 }

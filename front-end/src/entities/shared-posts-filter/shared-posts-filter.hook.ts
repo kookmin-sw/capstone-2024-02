@@ -1,30 +1,21 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useRecoilState, useResetRecoilState } from 'recoil';
 
-import { type SharedPostsFilter } from '.';
+import { sharedPostsFilterState } from './shared-posts-filter.atom';
+import { type SharedPostsFilter } from './shared-posts-filter.type';
 
-export const useSharedPostsFilter: () => [
-  SharedPostsFilter,
-  (
-    optionOrUpdater:
-      | Partial<SharedPostsFilter>
-      | ((prev: SharedPostsFilter) => SharedPostsFilter),
-  ) => void,
-] = () => {
-  const [filter, setFilter] = useState<SharedPostsFilter>({});
-  const setter = useCallback(
-    (
-      optionOrUpdater:
-        | Partial<SharedPostsFilter>
-        | ((prev: SharedPostsFilter) => SharedPostsFilter),
-    ) => {
-      if (typeof optionOrUpdater === 'function') {
-        setFilter(optionOrUpdater);
-      } else {
-        setFilter(prev => ({ ...prev, ...optionOrUpdater }));
-      }
-    },
-    [],
+export const useSharedPostsFilter = () => {
+  const [filter, setFilter] = useRecoilState<SharedPostsFilter>(
+    sharedPostsFilterState,
   );
 
-  return useMemo(() => [filter, setter], [filter, setter]);
+  const reset = useResetRecoilState(sharedPostsFilterState);
+  return useMemo(
+    () => ({
+      filter,
+      setFilter,
+      reset,
+    }),
+    [filter, setFilter, reset],
+  );
 };

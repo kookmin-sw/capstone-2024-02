@@ -1,6 +1,6 @@
 {
   "name": "maru",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -16,7 +16,6 @@
     "react": "^18",
     "react-dom": "^18",
     "react-redux": "^9.1.0",
-    "react-toastify": "^10.0.5",
     "recoil": "^0.7.7",
     "sass": "^1.71.1",
     "styled-components": "^6.1.8"

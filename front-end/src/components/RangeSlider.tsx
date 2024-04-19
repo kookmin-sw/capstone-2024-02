@@ -57,11 +57,11 @@ const styles = {
 
     input[type='range']::-webkit-slider-thumb:active {
       box-shadow:
-        inset 0 0 3px #e15637,
-        0 0 9px #e15637;
+        inset 0 0 1px black,
+        0 0 1px black;
       -webkit-box-shadow:
-        inset 0 0 3px #e15637,
-        0 0 9px #e15637;
+        inset 0 0 1px black,
+        0 0 1px black;
     }
 
     input[type='range'] {
@@ -79,15 +79,17 @@ const styles = {
 interface Props {
   min: number;
   max: number;
+  step: number;
   onChange: ({ low, high }: { low: number; high: number }) => void;
 }
 
-export function RangeSlider({ min, max, onChange }: Props) {
+export function RangeSlider({ min, max, step, onChange }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const [low, setLow] = useState(min);
-
-  const [high, setHigh] = useState(max);
+  const [state, setState] = useState<{ low: number; high: number }>({
+    low: min,
+    high: max,
+  });
 
   const { width, margin }: { width: number; margin: number } = useMemo(() => {
     if (containerRef?.current === null) {
@@ -95,44 +97,58 @@ export function RangeSlider({ min, max, onChange }: Props) {
     }
 
     const containerWidth = containerRef.current.clientWidth;
-    const highPercentage = high / 100;
-    const lowPercentage = low / 100;
+    const highPercentage = state.high / (min + max - 1);
+    const lowPercentage = state.low / (min + max - 1);
 
     return {
       width: containerWidth * (highPercentage - lowPercentage),
       margin: containerWidth * lowPercentage,
     };
-  }, [containerRef, low, high]);
+  }, [containerRef, state, max, min]);
 
   useEffect(() => {
-    setLow((min + max) * 0.25);
-    setHigh((min + max) * 0.75);
+    setState({
+      low: (min + max - 1) * 0.25,
+      high: (min + max - 1) * 0.75,
+    });
   }, []);
-
-  useEffect(() => {
-    onChange({ low, high });
-  }, [onChange, low, high]);
 
   return (
     <styles.container ref={containerRef} $width={width} $margin={margin}>
       <div />
       <div className="range" />
       <input
-        value={low}
+        step={step}
+        min={min}
+        max={max}
+        value={state.low}
         onChange={e => {
           const newLow = +e.currentTarget.value;
-          if (newLow > high) setHigh(newLow);
-          setLow(newLow);
+          const newState = { ...state };
+
+          newState.low = newLow;
+          if (newLow > state.high) newState.high = newLow;
+
+          onChange(newState);
+          setState(newState);
         }}
         className="low"
         type="range"
       />
       <input
-        value={high}
+        step={step}
+        min={min}
+        max={max}
+        value={state.high}
         onChange={e => {
           const newHigh = +e.currentTarget.value;
-          if (newHigh < low) setLow(newHigh);
-          setHigh(newHigh);
+          const newState = { ...state };
+
+          newState.high = newHigh;
+          if (newHigh < state.low) newState.low = newHigh;
+
+          onChange(newState);
+          setState(newState);
         }}
         className="high"
         type="range"

@@ -8,6 +8,8 @@ import styled from 'styled-components';
 import { CircularButton } from '@/components';
 import { UserCard } from '@/components/main-page';
 import { useAuthActions, useAuthValue, useUserData } from '@/features/auth';
+import { getGeolocation } from '@/features/geocoding';
+import { useRecommendationMate } from '@/features/recommendation';
 
 const styles = {
   container: styled.div`
@@ -20,6 +22,29 @@ const styles = {
   map: styled.div`
     width: 100%;
     height: 50dvh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    p {
+      color: #000;
+      font-family: 'Noto Sans KR';
+      font-size: 1.25rem;
+      font-style: normal;
+      font-weight: 700;
+      line-height: normal;
+    }
+
+    p[class~='caption'] {
+      color: #19191980;
+      font-family: 'Noto Sans KR';
+      font-size: 1rem;
+      font-style: normal;
+      font-weight: 400;
+      line-height: normal;
+    }
   `,
   mateRecommendationContainer: styled.div`
     width: 100%;
@@ -48,6 +73,7 @@ const styles = {
   `,
   mateRecommendation: styled.div`
     display: flex;
+    flex-grow: 1;
     flex-direction: row;
     gap: 2.625rem;
     overflow-x: auto;
@@ -66,9 +92,15 @@ export function MainPage() {
   const auth = useAuthValue();
   const { setAuthUserData } = useAuthActions();
 
-  const { data } = useUserData(auth?.accessToken !== undefined);
+  const { data: userData } = useUserData(auth?.accessToken !== undefined);
 
-  const [, setMap] = useState<naver.maps.Map | null>(null);
+  const { data: recommendationMates } = useRecommendationMate({
+    memberId: auth?.user?.memberId ?? 'undefined',
+    cardType: 'mate',
+    enabled: auth?.accessToken != null,
+  });
+
+  const [map, setMap] = useState<naver.maps.Map | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -85,28 +117,46 @@ export function MainPage() {
   };
 
   useEffect(() => {
-    const center = new naver.maps.LatLng(37.6090857, 126.9966865);
-    setMap(
-      new naver.maps.Map('map', {
-        center,
-        disableKineticPan: false,
-        scrollWheel: false,
-      }),
-    );
+    getGeolocation({
+      onSuccess: position => {
+        const center = new naver.maps.LatLng(
+          position.coords.latitude,
+          position.coords.longitude,
+        );
+
+        setMap(
+          new naver.maps.Map('map', {
+            center,
+            disableKineticPan: false,
+            scrollWheel: false,
+          }),
+        );
+      },
+      onError: error => {
+        console.error(error);
+      },
+    });
   }, []);
 
   useEffect(() => {
-    if (data !== undefined) {
-      setAuthUserData(data);
-      if (data.initialized) {
+    if (userData !== undefined) {
+      setAuthUserData(userData);
+      if (userData.initialized) {
         // router.replace('/profile');
       }
     }
-  }, [data, router, setAuthUserData]);
+  }, [userData, router, setAuthUserData]);
 
   return (
     <styles.container>
-      <styles.map id="map" />
+      <styles.map id="map">
+        {map == null && (
+          <>
+            <p>지도를 불러오는 중입니다.</p>
+            <p className="caption">(위치 권한이 필요합니다)</p>
+          </>
+        )}
+      </styles.map>
       <styles.mateRecommendationContainer>
         <styles.mateRecommendationTitle>
           {auth?.user?.name}님의 추천 메이트
@@ -118,48 +168,14 @@ export function MainPage() {
             onClick={handleScrollLeft}
           />
           <styles.mateRecommendation ref={scrollRef}>
-            <Link href="/profile/memberId">
-              <UserCard
-                name="김마루"
-                address="성북 길음동"
-                birth={new Date(2000, 5, 27)}
-              />
-            </Link>
-            <Link href="/profile/memberId">
-              <UserCard
-                name="김마루"
-                address="성북 길음동"
-                birth={new Date(2000, 5, 27)}
-              />
-            </Link>
-            <Link href="/profile/memberId">
-              <UserCard
-                name="김마루"
-                address="성북 길음동"
-                birth={new Date(2000, 5, 27)}
-              />
-            </Link>
-            <Link href="/profile/memberId">
-              <UserCard
-                name="김마루"
-                address="성북 길음동"
-                birth={new Date(2000, 5, 27)}
-              />
-            </Link>
-            <Link href="/profile/memberId">
-              <UserCard
-                name="김마루"
-                address="성북 길음동"
-                birth={new Date(2000, 5, 27)}
-              />
-            </Link>
-            <Link href="/profile/memberId">
-              <UserCard
-                name="김마루"
-                address="성북 길음동"
-                birth={new Date(2000, 5, 27)}
-              />
-            </Link>
+            {recommendationMates?.map(({ name, similarity, userId }) => (
+              <Link key={userId} href={`/profile/${userId}`}>
+                <UserCard
+                  name={name}
+                  percentage={Math.floor(similarity * 100)}
+                />
+              </Link>
+            ))}
           </styles.mateRecommendation>
           <CircularButton
             direction="right"

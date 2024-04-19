@@ -53,6 +53,7 @@ const styles = {
 
 interface Props {
   images: string[];
+  className?: string;
 }
 
 const sliceImages = (images: string[]) => {
@@ -67,7 +68,7 @@ const sliceImages = (images: string[]) => {
   return result;
 };
 
-export function ImageGrid({ images: imagesParam }: Props) {
+export function ImageGrid({ images: imagesParam, className }: Props) {
   const [images] = useState(sliceImages(imagesParam));
   const [pageIndex, setPageIndex] = useState(0);
 
@@ -80,7 +81,7 @@ export function ImageGrid({ images: imagesParam }: Props) {
   };
 
   return (
-    <styles.container>
+    <styles.container className={className}>
       <styles.buttonContainer>
         <CircularButton
           disabled={pageIndex - 1 < 0}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const styles = {
@@ -80,7 +80,7 @@ const styles = {
     width: 25rem;
     height: 0.3125rem;
     flex-shrink: 0;
-    border-radius: 1.25rem;
+    border-radius: 20px;
     background: #d9d9d9;
     margin-bottom: 0.63rem;
   `,
@@ -131,7 +131,7 @@ const styles = {
     background-color: #bebebe;
     -webkit-transition: 0.4s;
     transition: 0.4s;
-    border-radius: 1.5rem;
+    border-radius: 24px;
   `,
   sliderDot: styled.span`
     position: absolute;
@@ -188,7 +188,7 @@ const CheckItem = styled.div<CheckItemProps>`
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
-  border-radius: 1.625rem;
+  border-radius: 26px;
   border: 2px solid #dfdfdf;
   background: #fff;
   cursor: pointer;
@@ -235,10 +235,27 @@ const PersonalOptions = [
 ];
 const BudgetOptions = ['보증금', '월세'];
 
-export function OptionSection() {
+export function OptionSection({
+  optionFeatures,
+  onFeatureChange,
+  isMySelf,
+}: {
+  optionFeatures: string[] | null;
+  onFeatureChange: (option: string) => void;
+  isMySelf: boolean;
+}) {
   type SelectedOptions = Record<string, boolean>;
-
   const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({});
+
+  useEffect(() => {
+    if (optionFeatures !== null) {
+      const initialOptions: SelectedOptions = {};
+      optionFeatures.forEach(option => {
+        initialOptions[option] = true;
+      });
+      setSelectedOptions(initialOptions);
+    }
+  }, [optionFeatures]);
 
   const [toggleStates, setToggleStates] = useState({
     toggle1: false,
@@ -252,6 +269,7 @@ export function OptionSection() {
       ...prevSelectedOptions,
       [option]: !prevSelectedOptions[option],
     }));
+    onFeatureChange(option);
   };
 
   const toggleSwitch = (toggleName: keyof typeof toggleStates) => {
@@ -273,7 +291,9 @@ export function OptionSection() {
                 key={option}
                 $isSelected={selectedOptions[option]}
                 onClick={() => {
-                  handleOptionClick(option);
+                  if (isMySelf) {
+                    handleOptionClick(option);
+                  }
                 }}
               >
                 {option}
@@ -289,7 +309,9 @@ export function OptionSection() {
                 key={option}
                 $isSelected={selectedOptions[option]}
                 onClick={() => {
-                  handleOptionClick(option);
+                  if (isMySelf) {
+                    handleOptionClick(option);
+                  }
                 }}
               >
                 {option}
@@ -305,7 +327,9 @@ export function OptionSection() {
                 key={option}
                 $isSelected={selectedOptions[option]}
                 onClick={() => {
-                  handleOptionClick(option);
+                  if (isMySelf) {
+                    handleOptionClick(option);
+                  }
                 }}
               >
                 {option}
@@ -321,7 +345,9 @@ export function OptionSection() {
                 key={option}
                 $isSelected={selectedOptions[option]}
                 onClick={() => {
-                  handleOptionClick(option);
+                  if (isMySelf) {
+                    handleOptionClick(option);
+                  }
                 }}
               >
                 {option}
@@ -342,7 +368,9 @@ export function OptionSection() {
                 key={option}
                 $isSelected={selectedOptions[option]}
                 onClick={() => {
-                  handleOptionClick(option);
+                  if (isMySelf) {
+                    handleOptionClick(option);
+                  }
                 }}
               >
                 {option}
@@ -358,7 +386,9 @@ export function OptionSection() {
                 key={option}
                 $isSelected={selectedOptions[option]}
                 onClick={() => {
-                  handleOptionClick(option);
+                  if (isMySelf) {
+                    handleOptionClick(option);
+                  }
                 }}
               >
                 {option === '엠비티아이' ? <>MBTI</> : option}
@@ -371,7 +401,9 @@ export function OptionSection() {
                   <ToggleSwitch
                     isChecked={toggleStates.toggle1}
                     onToggle={() => {
-                      toggleSwitch('toggle1');
+                      if (isMySelf) {
+                        toggleSwitch('toggle1');
+                      }
                     }}
                   />
                   I
@@ -381,7 +413,9 @@ export function OptionSection() {
                   <ToggleSwitch
                     isChecked={toggleStates.toggle2}
                     onToggle={() => {
-                      toggleSwitch('toggle2');
+                      if (isMySelf) {
+                        toggleSwitch('toggle2');
+                      }
                     }}
                   />
                   S
@@ -391,7 +425,9 @@ export function OptionSection() {
                   <ToggleSwitch
                     isChecked={toggleStates.toggle3}
                     onToggle={() => {
-                      toggleSwitch('toggle3');
+                      if (isMySelf) {
+                        toggleSwitch('toggle3');
+                      }
                     }}
                   />
                   T
@@ -401,7 +437,9 @@ export function OptionSection() {
                   <ToggleSwitch
                     isChecked={toggleStates.toggle4}
                     onToggle={() => {
-                      toggleSwitch('toggle4');
+                      if (isMySelf) {
+                        toggleSwitch('toggle4');
+                      }
                     }}
                   />
                   J
@@ -420,7 +458,9 @@ export function OptionSection() {
                 <CheckItem
                   $isSelected={selectedOptions[option]}
                   onClick={() => {
-                    handleOptionClick(option);
+                    if (isMySelf) {
+                      handleOptionClick(option);
+                    }
                   }}
                 >
                   {option}

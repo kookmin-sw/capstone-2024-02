@@ -1,14 +1,22 @@
 'use client';
 
+import { useMemo } from 'react';
 import styled from 'styled-components';
 
-import { DealTypeFilter } from './filter';
+import {
+  DealTypeFilter,
+  ExtraInfoFilter,
+  MateCardFilter,
+  RoomTypeFilter,
+} from './filter';
 import { SharedPostFilterItem } from './SharedPostFilterItem';
 
 import {
   SharedPostsFilterTypeValue,
+  useSharedPostsFilter,
   type SharedPostsType,
 } from '@/entities/shared-posts-filter';
+import { useAuthValue, useUserData } from '@/features/auth';
 
 const styles = {
   container: styled.div`
@@ -23,26 +31,36 @@ export function SharedPostFilters({
 }: {
   selected: SharedPostsType;
 } & React.ComponentProps<'div'>) {
-  // TODO: 필터 정보 저장 코드 필요.
+  const auth = useAuthValue();
+  const { data: userData } = useUserData(auth?.accessToken != null);
 
-  const filterEntries = Object.entries(SharedPostsFilterTypeValue).map<
-    [string, string]
-  >(([key, value]) => [key, value]);
+  const { filter } = useSharedPostsFilter();
 
-  const filter = (value: string) => {
-    if (selected === 'hasRoom') return true;
-    return value === '마이카드' || value === '메이트카드';
-  };
+  const mateCardFilterTitle = useMemo(() => {
+    if (filter.cardType == null) return SharedPostsFilterTypeValue.cardType;
+    if (filter.cardType === 'mate') return `${userData?.name}님이 원하는 방`;
+    if (filter.cardType === 'my') return `${userData?.name}님을 원하는 방`;
+    return 'error';
+  }, [userData?.name, filter.cardType]);
 
   return (
     <styles.container className={className}>
-      {filterEntries
-        .filter(([, value]) => filter(value))
-        .map(([key, value]) => (
-          <SharedPostFilterItem key={key} title={value}>
+      <SharedPostFilterItem title={mateCardFilterTitle}>
+        <MateCardFilter />
+      </SharedPostFilterItem>
+      {selected === 'hasRoom' && (
+        <>
+          <SharedPostFilterItem title={SharedPostsFilterTypeValue.dealInfo}>
             <DealTypeFilter />
           </SharedPostFilterItem>
-        ))}
+          <SharedPostFilterItem title={SharedPostsFilterTypeValue.roomInfo}>
+            <RoomTypeFilter />
+          </SharedPostFilterItem>
+          <SharedPostFilterItem title={SharedPostsFilterTypeValue.extraInfo}>
+            <ExtraInfoFilter />
+          </SharedPostFilterItem>
+        </>
+      )}
     </styles.container>
   );
 }

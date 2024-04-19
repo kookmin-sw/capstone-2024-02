@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import React from 'react';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import './globals.scss';
 
 import {
@@ -10,6 +8,7 @@ import {
   RecoilRootProvider,
   StyledComponentsRegistry,
   TanstackQueryProvider,
+  ToastProvider,
 } from '@/app/lib/providers';
 import { FloatingChatting, NavigationBar } from '@/components';
 
@@ -31,7 +30,7 @@ export default function RootLayout({
         <script
           async
           type="text/javascript"
-          src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}`}
+          src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${process.env.NEXT_PUBLIC_NAVER_MAP_CLIENT_ID}&submodules=geocoder`}
         />
       </head>
       <body className={inter.className}>
@@ -42,7 +41,7 @@ export default function RootLayout({
                 <NavigationBar />
                 <main>{children}</main>
                 <FloatingChatting />
-                <ToastContainer />
+                <ToastProvider />
               </AuthProvider>
             </StyledComponentsRegistry>
           </RecoilRootProvider>

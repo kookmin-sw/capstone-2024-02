@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 import { VitalSection, OptionSection } from '@/components';
+import { useAuthValue, useUserData } from '@/features/auth';
+import { usePutUserCard } from '@/features/profile';
 
 const styles = {
   pageContainer: styled.div`
@@ -38,7 +41,7 @@ const styles = {
     width: 23.0625rem;
     height: 17.5rem;
     flex-shrink: 0;
-    border-radius: 1.875rem;
+    border-radius: 30px;
     padding: 1.62rem 1.44rem;
     display: flex;
     flex-direction: column;
@@ -78,7 +81,7 @@ const styles = {
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
-    border-radius: 1.625rem;
+    border-radius: 26px;
     border: 2px solid var(--Main-1, #e15637);
     background: #fff;
 
@@ -99,7 +102,7 @@ const styles = {
     width: 51.0625rem;
     height: 95.8125rem;
     flex-shrink: 0;
-    border-radius: 1.875rem;
+    border-radius: 30px;
     background: var(--background, #f7f6f9);
     padding: 3.56rem 0 0 1.56rem;
     margin-bottom: 7.5rem;
@@ -129,7 +132,7 @@ const styles = {
     justify-content: center;
     align-items: center;
     gap: 0.25rem;
-    border-radius: 0.5rem;
+    border-radius: 8px;
     background: var(--Main-1, #e15637);
     margin: 4.06rem 31rem 9.06rem 31rem;
   `,
@@ -152,7 +155,124 @@ interface CardActiveProps {
   $active?: boolean;
 }
 
+interface UserProps {
+  memberId: string | undefined;
+  name: string | undefined;
+  gender: string | undefined;
+  birthYear: string | undefined;
+  myCardId: number | undefined;
+  mateCardId: number | undefined;
+}
+
+interface SelectedState {
+  smoking: string | undefined;
+  room: string | undefined;
+}
+type SelectedOptions = Record<string, boolean>;
+
+const useSelectedState = (): [
+  SelectedState,
+  SelectedOptions,
+  (optionName: keyof SelectedState, item: string | number) => void,
+  (option: string) => void,
+] => {
+  const [selectedState, setSelectedState] = useState<SelectedState>({
+    smoking: undefined,
+    room: undefined,
+  });
+  const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({});
+
+  const handleFeatureChange = (
+    optionName: keyof SelectedState,
+    item: string | number,
+  ) => {
+    setSelectedState(prevState => ({
+      ...prevState,
+      [optionName]: prevState[optionName] === item ? undefined : item,
+    }));
+  };
+
+  const handleOptionClick = (option: string) => {
+    setSelectedOptions(prevSelectedOptions => ({
+      ...prevSelectedOptions,
+      [option]: !prevSelectedOptions[option],
+    }));
+  };
+
+  return [
+    selectedState,
+    selectedOptions,
+    handleFeatureChange,
+    handleOptionClick,
+  ];
+};
+
 export function UserInputPage() {
+  const auth = useAuthValue();
+  const { data } = useUserData(auth?.accessToken !== undefined);
+  const [user, setUserData] = useState<UserProps | null>(null);
+
+  useEffect(() => {
+    if (data !== undefined) {
+      const { name, gender, birthYear, memberId, myCardId, mateCardId } = data;
+      setUserData({ name, gender, birthYear, memberId, myCardId, mateCardId });
+    }
+  }, [data]);
+
+  const [
+    selectedState,
+    selectedOptions,
+    handleFeatureChange,
+    handleOptionClick,
+  ] = useSelectedState();
+  const [
+    selectedMateState,
+    selectedMateOptions,
+    handleMateFeatureChange,
+    handleMateOptionClick,
+  ] = useSelectedState();
+
+  const myCardId = user?.myCardId ?? 0;
+  const mateCardId = user?.mateCardId ?? 0;
+
+  const { mutate: mutateMyCard } = usePutUserCard(myCardId);
+  const { mutate: mutateMateCard } = usePutUserCard(mateCardId);
+
+  const handleButtonClick = () => {
+    const myOptions = Object.keys(selectedOptions).filter(
+      key => selectedOptions[key],
+    );
+    const mateOptions = Object.keys(selectedMateOptions).filter(
+      key => selectedMateOptions[key],
+    );
+
+    const location = '성북 길음동';
+    const myFeatures = [
+      selectedState.smoking,
+      selectedState.room,
+      ...myOptions,
+    ];
+
+    const mateFeatures = [
+      selectedMateState.smoking,
+      selectedMateState.room,
+      ...mateOptions,
+    ];
+
+    try {
+      mutateMyCard({
+        location,
+        features: myFeatures,
+      });
+      mutateMateCard({
+        location,
+        features: mateFeatures,
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const [activeContainer, setActiveContainer] = useState<'my' | 'mate'>('my');
 
   const handleMyCardClick = () => {
@@ -163,10 +283,18 @@ export function UserInputPage() {
     setActiveContainer('mate');
   };
 
+  let genderText = null;
+
+  if (user?.gender === 'MALE') {
+    genderText = '남성';
+  } else if (user?.gender === 'FEMALE') {
+    genderText = '여성';
+  }
+
   return (
     <styles.pageContainer>
       <styles.pageDescription>
-        김마루 님과 희망 메이트에 대해서 알려주세요
+        {user?.name} 님과 희망 메이트에 대해서 알려주세요
       </styles.pageDescription>
       <styles.cardContainer>
         <styles.cardNameSection>
@@ -178,13 +306,20 @@ export function UserInputPage() {
               내카드
             </styles.miniCardName>
             <styles.miniCardKeywordsContainer>
-              <styles.miniCardKeyword>여성</styles.miniCardKeyword>
-              <styles.miniCardKeyword style={{ right: '0' }}>
-                비흡연
+              <styles.miniCardKeyword
+                style={{
+                  border: 'none',
+                  background: 'var(--Gray-5, #828282)',
+                  color: '#fff',
+                }}
+              >
+                {genderText}
               </styles.miniCardKeyword>
-              <styles.miniCardKeyword style={{ bottom: '0' }}>
-                아침형
-              </styles.miniCardKeyword>
+              {selectedState.smoking != null ? (
+                <styles.miniCardKeyword style={{ right: '0' }}>
+                  {selectedState.smoking}
+                </styles.miniCardKeyword>
+              ) : null}
             </styles.miniCardKeywordsContainer>
           </styles.miniCard>
           <styles.miniCard
@@ -195,39 +330,70 @@ export function UserInputPage() {
               메이트카드
             </styles.miniCardName>
             <styles.miniCardKeywordsContainer>
-              <styles.miniCardKeyword>여성</styles.miniCardKeyword>
-              <styles.miniCardKeyword style={{ right: '0' }}>
-                비흡연
+              <styles.miniCardKeyword
+                style={{
+                  border: 'none',
+                  background: 'var(--Gray-5, #828282)',
+                  color: '#fff',
+                }}
+              >
+                {genderText}
               </styles.miniCardKeyword>
-              <styles.miniCardKeyword style={{ bottom: '0' }}>
-                아침형
-              </styles.miniCardKeyword>
+              {selectedMateState.smoking != null ? (
+                <styles.miniCardKeyword style={{ right: '0' }}>
+                  {selectedMateState.smoking}
+                </styles.miniCardKeyword>
+              ) : null}
             </styles.miniCardKeywordsContainer>
           </styles.miniCard>
         </styles.cardNameSection>
         <styles.checkSection>
           <styles.checkContainer $active={activeContainer === 'my'}>
-            <VitalSection />
+            <VitalSection
+              gender={user?.gender}
+              birthYear={user?.birthYear}
+              smoking={undefined}
+              room={undefined}
+              onFeatureChange={handleFeatureChange}
+              isMySelf
+            />
             <styles.lineContainer>
               <styles.horizontalLine />
             </styles.lineContainer>
-            <OptionSection />
+            <OptionSection
+              optionFeatures={null}
+              onFeatureChange={handleOptionClick}
+              isMySelf
+            />
           </styles.checkContainer>
           <styles.checkContainer $active={activeContainer === 'mate'}>
-            <VitalSection />
+            <VitalSection
+              gender={user?.gender}
+              birthYear={undefined}
+              smoking={undefined}
+              room={undefined}
+              onFeatureChange={handleMateFeatureChange}
+              isMySelf
+            />
             <styles.lineContainer>
               <styles.horizontalLine />
             </styles.lineContainer>
-            <OptionSection />
+            <OptionSection
+              optionFeatures={null}
+              onFeatureChange={handleMateOptionClick}
+              isMySelf
+            />
           </styles.checkContainer>
         </styles.checkSection>
       </styles.cardContainer>
-      <styles.mateButtonContainer>
-        <styles.mateButtonDescription>
-          나의 메이트 확인하기
-        </styles.mateButtonDescription>
-        <styles.mateButtonIcon src="/chevron-right.svg" />
-      </styles.mateButtonContainer>
+      <Link href="/">
+        <styles.mateButtonContainer onClick={handleButtonClick}>
+          <styles.mateButtonDescription>
+            나의 메이트 확인하기
+          </styles.mateButtonDescription>
+          <styles.mateButtonIcon src="/chevron-right.svg" />
+        </styles.mateButtonContainer>
+      </Link>
     </styles.pageContainer>
   );
 }

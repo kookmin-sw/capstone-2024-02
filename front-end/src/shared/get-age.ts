@@ -1,3 +1,3 @@
-export function getAge(birth: Date) {
-  return new Date().getFullYear() - birth.getFullYear() + 1;
+export function getAge(birthYear: number) {
+  return new Date().getFullYear() - birthYear + 1;
 }

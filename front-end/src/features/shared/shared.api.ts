@@ -2,8 +2,9 @@ import axios from 'axios';
 
 import { type GetSharedPostDTO, type GetSharedPostsDTO } from './shared.dto';
 import {
-  type GetSharedPostsProps,
+  type CreateSharedPostProps,
   type GetSharedPostsFilter,
+  type GetSharedPostsProps,
 } from './shared.type';
 
 import {
@@ -36,7 +37,7 @@ export const getSharedPosts = async ({
   page,
 }: GetSharedPostsProps) => {
   const getURI = () => {
-    const baseURL = '/api/shared/posts/studio';
+    const baseURL = '/maru-api/shared/posts/studio';
     let query = '';
 
     if (filter !== undefined) {
@@ -47,22 +48,44 @@ export const getSharedPosts = async ({
       query += `&search=${search}`;
     }
 
-    if (page !== undefined) {
-      query += `&page=${page}`;
-    }
+    query += `&page=${page}`;
 
-    if (query === '') return baseURL;
-    return `${baseURL}?${encodeURIComponent(query)}`;
+    return `${baseURL}?${encodeURI(query)}`;
   };
 
   return await axios.get<GetSharedPostsDTO>(getURI());
 };
 
+export const createSharedPost = async ({
+  imageFilesData,
+  postData,
+  transactionData,
+  roomDetailData,
+  locationData,
+}: CreateSharedPostProps) => {
+  const formData = new FormData();
+  formData.append('imageFilesData', JSON.stringify(imageFilesData));
+  formData.append('postData', JSON.stringify(postData));
+  formData.append('transactionData', JSON.stringify(transactionData));
+  formData.append('roomDetailData', JSON.stringify(roomDetailData));
+  formData.append('locationData', JSON.stringify(locationData));
+
+  return await axios.post<SuccessBaseDTO>(
+    `/maru-api/shared/posts/studio`,
+    formData,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    },
+  );
+};
+
 export const getSharedPost = async (postId: number) =>
-  await axios.get<GetSharedPostDTO>(`/api/shared/posts/studio/${postId}`);
+  await axios.get<GetSharedPostDTO>(`/maru-api/shared/posts/studio/${postId}`);
 
 export const deleteSharedPost = async (postId: number) =>
-  await axios.delete<SuccessBaseDTO>(`/api/shared/posts/studio/${postId}`);
+  await axios.delete<SuccessBaseDTO>(`/maru-api/shared/posts/studio/${postId}`);
 
 export const scrapPost = async (postId: number) =>
-  await axios.get<SuccessBaseDTO>(`/api/shared/posts/studio/${postId}/scrap`);
+  await axios.get<SuccessBaseDTO>(
+    `/maru-api/shared/posts/studio/${postId}/scrap`,
+  );

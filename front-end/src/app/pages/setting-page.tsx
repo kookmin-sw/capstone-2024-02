@@ -1,8 +1,16 @@
 'use client';
 
+import { type NavigateOptions } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
 import styled from 'styled-components';
 
 import { VitalSection, OptionSection } from '@/components';
+import {
+  useProfileData,
+  usePutUserCard,
+  useUserCard,
+} from '@/features/profile';
 
 const styles = {
   pageContainer: styled.div`
@@ -30,7 +38,7 @@ const styles = {
     width: 23.0625rem;
     height: 17.5rem;
     flex-shrink: 0;
-    border-radius: 1.875rem;
+    border-radius: 30px;
     background: #f7f6f9;
     box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.2);
     padding: 1.62rem 1.44rem;
@@ -57,7 +65,7 @@ const styles = {
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
-    border-radius: 1.625rem;
+    border-radius: 26px;
     border: 2px solid var(--Main-1, #e15637);
     background: #fff;
 
@@ -73,7 +81,7 @@ const styles = {
     width: 51.0625rem;
     height: 95.8125rem;
     flex-shrink: 0;
-    border-radius: 1.875rem;
+    border-radius: 30px;
     background: var(--background, #f7f6f9);
     padding: 3.56rem 0 0 1.56rem;
     margin-bottom: 7.5rem;
@@ -92,36 +100,198 @@ const styles = {
   `,
 };
 
-interface SettingPageProps {
-  type: string;
-  name: string;
+interface SelectedState {
+  smoking: string | undefined;
+  room: string | undefined;
 }
 
-export function SettingPage({ type, name }: SettingPageProps) {
+interface UserProps {
+  name: string;
+  gender: string;
+  birthYear: string;
+}
+
+type SelectedOptions = Record<string, boolean>;
+
+const miniCardKeywordStyle = {
+  border: 'none',
+  background: 'var(--Gray-5, #828282)',
+  color: '#fff',
+};
+
+export function SettingPage({ cardId }: { cardId: number }) {
+  const params = useSearchParams();
+  const memberIdParams = params.get('memberId');
+  const memberId = memberIdParams ?? '';
+  const isMySelfStr = params.get('isMySelf');
+  const isMySelf = isMySelfStr === 'true';
+
+  const user = useProfileData(memberId);
+  const [userData, setUserData] = useState<UserProps | null>(null);
+
+  useEffect(() => {
+    if (user.data !== undefined) {
+      const userProfileData = user.data.data.authResponse;
+      if (userProfileData !== undefined) {
+        const { name, birthYear, gender } = userProfileData;
+        setUserData({ name, gender, birthYear });
+      }
+    }
+  }, [user.data]);
+
+  const card = useUserCard(cardId);
+  const [features, setFeatures] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    if (isMySelf) {
+      if (card !== undefined) {
+        const featuresData = card.data?.data.myFeatures ?? null;
+        setFeatures(featuresData);
+      }
+    }
+  }, [card, isMySelf]);
+
+  const [selectedState, setSelectedState] = useState<SelectedState>({
+    smoking: undefined,
+    room: undefined,
+  });
+
+  useEffect(() => {
+    if (isMySelf) {
+      if (features !== null) {
+        setSelectedState({
+          ...selectedState,
+          smoking: features[0],
+          room: features[1],
+        });
+      }
+    }
+  }, [features, isMySelf]);
+
+  const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({});
+
+  useEffect(() => {
+    if (isMySelf) {
+      if (features !== null) {
+        const initialOptions: SelectedOptions = {};
+        features.slice(2).forEach(option => {
+          initialOptions[option] = true;
+        });
+        setSelectedOptions(initialOptions);
+      }
+    }
+  }, [features, isMySelf]);
+
+  const handleFeatureChange = (
+    optionName: keyof SelectedState,
+    item: string | number,
+  ) => {
+    if (isMySelf) {
+      setSelectedState(prevState => ({
+        ...prevState,
+        [optionName]: prevState[optionName] === item ? null : item,
+      }));
+    }
+  };
+  const handleOptionClick = (option: string) => {
+    if (isMySelf) {
+      setSelectedOptions(prevSelectedOptions => ({
+        ...prevSelectedOptions,
+        [option]: !prevSelectedOptions[option],
+      }));
+    }
+  };
+
+  const { mutate } = usePutUserCard(cardId);
+  const router = useRouter();
+
+  const saveData = () => {
+    const array = Object.keys(selectedOptions).filter(
+      key => selectedOptions[key],
+    );
+
+    const location = '성북 길음동';
+    const myFeatures = [selectedState.smoking, selectedState.room, ...array];
+
+    mutate({ location: location, features: myFeatures });
+  };
+
+  const handleBeforeUnload = () => {
+    saveData();
+  };
+
+  const isClickedFirst = useRef(false);
+
+  const handlePopState = () => {
+    saveData();
+    history.back();
+  };
+
+  useEffect(() => {
+    const originalPush = router.push.bind(router);
+    const newPush = (
+      href: string,
+      options?: NavigateOptions | undefined,
+    ): void => {
+      saveData();
+      originalPush(href, options);
+    };
+    router.push = newPush;
+    window.onbeforeunload = handleBeforeUnload;
+    return () => {
+      router.push = originalPush;
+      window.onbeforeunload = null;
+    };
+  }, [router, handleBeforeUnload]);
+
+  useEffect(() => {
+    if (!isClickedFirst.current) {
+      history.pushState(null, '', '');
+      isClickedFirst.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [handlePopState]);
+
   return (
     <styles.pageContainer>
-      <styles.cardName>
-        {type} 카드 &gt; {name}
-      </styles.cardName>
+      <styles.cardName>내 카드 &gt; {userData?.name}</styles.cardName>
       <styles.cardContainer>
         <styles.miniCard>
-          <styles.miniCardName>{type}카드</styles.miniCardName>
+          <styles.miniCardName>내카드</styles.miniCardName>
           <styles.miniCardKeywordsContainer>
-            <styles.miniCardKeyword>여성</styles.miniCardKeyword>
-            <styles.miniCardKeyword style={{ right: '0' }}>
-              비흡연
+            <styles.miniCardKeyword style={miniCardKeywordStyle}>
+              {userData?.gender === 'MALE' ? '남성' : '여성'}
             </styles.miniCardKeyword>
-            <styles.miniCardKeyword style={{ bottom: '0' }}>
-              아침형
-            </styles.miniCardKeyword>
+            {features?.[0] !== null && features !== null ? (
+              <styles.miniCardKeyword style={{ right: '0' }}>
+                {features[0]}
+              </styles.miniCardKeyword>
+            ) : null}
           </styles.miniCardKeywordsContainer>
         </styles.miniCard>
         <styles.checkContainer>
-          <VitalSection />
+          <VitalSection
+            gender={userData?.gender}
+            birthYear={userData?.birthYear}
+            smoking={selectedState.smoking}
+            room={selectedState.room}
+            onFeatureChange={handleFeatureChange}
+            isMySelf={isMySelf}
+          />
           <styles.lineContainer>
             <styles.horizontalLine />
           </styles.lineContainer>
-          <OptionSection />
+          <OptionSection
+            optionFeatures={features}
+            onFeatureChange={handleOptionClick}
+            isMySelf={isMySelf}
+          />
         </styles.checkContainer>
       </styles.cardContainer>
     </styles.pageContainer>

@@ -1,8 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { atom, useRecoilState } from 'recoil';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+
+import { useAuthValue, useUserData } from '@/features/auth';
+import { useProfileData } from '@/features/profile';
+import { getAge } from '@/shared';
 
 const styles = {
   pageContainer: styled.div`
@@ -28,7 +32,7 @@ const styles = {
     height: 8.3125rem;
     justify-content: center;
     align-items: center;
-    border-radius: 6.25rem;
+    border-radius: 100px;
     border: 1px solid #dcddea;
 
     background: #c4c4c4;
@@ -99,7 +103,7 @@ const styles = {
     background-color: #bebebe;
     -webkit-transition: 0.4s;
     transition: 0.4s;
-    border-radius: 1.5rem;
+    border-radius: 24px;
   `,
   sliderDot: styled.span`
     position: absolute;
@@ -126,7 +130,7 @@ const styles = {
   authContainer: styled.div`
     height: 2rem;
     width: 5.3125rem;
-    border-radius: 1.625rem;
+    border-radius: 26px;
     background: #5c6eb4;
     margin: 1rem 1.4375rem 0 1.5625rem;
     cursor: pointer;
@@ -196,9 +200,10 @@ const styles = {
     justify-content: center;
     align-items: center;
     gap: 0.25rem;
-    border-radius: 0.5rem;
+    border-radius: 8px;
     border: 1px solid var(--Gray-5, #828282);
     background: var(--White, #fff);
+    cursor: pointer;
 
     color: var(--Gray-5, #828282);
     font-family: Pretendard;
@@ -214,6 +219,10 @@ const styles = {
   `,
   mateCards: styled.div`
     display: flex;
+    width: 35.6rem;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    padding: 1.5rem;
     gap: 2.88rem;
   `,
   cardContainer: styled.div`
@@ -222,8 +231,8 @@ const styles = {
     align-items: center;
     width: 15rem;
     height: 15rem;
-    flex-shrink: 0;
-    border-radius: 1.25rem;
+    flex: 0 0 auto;
+    border-radius: 20px;
     border: 1pxs olid var(--background, #f7f6f9);
     box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.2);
     background: var(--grey-100, #fff);
@@ -249,7 +258,7 @@ const styles = {
     width: 6.0625rem;
     height: 2.5625rem;
     flex-shrink: 0;
-    border-radius: 1.25rem 0rem 0rem 1.25rem;
+    border-radius: 20px 0 0 20px;
     background: var(--Main-1, #e15637);
 
     position: absolute;
@@ -298,7 +307,7 @@ const styles = {
     height: 15.625rem;
     padding: 1.5rem 0;
     flex-shrink: 0;
-    border-radius: 1.25rem;
+    border-radius: 20px;
     background: var(--background, #f7f6f9);
 
     justify-content: center;
@@ -338,7 +347,7 @@ const styles = {
     justify-content: center;
     align-items: center;
     gap: 0.5rem;
-    border-radius: 1.625rem;
+    border-radius: 26px;
     color: #fff;
     text-align: center;
     font-family: 'Noto Sans KR';
@@ -371,7 +380,7 @@ const styles = {
     padding: 0.63rem 1.13rem;
     justify-content: center;
     align-items: center;
-    border-radius: 1rem;
+    border-radius: 16px;
     border: 1px solid var(--Main-1, #e15637);
     background: var(--White, #fff);
     color: var(--Main-1, #e15637);
@@ -384,7 +393,7 @@ const styles = {
   rulesContent: styled.div`
     width: 100%;
     height: 21.625rem;
-    border-radius: 1rem;
+    border-radius: 16px;
     background: #f7f6f9;
   `,
 
@@ -400,25 +409,19 @@ const styles = {
   accountContent: styled.div`
     width: 64.5rem;
     height: 12.4375rem;
-    border-radius: 1rem;
+    border-radius: 16px;
     background: #f7f6f9;
   `,
 };
 
 interface UserProfileInfoProps {
-  src: string;
-  name: string;
+  name: string | undefined;
   age: string;
-  addr: string;
+  src: string | undefined;
 }
 
-const isCheckedState = atom({
-  key: 'isCheckedState',
-  default: false,
-});
-
-function UserInfo({ src, name, age, addr }: UserProfileInfoProps) {
-  const [isChecked, setIsChecked] = useRecoilState(isCheckedState);
+function UserInfo({ name, age, src }: UserProfileInfoProps) {
+  const [isChecked, setIsChecked] = useState(false);
 
   const toggleSwitch = () => {
     setIsChecked(!isChecked);
@@ -434,7 +437,7 @@ function UserInfo({ src, name, age, addr }: UserProfileInfoProps) {
           <styles.userName>{name}</styles.userName>
           <styles.userDetailedContainer>
             <styles.userDetailedInfo>{age}</styles.userDetailedInfo>
-            <styles.userDetailedInfo>{addr}</styles.userDetailedInfo>
+            <styles.userDetailedInfo>성북 길음동</styles.userDetailedInfo>
           </styles.userDetailedContainer>
         </styles.userInfoContainer>
       </styles.userProfileWithoutSwitch>
@@ -474,7 +477,7 @@ function ToggleSwitch({ isChecked, onToggle }: ToggleSwitchProps) {
   );
 }
 
-function Auth() {
+function Auth({ isMySelf }: { isMySelf: boolean }) {
   return (
     <styles.authContainer>
       <styles.authCheckImg src="/check_circle_24px copy.svg" />
@@ -483,40 +486,42 @@ function Auth() {
   );
 }
 
-function Card() {
+function Card({
+  name,
+  memberId,
+  myCardId,
+  mateCardId,
+  isMySelf,
+}: {
+  name: string | undefined;
+  memberId: string | undefined;
+  myCardId: number | undefined;
+  mateCardId: number | undefined;
+  isMySelf: boolean;
+}) {
   return (
     <styles.cardSection>
       <styles.cardWrapper>
         <styles.description32px>내 카드</styles.description32px>
-        <Link href="/setting/my">
+        <Link
+          href={`/profile/card/${myCardId}?memberId=${memberId}&isMySelf=${isMySelf}`}
+        >
           <styles.cardContainer>
-            <styles.cardName>김마루</styles.cardName>
+            <styles.cardName>{name}</styles.cardName>
             <styles.cardDefault>기본</styles.cardDefault>
           </styles.cardContainer>
         </Link>
       </styles.cardWrapper>
       <styles.cardWrapper>
-        <styles.cardDescriptionSection>
-          <styles.description32px>메이트 카드</styles.description32px>
-          <styles.addButton>+ 추가</styles.addButton>
-        </styles.cardDescriptionSection>
-        <styles.mateCardsContainer>
-          <styles.prevButton />
-          <styles.mateCards>
-            <Link href="/setting/mate">
-              <styles.cardContainer>
-                <styles.cardName>메이트</styles.cardName>
-                <styles.cardDefault>기본</styles.cardDefault>
-              </styles.cardContainer>
-            </Link>
-            <Link href="/setting/mate">
-              <styles.cardContainer>
-                <styles.cardName>메이트</styles.cardName>
-              </styles.cardContainer>
-            </Link>
-          </styles.mateCards>
-          <styles.nextButton />
-        </styles.mateCardsContainer>
+        <styles.description32px>메이트 카드</styles.description32px>
+        <Link
+          href={`/profile/card/${mateCardId}?memberId=${memberId}&isMySelf=${isMySelf}`}
+        >
+          <styles.cardContainer>
+            <styles.cardName>메이트</styles.cardName>
+            <styles.cardDefault>기본</styles.cardDefault>
+          </styles.cardContainer>
+        </Link>
       </styles.cardWrapper>
     </styles.cardSection>
   );
@@ -594,12 +599,79 @@ function Maru() {
   );
 }
 
-export function ProfilePage({ src, name, age, addr }: UserProfileInfoProps) {
+interface UserProps {
+  memberId: string;
+  email: string;
+  name: string;
+  birthYear: string;
+  gender: string;
+  phoneNumber: string;
+  initialized: boolean;
+  myCardId: number;
+  mateCardId: number;
+}
+
+export function ProfilePage({ memberId }: { memberId: string }) {
+  const auth = useAuthValue();
+  const { data } = useUserData(auth?.accessToken !== undefined);
+
+  const id = data?.memberId;
+
+  const user = useProfileData(memberId);
+  const [userData, setUserData] = useState<UserProps | null>(null);
+  const [isMySelf, setIsMySelf] = useState(false);
+
+  useEffect(() => {
+    if (user.data !== undefined) {
+      const userProfileData = user.data.data.authResponse;
+      const {
+        name,
+        email,
+        birthYear,
+        gender,
+        phoneNumber,
+        initialized,
+        myCardId,
+        mateCardId,
+      } = userProfileData;
+      setUserData({
+        memberId,
+        name,
+        email,
+        birthYear,
+        gender,
+        phoneNumber,
+        initialized,
+        myCardId,
+        mateCardId,
+      });
+      if (id === memberId) {
+        setIsMySelf(true);
+      }
+    }
+  }, [user.data, memberId]);
+
+  const birthYearString: string = userData?.birthYear ?? '';
+  const birthYearDate: number = Number(birthYearString);
   return (
     <styles.pageContainer>
-      <UserInfo src={src} name={name} age={age} addr={addr} />
-      <Auth />
-      <Card />
+      <UserInfo
+        name={userData?.name ?? ''}
+        age={
+          String(getAge(birthYearDate)) !== ''
+            ? String(getAge(birthYearDate))
+            : ''
+        }
+        src={user.data?.data.profileImage}
+      />
+      <Auth isMySelf={isMySelf} />
+      <Card
+        name={userData?.name}
+        memberId={userData?.memberId}
+        myCardId={userData?.myCardId}
+        mateCardId={userData?.mateCardId}
+        isMySelf={isMySelf}
+      />
       <Maru />
     </styles.pageContainer>
   );

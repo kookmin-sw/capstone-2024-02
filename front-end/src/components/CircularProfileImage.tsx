@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { CircularProgressBar } from './CircularProgressBar';
 
 const styles = {
-  backgroundContainer: styled.div<{ $diameter: number; $url: string }>`
+  backgroundContainer: styled.div<{ $url: string }>`
     width: 100%;
     height: 100%;
     border-radius: 50%;
@@ -73,7 +73,7 @@ export function CircularProfileImage({
 }) {
   return (
     <styles.container $diameter={diameter}>
-      <styles.backgroundContainer $diameter={diameter} $url={url} />
+      <styles.backgroundContainer $url={url} />
       <styles.CircularProgressBar
         diameter={diameter}
         percentage={percentage}

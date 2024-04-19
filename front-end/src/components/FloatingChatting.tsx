@@ -13,7 +13,7 @@ const styles = {
     padding: 1rem;
     align-items: flex-start;
     gap: 0.5rem;
-    border-radius: 6.25rem;
+    border-radius: 100px;
     background: #e15637;
     box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.2);
     z-index: 100;
@@ -34,7 +34,7 @@ const styles = {
     flex-direction: column;
     align-items: flex-start;
     flex-shrink: 0;
-    border-radius: 1.25rem;
+    border-radius: 20px;
     background: #fff;
     box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.2);
     z-index: 100;
@@ -46,7 +46,7 @@ const styles = {
     width: 100%;
     height: 3.25rem;
     flex-shrink: 0;
-    border-radius: 1.25rem 1.25rem 0rem 0rem;
+    border-radius: 20px 20px 0 0;
     background: var(--background, #f7f6f9);
   `,
 };

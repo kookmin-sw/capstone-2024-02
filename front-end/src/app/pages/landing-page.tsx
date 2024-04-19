@@ -171,7 +171,7 @@ export function LandingPage() {
       <styles.section1>
         <styles.img
           alt="Brazuca Date Night"
-          src="https://s3-alpha-sig.figma.com/img/cee1/f195/09c0e7edb4b99b5d73a56afd3391e70c?Expires=1713139200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=GD32LLH2Mn1hwXGowQ4~ZbzqXVnlrJ~PA42mtUf~8IhrvG6frWHG9Z0EAqzF40h9RUUJ8XYyXpcE8L3~wh2falwIiWzXA6R~3irEUOv6YRN1pCVpj43Aftw5-vr3yBPv2Kxyx7NThdtmOpFn5F~PMvarqDzx7Oig4W0pCMgxaWg6RTCG226xbLvIPyS8x5vnn2KePbi84zSGZfS2kiWoYvD7QEaLcIi29kbcb6t9GEuSOB-rV7nJ2y0uJiGafxRelwthA~w4sOPYRQ~I5xmA1fUbjgjnUiByb9iAU9GPlH9TjHh700aTFdpxy-2j2KpbyB7Tz51f0CoqXiX0TH5SQg__"
+          src="https://s3-alpha-sig.figma.com/img/cee1/f195/09c0e7edb4b99b5d73a56afd3391e70c?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=mGbLX64XEb4~I8MnA4qswCUMllOL~P7U2jkKUuzLYa6x3Fr2kB6NFyORGvAhWNjkQ1PGIkTB9bul-F4o2hdS-jE5~1y0Ss1sLqK-j8bFMsFvJSm7qqTShNsBKHYXnbXA0d8tl74LDrhwNADsVQbR2p7xG~syVQ3l-NSmzaGaeEF3g0tnUIB3dybwZY1llwLcazj7yBXhVY-NMWg8ekFaFNU7ZRsK7HhK81bQJb1CBNughUXF1O1xDvQZjh3IKx~f2TP5qJAkB5Z1Nw9i5SoZF9YEo-odhDSrvzy7Gbfqw9W0xyXesJVGTRF~AZ3z8D5Zn2E~aZDvg5i3SWJHfFuFXg__"
         />
         <styles.description>
           <h1>공동주거생활의 A to Z</h1>
@@ -185,7 +185,7 @@ export function LandingPage() {
             >
               <img
                 alt="kakao"
-                src="https://s3-alpha-sig.figma.com/img/3d3c/d1f5/021fb8c1c71bbfcfdbd58571b78fafa3?Expires=1713139200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=FTAwnytd3IJSGgWXu7yJMR2zsfo4PnCcF9Gdfh7vqYyiCH8X6r74r6DujoZNISOFwozcGVt6ir0AcO8v5OB80YCmIsbpDm6QuSe~gOW9e6CMtDODh4ih7DO3DRu5Z9Fl4kXjIO4De5eoH1rh~S6Aeycar4eJOGCSqgTowxQjbx7vU6zmD0-XwjCa7p4p7BpcPcL2duWbrekHcJ8vLmSUDEjLwG-445rH9k9U-BYMe1KTlzcyhg0HLnitxX~XfW9HSN9VADuidDyp4mwBYPeWG87DRXixuWUSGIdipIYBg~NTFemJIVu8U2UP~TI6NAY9U-aDoP7mFy53RCG2UTdMPg__"
+                src="https://s3-alpha-sig.figma.com/img/3d3c/d1f5/021fb8c1c71bbfcfdbd58571b78fafa3?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Jgm070ukGhSkHRxajO10LZQixoKIVm2S6l7xuP6MY0UJD54Rosq2xvca-UgdiThbu-TLnIu2xuoP0gOXtw-L4PDccdMPBnaURCuygfJSH6ELelnq12~hR9YuwNLifCAl48tAnjwwkCZCPlGlbK1HiUIhAZ5HnF2qXc2PQjq4Zfu0WBZOhttWhRRlZhmHOFFrus--5xYMq4lIw6n0Or8aGJ~Amf9HDlVQmj4ioeSG9HZB3DAEpoIcgqhzzSjqG64Z-U5k~cYZc8V~y5qmm3bVX1n3HCfKi4F~25zmS3A9tNX~y2VcaS-L018gcMtHVke9Qb6C0B9foBMZI6TobWy-Ng__"
               />
             </a>
             <a
@@ -193,7 +193,7 @@ export function LandingPage() {
             >
               <img
                 alt="naver"
-                src="https://s3-alpha-sig.figma.com/img/bc24/1c57/afda23776f60b331a41aa67a9eaaf66c?Expires=1713139200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=LuD7rvKOi7gYpAsadxPyl7lq4TXQsumgdHexE9YdScyyDAOQ6m03yzmkwFw1lOI9CTF87sIjT~aywIl2fZKkjcK5Udx4UGgacCsebVPWBfZDEibev75yhf0f-ASFamR6Tz6MDKxxzBhWyD1aUdrdMeanKXdK-mKsyY1vMY1gLbPziG~PHXfyUO-3u~FcbnH4FPIfm47jA1qPooGBgMWCg8HdAVRaBexlG3CtPioxKmwG7fm-Xw6PMy~Nw5USxzVipHT-rgmwNGbeWNLhZo4Unrnmyn38vF3rv0bnJVVeDvJT0XWs2oDmch5Bar1GAhpxH3Ojr4HjKqkHSXTNsEXrEw__"
+                src="https://s3-alpha-sig.figma.com/img/bc24/1c57/afda23776f60b331a41aa67a9eaaf66c?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=dk8rQuwlcSV6HVLJZQ3SI4Cf5tGL8HbnfAisVrT5kE5-rqlQ71CKGQtz0xTKX-7bt4OVOOsMaaQX5IsqhHnX2ZEudp4AN2M6lGQf9lE9iLvKT~5uAnYiwMHCXIJ-zuu6qLpDu~rDAPZ92ki8Bc6Dp-OIxkWU75wb54T7erfxNZgATHwEBre-5I7~pPWo-GETubNWL7zF~QFP97Cqf34gORT7GlRg~qPHnBJfeER7AcExfyXG8CXyqjkk5uudH5FD7zU3a9PGunNQDRdComHZRx6MOQBltHa6mPT78MBB8mPyDlJxuRNrpkyFJKDa3I3JWwL-Ns-qJlwBW0WDnPsYQA__"
               />
             </a>
           </styles.loginButtons>

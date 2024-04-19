@@ -68,23 +68,21 @@ const styles = {
 
 export function UserCard({
   name,
-  address,
-  birth,
+  percentage,
 }: {
   name: string;
-  address: string;
-  birth: Date;
+  percentage: number;
 }) {
   return (
     <styles.container>
       <styles.profileInfo>
         <CircularProfileImage
           diameter={110}
-          percentage={50}
+          percentage={percentage}
           url="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1712534400&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=otR4I8Y0NumUlQW6NsUkXOvTzPqQhjjq1BLNd~EcweuN0Q0vRcVUvMuhlAx2vlsr2lOiqAgoyuXkYlVrK2qknRxQffQDRjGbRsK6CyebC76kXWw5Zu0SxlwtUdiYVV8VI0lWwoRsKqnoI4DXOqChcEMKPQamtpUmTx~NHx8t5cKSdvAMu0tqlPPdF7Sa51Vcuzrryfj~mcZXXEdEltEACAxPsFxhCelyDPB2Se7ZihPK1RGrtvovJZkc-64whNnji8Z0AOm-~irZhl0WQh0jhsaUpp2T5h9drq8-UwVdco3GBNXLSk3ygioYruN0j4U7SkqKVt7~ng1G7IH7395B4A__"
         />
         <div>
-          <h1>김마루</h1>
+          <h1>{name}</h1>
           <p>24세</p>
           <p>성북 길음동</p>
         </div>

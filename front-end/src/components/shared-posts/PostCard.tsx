@@ -4,6 +4,8 @@ import styled from 'styled-components';
 
 import { HorizontalDivider } from '..';
 
+import { type SharedPostListItem } from '@/entities/shared-post';
+
 const styles = {
   container: styled.div`
     width: 100%;
@@ -15,6 +17,7 @@ const styles = {
   thumbnail: styled.img`
     width: 16.125rem;
     height: 12.5rem;
+
     flex-shrink: 0;
     border-radius: 16px;
 
@@ -64,12 +67,13 @@ const styles = {
     position: relative;
 
     display: flex;
+    flex-shrink: 0;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
 
     img {
-      border-radius: 6.25rem;
+      border-radius: 50%;
       border: 1px solid #dcddea;
       background: #c4c4c4;
 
@@ -92,8 +96,8 @@ const styles = {
   `,
   percentage: styled.div`
     position: absolute;
-    left: 75%;
-    top: 30%;
+    left: 70%;
+    top: 25%;
 
     display: inline-flex;
     padding: 0.75rem 0.375rem;
@@ -116,7 +120,7 @@ const styles = {
   `,
 };
 
-export function PostCard() {
+export function PostCard({ post }: { post: SharedPostListItem }) {
   return (
     <div>
       <styles.container>
@@ -126,8 +130,8 @@ export function PostCard() {
         />
         <styles.content>
           <div>
-            <h1>혼자 살긴 너무 큰 방 같이 살 룸메이트 구해요!</h1>
-            <h2>서울특별시 성북구 정릉로 104</h2>
+            <h1>{post.title}</h1>
+            <h2>{post.roomInfo.address.roadAddress}</h2>
           </div>
           <div>
             <p>모집 1명 / 총원 2명</p>
@@ -143,7 +147,7 @@ export function PostCard() {
           <styles.percentage>
             <p>50%</p>
           </styles.percentage>
-          <p>김마루</p>
+          <p>{post.publisherAccount.nickname}</p>
         </styles.writer>
       </styles.container>
       <HorizontalDivider />

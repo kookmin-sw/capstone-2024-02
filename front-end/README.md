@@ -109,9 +109,9 @@ refactor/...
 ### 예시
 
 ```plaintext
-[feat]: add new function
+[Feat]: add new function
 
-[fix]: fix some bug
+[Fix]: fix some bug
 ```
 
 <br /> <br />

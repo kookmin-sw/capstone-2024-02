@@ -26,8 +26,8 @@ const styles = {
     bottom: 0;
     background-color: ${({ $isChecked }) =>
       $isChecked ? '#E15637' : '#BEBEBE'};
-    -webkit-transition: 0.4s;
-    transition: 0.4s;
+    -webkit-transition: 0.4s transform;
+    transition: 0.4s transform;
     border-radius: 24px;
   `,
   sliderDot: styled.span<{ $isChecked: boolean }>`
@@ -37,8 +37,8 @@ const styles = {
     left: 0.25rem;
     bottom: 0.25rem;
     background-color: white;
-    -webkit-transition: 0.4s;
-    transition: 0.4s;
+    -webkit-transition: 0.4s transform;
+    transition: 0.4s transform;
     border-radius: 50%;
     width: 1rem;
     height: 1rem;

@@ -58,7 +58,7 @@ export function Bookmark({
         onToggle();
       }}
     >
-      <Icon fill={color} />
+      <Icon fill={marked ? 'red' : color} />
     </styles.container>
   );
 }

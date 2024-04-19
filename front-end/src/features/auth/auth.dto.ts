@@ -9,6 +9,8 @@ export interface GetUserDataDTO extends SuccessBaseDTO {
     gender: string;
     phoneNumber: string;
     initialized: boolean;
+    myCardId: number;
+    mateCardId: number;
   };
 }
 
