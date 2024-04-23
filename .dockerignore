@@ -7,3 +7,4 @@ capstone_maru_rec_sys.ipynb
 capstone_maru_rec_sys.py
 maru-rec-sys-env
 Dockerfile
+*.json

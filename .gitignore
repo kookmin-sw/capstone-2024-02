@@ -3,3 +3,7 @@
 __pycache__
 
 maru-rec-sys-env
+
+*.json
+
+.env
