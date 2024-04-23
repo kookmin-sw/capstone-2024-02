@@ -1,17 +1,21 @@
 import ast
 from contextlib import asynccontextmanager
+from typing import List
+from xml.etree.ElementInclude import default_loader
 from databases import Database
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
+from google.cloud import firestore
 import os
 
-
 import pandas as pd
+from pydantic import BaseModel
 from sklearn.cluster import DBSCAN
 from sklearn.metrics.pairwise import cosine_similarity
 
 from asyncio import Lock
+from collections import defaultdict
 
 state_lock = Lock()
 
@@ -20,8 +24,30 @@ state_lock = Lock()
 
 load_dotenv()  # .env 파일에서 환경 변수 로드
 
+
+class SimilarityItem(BaseModel):
+    id: str
+    similarity: float
+
+
+class UserCategory(BaseModel):
+    my: List[SimilarityItem]
+    mate: List[SimilarityItem]
+
+
+class PostCategory(BaseModel):
+    my: List[SimilarityItem]
+    mate: List[SimilarityItem]
+
+
+class DataModel(BaseModel):
+    user: UserCategory
+    post: PostCategory
+
+
 DATABASE_URL = f"postgresql://{os.getenv('USER_NAME')}:{os.getenv('PASSWORD')}@{os.getenv('HOST')}/{os.getenv('DATABASE')}"
 database = Database(DATABASE_URL)
+nosql_database = firestore.Client(database="maru")
 
 
 @asynccontextmanager
@@ -29,6 +55,7 @@ async def lifespan(app: FastAPI):
     await database.connect()
     yield
     await database.disconnect()
+    nosql_database.close()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -46,20 +73,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-male_data = []
-male_data_dict = {}
-male_cluster = {}
-male_cluster_target = {}
-male_cluster_model = None
-male_similarity = {}  # { user: { other_id: number } }
-
-female_data = []
-female_data_dict = {}
-female_cluster = {}
-female_cluster_target = {}
-female_cluster_model = None
-female_similarity = {}  # { user: { other_id: number } }
 
 
 def generate_df_data(data):
@@ -89,28 +102,14 @@ def generate_df_data(data):
     return df
 
 
-def convert_fit_data(df_data):
-    result = df_data.drop(
-        columns=["nickname", "member_id", "gender", "card_type"], axis=1
-    )
+def convert_fit_data(df_data, columns=["nickname", "id", "gender", "card_type"]):
+    result = df_data.drop(columns=columns, axis=1)
     return result
 
 
-def member_cosine_similarity(member_id1, member_id2, gender):
-    data = male_data_dict
-    if gender in ("FEMALE", "female"):
-        data = female_data_dict
-
-    if member_id1 not in data or member_id2 not in data:
-        return None
-
-    user1 = data[member_id1]
-    user2 = data[member_id2]
-
+def user_cosine_similarity(user1, user2):
     user_df_data = generate_df_data([user1, user2])
-
     user_fit_data = convert_fit_data(user_df_data)
-
     result = cosine_similarity(user_fit_data)
     return result[0][1].item()
 
@@ -118,31 +117,53 @@ def member_cosine_similarity(member_id1, member_id2, gender):
 async def fetch_data():
     async with state_lock:
         query = """
-                SELECT member_id, features, birth_year, gender, nickname, 'my' AS card_type
+                SELECT member_id as id, features, birth_year, gender, nickname, 'my' AS card_type
                 FROM member_account
                 JOIN feature_card ON member_account.my_card_id = feature_card.feature_card_id
                 UNION ALL
-                SELECT member_id, features, birth_year, gender, nickname, 'mate' AS card_type
+                SELECT member_id as id, features, birth_year, gender, nickname, 'mate' AS card_type
                 FROM member_account
                 JOIN feature_card ON member_account.mate_card_id = feature_card.feature_card_id
                 """
-        all_data = [dict(record) for record in await database.fetch_all(query)]
+        user_card_data = [dict(record) for record in await database.fetch_all(query)]
 
-        global male_data, female_data
-        male_data = [user for user in all_data if user["gender"].lower() == "male"]
-        female_data = [user for user in all_data if user["gender"].lower() == "female"]
+        query = """
+                SELECT id, features, birth_year, gender, nickname, 'room' AS card_type
+                FROM shared_room_post
+                JOIN feature_card ON shared_room_post.room_mate_card_id = feature_card.feature_card_id
+                JOIN member_account ON member_account.member_id = shared_room_post.publisher_id
+                """
+        post_card_data = [dict(record) for record in await database.fetch_all(query)]
 
-        global male_data_dict, female_data_dict
-        male_data_dict = {user["member_id"]: user for user in male_data}
-        female_data_dict = {user["member_id"]: user for user in female_data}
+        user_male_cards = []
+        user_female_cards = []
+        for record in user_card_data:
+            user_gender = record["gender"]
+
+            cards = user_male_cards
+            if user_gender.lower() == "female":
+                cards = user_female_cards
+            cards.append(record)
+
+        post_male_cards = []
+        post_female_cards = []
+        for record in post_card_data:
+            user_gender = record["gender"]
+
+            cards = post_male_cards
+            if user_gender.lower() == "female":
+                cards = post_female_cards
+            cards.append(record)
 
 
-async def clustering():
-    global male_cluster, male_cluster_model, male_cluster_target, male_similarity
-    global female_cluster, female_cluster_model, female_cluster_target, female_similarity
-
+async def clustering(
+    user_male_cards, user_female_cards, post_male_cards, post_female_cards
+):
     async with state_lock:
+        male_data = [*user_male_cards, *post_male_cards]
         male_df_data = generate_df_data(male_data)
+
+        female_data = [*user_female_cards, *post_female_cards]
         female_df_data = generate_df_data(female_data)
 
         male_cluster_model = DBSCAN(eps=0.2, min_samples=2)
@@ -151,52 +172,64 @@ async def clustering():
         female_cluster_model = DBSCAN(eps=0.2, min_samples=2)
         female_cluster_model.fit(convert_fit_data(female_df_data))
 
-        male_cluster = {}
-        male_cluster_target = {}
+        male_dict = defaultdict(lambda: {})
+        male_cluster = defaultdict(lambda: [])
+        male_user_cluster_id = defaultdict(lambda: {"my": -1, "mate": -1})
         for index, cluster in enumerate(
             male_cluster_model.fit_predict(convert_fit_data(male_df_data))
         ):
             cluster = cluster.item()
-            user = male_data[index]["member_id"]
+
+            user_id = male_data[index]["id"]
             card_type = male_data[index]["card_type"]
 
-            male_cluster_target[user] = cluster
-            if cluster in male_cluster:
-                male_cluster[cluster].append((user, card_type))
-            else:
-                male_cluster[cluster] = [(user, card_type)]
+            if card_type != "room":
+                male_dict[user_id][card_type] = male_data[index]
 
-        female_cluster = {}
-        female_cluster_target = {}
+            if card_type == "my":
+                male_user_cluster_id[user_id]["my"] = cluster
+            elif card_type == "mate":
+                male_user_cluster_id[user_id]["mate"] = cluster
+            male_cluster[cluster].append(male_data[index])
+
+        female_dict = defaultdict(lambda: {})
+        female_cluster = defaultdict(lambda: [])
+        female_user_cluster_id = defaultdict(lambda: {"my": -1, "mate": -1})
         for index, cluster in enumerate(
             female_cluster_model.fit_predict(convert_fit_data(female_df_data))
         ):
             cluster = cluster.item()
-            user = female_data[index]["member_id"]
+
+            user_id = female_data[index]["id"]
             card_type = female_data[index]["card_type"]
 
-            female_cluster_target[user] = cluster
-            if cluster in female_cluster:
-                female_cluster[cluster].append((user, card_type))
-            else:
-                female_cluster[cluster] = [(user, card_type)]
+            if card_type != "room":
+                female_dict[user_id][card_type] = female_data[index]
 
-        male_similarity = {}
-        female_similarity = {}
-        for cluster, similarity_list, gender in [
-            (male_cluster, male_similarity, "male"),
-            (female_cluster, female_similarity, "female"),
-        ]:
-            for user_list in cluster.values():
-                for user1, card_type1 in user_list:
-                    similarity_list[(user1, card_type1)] = []
-                    for user2, card_type2 in user_list:
-                        if user1 == user2:
-                            continue
+            if card_type == "my":
+                female_user_cluster_id[user_id]["my"] = cluster
+            elif card_type == "mate":
+                female_user_cluster_id[user_id]["mate"] = cluster
+            female_cluster[cluster].append(female_data[index])
 
-                        similarity = member_cosine_similarity(user1, user2, gender)
-                        similarity_list.append((user2, similarity, card_type2))
-                    similarity_list[(user1, card_type1)].sort(key=lambda x: x[1])
+        male_similarity = defaultdict(
+            lambda: {"user": {"my": [], "mate": []}, "post": {"my": [], "mate": []}}
+        )
+        for user_id in male_user_cluster_id:
+            my_card_id = male_dict[user_id]["my"]
+            mate_card_id = male_dict[user_id]["mate"]
+
+            for other_id in male_cluster[male_user_cluster_id[user_id]["my"]]:
+                pass
+
+            for other_id in male_cluster[male_user_cluster_id[user_id]["mate"]]:
+                pass
+
+
+@app.get("/")
+async def root():
+    await fetch_data()
+    return {"detail": "ok"}
 
 
 @app.get("/recommendation/update")
