@@ -47,7 +47,7 @@ class DataModel(BaseModel):
 
 DATABASE_URL = f"postgresql://{os.getenv('USER_NAME')}:{os.getenv('PASSWORD')}@{os.getenv('HOST')}/{os.getenv('DATABASE')}"
 database = Database(DATABASE_URL)
-nosql_database = firestore.Client(database="maru")
+recommendation_database = firestore.Client(database="maru")
 
 
 @asynccontextmanager
@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI):
     await database.connect()
     yield
     await database.disconnect()
-    nosql_database.close()
+    recommendation_database.close()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -241,6 +241,14 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
                     female_recommendation_result[user_id]["post"][card_type].append(
                         {"id": other_card["id"], "score": similarity}
                     )
+
+    recommendation_collection = recommendation_database.collection("recommendation")
+    for male_user_id, recommendation_result in male_recommendation_result.items():
+        doc_ref = recommendation_collection.document(f"{male_user_id}")
+        doc_ref.set(recommendation_result)
+    for female_user_id, recommendation_result in female_recommendation_result.items():
+        doc_ref = recommendation_collection.document(f"{female_user_id}")
+        doc_ref.set(recommendation_result)
 
 
 @app.get("/")
