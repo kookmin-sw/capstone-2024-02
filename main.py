@@ -205,17 +205,29 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
             user_id = card["id"]
             card_type = card["card_type"]
             for j, other_card in enumerate(cluster_item):
-                if i == j:
+                if (
+                    i == j
+                    or card_type == other_card["card_type"]
+                    or user_id == other_card["id"]
+                ):
                     continue
 
                 similarity = feature_card_cosine_similarity(card, other_card)
                 if other_card["card_type"] != "room":
                     male_recommendation_result[user_id]["user"][card_type].append(
-                        {"id": other_card["id"], "score": similarity}
+                        {
+                            "id": other_card["id"],
+                            "score": similarity,
+                            "cardType": other_card["card_type"],
+                        }
                     )
                 else:
                     male_recommendation_result[user_id]["post"][card_type].append(
-                        {"id": other_card["id"], "score": similarity}
+                        {
+                            "id": other_card["id"],
+                            "score": similarity,
+                            "cardType": other_card["card_type"],
+                        }
                     )
 
     female_recommendation_result = defaultdict(
@@ -229,17 +241,29 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
             user_id = card["id"]
             card_type = card["card_type"]
             for j, other_card in enumerate(cluster_item):
-                if i == j:
+                if (
+                    i == j
+                    or card_type == other_card["card_type"]
+                    or user_id == other_card["id"]
+                ):
                     continue
 
                 similarity = feature_card_cosine_similarity(card, other_card)
                 if other_card["card_type"] != "room":
                     female_recommendation_result[user_id]["user"][card_type].append(
-                        {"id": other_card["id"], "score": similarity}
+                        {
+                            "id": other_card["id"],
+                            "score": similarity,
+                            "cardType": other_card["card_type"],
+                        }
                     )
                 else:
                     female_recommendation_result[user_id]["post"][card_type].append(
-                        {"id": other_card["id"], "score": similarity}
+                        {
+                            "id": other_card["id"],
+                            "score": similarity,
+                            "cardType": other_card["card_type"],
+                        }
                     )
 
     recommendation_collection = recommendation_database.collection("recommendation")
@@ -253,15 +277,13 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
 
 @app.get("/")
 async def root():
-    user_male_cards, user_female_cards, post_male_cards, post_female_cards = (
-        await fetch_data()
-    )
-    clustering(user_male_cards, user_female_cards, post_male_cards, post_female_cards)
     return {"detail": "ok"}
 
 
 @app.get("/recommendation/update")
 async def update():
-    await fetch_data()
-    await clustering()
+    user_male_cards, user_female_cards, post_male_cards, post_female_cards = (
+        await fetch_data()
+    )
+    clustering(user_male_cards, user_female_cards, post_male_cards, post_female_cards)
     return {"detail": "ok"}
