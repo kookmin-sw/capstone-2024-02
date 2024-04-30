@@ -10,7 +10,6 @@ import os
 
 import pandas as pd
 from pydantic import BaseModel
-from scipy import cluster
 from sklearn.cluster import DBSCAN
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -47,7 +46,7 @@ class DataModel(BaseModel):
 
 DATABASE_URL = f"postgresql://{os.getenv('USER_NAME')}:{os.getenv('PASSWORD')}@{os.getenv('HOST')}/{os.getenv('DATABASE')}"
 database = Database(DATABASE_URL)
-recommendation_database = firestore.Client(database="maru")
+recommendation_database = firestore.Client()
 
 
 @asynccontextmanager
