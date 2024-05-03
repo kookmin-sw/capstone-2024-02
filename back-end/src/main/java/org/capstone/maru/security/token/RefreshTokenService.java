@@ -12,19 +12,19 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository repository;
 
-    public void saveRefreshToken(String refreshToken) {
-        repository.save(new RefreshToken(refreshToken));
+    public void saveRefreshToken(String token, Long ttl) {
+        repository.save(new RefreshToken(token, ttl));
     }
 
-    public void removeRefreshToken(String refreshToken) {
-        RefreshToken token = repository
-            .findByRefreshToken(refreshToken)
+    public void removeRefreshToken(String token) {
+        RefreshToken refreshToken = repository
+            .findByToken(token)
             .orElseThrow(RefreshTokenNotFoundException::new);
 
-        repository.delete(token);
+        repository.delete(refreshToken);
     }
 
-    public boolean hasRefreshToken(String refreshToken) {
-        return repository.existsByRefreshToken(refreshToken);
+    public boolean hasRefreshToken(String token) {
+        return repository.existsByToken(token);
     }
 }

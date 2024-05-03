@@ -3,19 +3,15 @@ package org.capstone.maru.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
-import static org.mockito.BDDMockito.willDoNothing;
 
 
-import com.github.gavlyukovskiy.boot.jdbc.decorator.DataSourceDecoratorAutoConfiguration;
 import java.util.List;
-import org.capstone.maru.config.P6spyConfig;
-import org.capstone.maru.config.TestJpaConfig;
 import org.capstone.maru.domain.StudioRoomPost;
 import org.capstone.maru.dto.StudioRoomPostDto;
 import org.capstone.maru.dto.request.SearchFilterRequest;
-import org.capstone.maru.repository.MemberAccountRepository;
-import org.capstone.maru.repository.ScrapPostRepository;
-import org.capstone.maru.repository.StudioRoomPostRepository;
+import org.capstone.maru.repository.postgre.MemberAccountRepository;
+import org.capstone.maru.repository.postgre.ScrapPostRepository;
+import org.capstone.maru.repository.postgre.StudioRoomPostRepository;
 import org.capstone.maru.util.EntityCreator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 @DisplayName("Service - 게시글")
@@ -91,7 +86,7 @@ class SharedRoomPostServiceTest {
             .contains(StudioRoomPostDto.from(studioRoomPost, List.of()));
         then(scrapPostRepository).should().findScrapViewByScrapperMemberId(memberId);
         then(studioRoomPostRepository).should()
-                                      .findStudioRoomPostByDynamicFilter(gender, filterCondition,
-                                          null, pageable);
+            .findStudioRoomPostByDynamicFilter(gender, filterCondition,
+                null, pageable);
     }
 }

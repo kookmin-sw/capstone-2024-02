@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(indexes = {
-    @Index(columnList = "shared_room_post_id")
+    @Index(columnList = "shared_room_post_id", unique = true)
 })
 @Entity
 public class ViewPost {
@@ -27,13 +27,26 @@ public class ViewPost {
     @Column
     private Long sharedRoomPostId;
 
+    @Column
+    private Long viewCount;
+
     // -- 생성자 메서드 -- //
-    private ViewPost(Long sharedRoomPostId) {
+    private ViewPost(Long sharedRoomPostId, Long viewCount) {
         this.sharedRoomPostId = sharedRoomPostId;
+        this.viewCount = viewCount;
     }
 
-    public static ViewPost of(Long sharedRoomPostId) {
-        return new ViewPost(sharedRoomPostId);
+    public static ViewPost of(Long sharedRoomPostId, Long viewCount) {
+        return new ViewPost(sharedRoomPostId, viewCount);
+    }
+
+    // -- 비지니스 로직 -- //
+    public void updateViewCount(Long viewCount) {
+        if (viewCount < 0) {
+            return;
+        }
+
+        this.viewCount = viewCount;
     }
 
     // -- Equals & Hash -- //

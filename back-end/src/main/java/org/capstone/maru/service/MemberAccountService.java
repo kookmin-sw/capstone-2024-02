@@ -8,12 +8,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.capstone.maru.domain.Follow;
 import org.capstone.maru.domain.FeatureCard;
+import org.capstone.maru.domain.MemberRoom;
 import org.capstone.maru.domain.ProfileImage;
 import org.capstone.maru.exception.RestErrorCode;
 import org.capstone.maru.security.exception.MemberAccountExistentException;
 import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.dto.MemberAccountDto;
-import org.capstone.maru.repository.MemberAccountRepository;
+import org.capstone.maru.repository.postgre.MemberAccountRepository;
 import org.capstone.maru.security.exception.MemberAccountNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +52,7 @@ public class MemberAccountService {
         return memberAccount.get();
     }
 
+    @Transactional
     public MemberAccountDto login(
         String memberId,
         String email,
@@ -71,6 +73,8 @@ public class MemberAccountService {
 
             ProfileImage profileImage = ProfileImage.defaultImage(memberId);
 
+            List<MemberRoom> chatRooms = List.of();
+
             MemberAccount member = MemberAccount.of(
                 memberId,
                 email,
@@ -80,12 +84,12 @@ public class MemberAccountService {
                 phoneNumber,
                 memberId,
                 true,
-                true,
                 myCard,
                 mateCard,
                 followers,
                 followings,
-                profileImage
+                profileImage,
+                chatRooms
             );
 
             return MemberAccountDto.from(
@@ -107,5 +111,17 @@ public class MemberAccountService {
      */
     public Boolean isInitialized(String memberId) {
         return memberAccountRepository.getInitializedById(memberId).getInitialized();
+    }
+
+    /*
+     * 이메일로 회원 찾기
+     */
+    public MemberAccount searchMemberAccountByEmail(String email) {
+        return memberAccountRepository.findByEmail(email)
+            .orElseThrow(() -> new MemberAccountNotFoundException(RestErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    public List<MemberAccount> searchContainByEmail(String word) {
+        return memberAccountRepository.findByEmailContaining(word);
     }
 }

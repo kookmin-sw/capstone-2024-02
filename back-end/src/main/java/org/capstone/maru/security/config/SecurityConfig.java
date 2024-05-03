@@ -74,7 +74,7 @@ public class SecurityConfig {
                 ).permitAll()
                 // ws 연결을 위한 /ws url 모두 허용
                 .requestMatchers(
-                    "/ws"
+                    "/ws", "/test2"
                 ).permitAll()
                 .anyRequest().authenticated()
             )

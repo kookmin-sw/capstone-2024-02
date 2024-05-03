@@ -20,11 +20,15 @@ spring:
         format_sql: true
         default_batch_fetch_size: 100
         use_sql_comments: false
+        order_updates: true
+        jdbc:
+          batch_versioned_data: true
   profiles:
     include:
       - oauth
       - datasource
       - cloud
+      - redis
 
 jwt:
   header: Authorization

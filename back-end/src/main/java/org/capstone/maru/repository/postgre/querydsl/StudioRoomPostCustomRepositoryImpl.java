@@ -1,4 +1,4 @@
-package org.capstone.maru.repository.querydsl;
+package org.capstone.maru.repository.postgre.querydsl;
 
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
@@ -22,7 +22,8 @@ import org.springframework.util.StringUtils;
 
 import static org.capstone.maru.domain.QStudioRoomPost.studioRoomPost;
 
-public class StudioRoomPostCustomRepositoryImpl implements StudioRoomPostCustomRepository {
+public class StudioRoomPostCustomRepositoryImpl implements
+    org.capstone.maru.repository.postgre.querydsl.StudioRoomPostCustomRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 

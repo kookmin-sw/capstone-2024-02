@@ -22,7 +22,8 @@ public class GlobalExceptionHandler {
     ) {
         log.error("[Error] NoResourceFoundException occur!: {}", ex.getMessage());
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
             .body(RestErrorResponse.of(RestErrorCode.NOT_FOUND));
     }
 
@@ -30,7 +31,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<RestErrorResponse> handlePageSizeOutOfBoundsException(
         PageSizeOutOfBoundsException ex
     ) {
-        return ResponseEntity.status(ex.getErrorCode().getStatus())
+        return ResponseEntity
+            .status(ex.getErrorCode().getStatus())
             .body(RestErrorResponse.of(ex.getErrorCode(), ex.getReason()));
     }
 
@@ -38,10 +40,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<RestErrorResponse> handleValidationExceptions(
         MethodArgumentNotValidException ex) {
         List<String> errorMessages = ex.getBindingResult().getAllErrors().stream()
-            .map(DefaultMessageSourceResolvable::getDefaultMessage)
-            .toList();
+                                       .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                                       .toList();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
             .body(RestErrorResponse.of(HttpStatus.BAD_REQUEST, errorMessages));
     }
 
@@ -49,7 +52,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<RestErrorResponse> handleMalformedJSONException(
         MalformedJsonException ex
     ) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
             .body(RestErrorResponse.of(HttpStatus.BAD_REQUEST,
                 "사용자 입력 form data가 잘못 되었습니다."));
     }
@@ -58,7 +62,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<RestErrorResponse> handleIllegalArgumentException(
         IllegalArgumentException ex
     ) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
             .body(RestErrorResponse.of(HttpStatus.BAD_REQUEST, ex.getMessage()));
+    }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    public ResponseEntity<RestErrorResponse> handlePostNotFoundException(
+        PostNotFoundException ex
+    ) {
+        return ResponseEntity
+            .status(ex.getErrorCode().getStatus())
+            .body(RestErrorResponse.of(ex.getErrorCode(), ex.getReason()));
     }
 }

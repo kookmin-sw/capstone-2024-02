@@ -1,13 +1,12 @@
 package org.capstone.maru.controller;
 
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.capstone.maru.security.principal.MemberPrincipal;
 import org.capstone.maru.security.token.TokenProvider;
+import org.capstone.maru.service.FirestoreService;
 import org.capstone.maru.service.S3FileService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,9 +22,11 @@ public class MainController {
 
     private final TokenProvider tokenProvider;
 
+    private final FirestoreService firestoreService;
+
     @GetMapping("/")
     public String root() {
-        return "health check!";
+        return "health check is running!";
     }
 
     @GetMapping("/test")
@@ -41,6 +42,11 @@ public class MainController {
                 memberPrincipal.phoneNumber()
             )
         );
+    }
+
+    @GetMapping("/test2")
+    public void test2() {
+        firestoreService.printAllDocumentsInCollection();
     }
 
 }

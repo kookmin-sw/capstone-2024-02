@@ -39,6 +39,12 @@ jobs:
           touch ./application-cloud.yaml
           echo "${{ secrets.APPLICATION_CLOUD }}" > ./application-cloud.yaml
 
+      - name: make firestore.json
+        run: |
+          cd ./src/main/resources
+          touch ./firestore.json
+          echo "${{ secrets.FIRESTORE }}" > ./firestore.json
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@417ae3ccd767c252f5661f1ace9f835f9654f2b5
 
@@ -63,13 +69,19 @@ jobs:
           key: ${{ secrets.AWS_ACCESS_SECRET_KEY }} # pem 키
           # 도커 작업
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/maru:latest
+            touch ~/docker-compose.yml
+            echo "${{ secrets.DOCKER_COMPOSE }}" > ~/docker-compose.yml
             
             CONTAINERS=$(docker ps -q)
+            
             for CONTAINER in $CONTAINERS; do
               docker stop $CONTAINER
             done
             
             docker rm $(docker ps -aq)
-            docker run -d --log-driver=syslog -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod ${{ secrets.DOCKER_USERNAME }}/maru:latest
+            
+            docker rmi $(docker images -q)
+            
+            docker-compose up -d
+            
             docker image prune -a -f

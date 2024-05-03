@@ -1,8 +1,8 @@
-package org.capstone.maru.repository;
+package org.capstone.maru.repository.postgre;
 
 
 import org.capstone.maru.domain.Participation;
-import org.capstone.maru.repository.projection.ParticipantsView;
+import org.capstone.maru.repository.postgre.projection.ParticipantsView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

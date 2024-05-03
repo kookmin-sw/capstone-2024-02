@@ -1,4 +1,4 @@
-package org.capstone.maru.repository;
+package org.capstone.maru.repository.postgre;
 
 import org.capstone.maru.domain.ProfileImage;
 import org.springframework.data.jpa.repository.JpaRepository;

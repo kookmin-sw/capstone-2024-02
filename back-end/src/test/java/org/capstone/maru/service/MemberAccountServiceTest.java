@@ -9,7 +9,7 @@ import java.util.Optional;
 import org.capstone.maru.config.TestJpaConfig;
 import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.dto.MemberAccountDto;
-import org.capstone.maru.repository.MemberAccountRepository;
+import org.capstone.maru.repository.postgre.MemberAccountRepository;
 import org.capstone.maru.security.exception.MemberAccountNotFoundException;
 import org.capstone.maru.util.EntityCreator;
 import org.junit.jupiter.api.DisplayName;

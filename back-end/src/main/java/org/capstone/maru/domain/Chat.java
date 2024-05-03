@@ -1,55 +1,46 @@
 package org.capstone.maru.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
+import org.capstone.maru.dto.ChatMessage;
+import org.springframework.data.mongodb.core.index.IndexDirection;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @NoArgsConstructor
-@Entity
-public class Chat {
+@Document(collection = "chat")
+public class Chat extends AuditingFields {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "chat_id")
-    private Long id;
+    private String id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id")
-    private ChatRoom room;
+    @Indexed(direction = IndexDirection.ASCENDING)
+    private Long roomId;
 
-    private String sender;
-
-    @Column(columnDefinition = "TEXT")
     private String message;
 
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime sendDate;
-
     @Builder
-    public Chat(ChatRoom room, String sender, String message) {
-        this.room = room;
-        this.sender = sender;
+    public Chat(String id, String sender, String message, Long room, LocalDateTime createdAt) {
+        this.id = id;
+        this.roomId = room;
         this.message = message;
-        this.sendDate = LocalDateTime.now();
+        this.createdBy = sender;
+        this.createdAt = createdAt;
     }
 
-    public static Chat createChat(ChatRoom room, String sender, String message) {
+    public static Chat createChat(Long room, String sender, String message) {
         return Chat.builder()
             .room(room)
             .sender(sender)
             .message(message)
             .build();
     }
+
+    public static Chat from(String id, ChatMessage chatMessage) {
+        return new Chat(id, chatMessage.sender(), chatMessage.message(), chatMessage.roomId(),
+            chatMessage.createdAt());
+    }
+
 }

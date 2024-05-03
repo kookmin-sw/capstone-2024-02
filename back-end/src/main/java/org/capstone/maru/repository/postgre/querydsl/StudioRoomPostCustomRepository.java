@@ -1,4 +1,4 @@
-package org.capstone.maru.repository.querydsl;
+package org.capstone.maru.repository.postgre.querydsl;
 
 import jakarta.annotation.Nonnull;
 import org.capstone.maru.domain.StudioRoomPost;

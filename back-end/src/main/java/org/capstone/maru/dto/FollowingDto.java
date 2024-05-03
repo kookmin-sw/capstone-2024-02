@@ -6,10 +6,10 @@ import lombok.Builder;
 
 @Builder
 public record FollowingDto(
-    Map<String, String> followingList
+    Map<String, List<String>> followingList
 ) {
 
-    public static FollowingDto from(Map<String, String> followingList) {
+    public static FollowingDto from(Map<String, List<String>> followingList) {
         return FollowingDto
             .builder()
             .followingList(followingList)

@@ -1,14 +1,11 @@
-package org.capstone.maru.repository;
+package org.capstone.maru.repository.postgre;
 
 import java.util.Optional;
 import org.capstone.maru.domain.StudioRoomPost;
-import org.capstone.maru.repository.querydsl.StudioRoomPostCustomRepository;
+import org.capstone.maru.repository.postgre.querydsl.StudioRoomPostCustomRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository

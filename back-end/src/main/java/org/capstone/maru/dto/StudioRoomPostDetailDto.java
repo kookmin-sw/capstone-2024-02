@@ -30,9 +30,12 @@ public record StudioRoomPostDetailDto(
     String modifiedBy
 ) {
 
-    public static StudioRoomPostDetailDto from(StudioRoomPost entity,
+    public static StudioRoomPostDetailDto from(
+        StudioRoomPost entity,
         Boolean isScrapped,
-        Long scrapCount, Long viewCount) {
+        Long scrapCount,
+        Long viewCount
+    ) {
         return StudioRoomPostDetailDto
             .builder()
             .id(entity.getId())

@@ -204,6 +204,7 @@ gradle-app.setting
 src/main/resources/application-oauth.*
 src/main/resources/application-datasource.*
 src/main/resources/application-cloud.*
+src/main/resources/application-redis.*
 
 ### Initial Dummy Data
 src/main/resources/data.sql
@@ -213,5 +214,9 @@ src/main/resources/data.sql
 
 ### JPA Buddy
 .jpb/
+.docker-compose.yml
+
+### json file
+src/main/resources/*.json
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,intellij+all,java,gradle

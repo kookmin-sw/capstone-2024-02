@@ -3,18 +3,13 @@ package org.capstone.maru.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
-import java.util.Set;
 
-import java.util.stream.Collectors;
 import lombok.Builder;
 import org.capstone.maru.domain.FeatureCard;
 import org.capstone.maru.domain.MemberAccount;
-import org.capstone.maru.domain.RoomImage;
 import org.capstone.maru.domain.RoomInfo;
-import org.capstone.maru.domain.ScrapPost;
 import org.capstone.maru.domain.StudioRoomPost;
-import org.capstone.maru.repository.projection.ScrapPostView;
+import org.capstone.maru.repository.postgre.projection.ScrapPostView;
 
 @Builder
 public record StudioRoomPostDto(
@@ -41,9 +36,9 @@ public record StudioRoomPostDto(
             .content(entity.getContent())
             .roomImages(
                 entity.getRoomImages()
-                      .stream()
-                      .map(RoomImageDto::from)
-                      .toList()
+                    .stream()
+                    .map(RoomImageDto::from)
+                    .toList()
             )
             .publisherGender(entity.getPublisherGender())
             .publisherAccount(MemberAccountDto.from(entity.getPublisherAccount()))

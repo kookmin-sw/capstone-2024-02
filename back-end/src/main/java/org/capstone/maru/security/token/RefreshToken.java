@@ -1,31 +1,28 @@
 package org.capstone.maru.security.token;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import java.time.LocalDateTime;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
+import org.springframework.data.redis.core.TimeToLive;
+import org.springframework.data.redis.core.index.Indexed;
 
-@Entity
+@Slf4j
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@RedisHash(value = "refresh_token")
 public class RefreshToken {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 1024)
-    private String refreshToken;
+    @Indexed
+    private String token;
 
-    private LocalDateTime createdAt;
+    @TimeToLive
+    private Long ttl;
 
-    public RefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-        this.createdAt = LocalDateTime.now();
+    public RefreshToken(String token, Long ttl) {
+        this.token = token;
+        this.ttl = ttl;
     }
 }

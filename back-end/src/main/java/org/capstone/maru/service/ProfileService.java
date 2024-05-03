@@ -10,9 +10,9 @@ import org.capstone.maru.domain.ProfileImage;
 import org.capstone.maru.dto.MemberCardDto;
 import org.capstone.maru.dto.MemberProfileDto;
 import org.capstone.maru.dto.response.AuthResponse;
-import org.capstone.maru.repository.MemberCardRepository;
-import org.capstone.maru.repository.ProfileImageRepository;
-import org.capstone.maru.security.principal.MemberPrincipal;
+import org.capstone.maru.dto.response.SimpleMemberProfileResponse;
+import org.capstone.maru.repository.postgre.MemberCardRepository;
+import org.capstone.maru.repository.postgre.ProfileImageRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -134,5 +134,30 @@ public class ProfileService {
          */
         MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
         return memberAccount.updateRecommendOn(recommendOn);
+    }
+
+    /*
+     * 프로필 검색
+     */
+    @Transactional(readOnly = true)
+    public SimpleMemberProfileResponse searchProfile(String email) {
+        MemberAccount memberAccount = memberAccountService.searchMemberAccountByEmail(email);
+        ProfileImage profileImage = memberAccount.getProfileImage();
+        String imgURL = s3FileService.getPreSignedUrlForLoad(profileImage.getFileName());
+
+        return SimpleMemberProfileResponse.from(memberAccount.getMemberId(),
+            memberAccount.getNickname(), imgURL);
+    }
+
+    public List<SimpleMemberProfileResponse> searchContainByEmail(String word) {
+        List<MemberAccount> memberAccounts = memberAccountService.searchContainByEmail(word);
+
+        return memberAccounts.stream().map(memberAccount -> {
+            ProfileImage profileImage = memberAccount.getProfileImage();
+            String imgURL = s3FileService.getPreSignedUrlForLoad(profileImage.getFileName());
+
+            return SimpleMemberProfileResponse.from(memberAccount.getMemberId(),
+                memberAccount.getNickname(), imgURL);
+        }).toList();
     }
 }

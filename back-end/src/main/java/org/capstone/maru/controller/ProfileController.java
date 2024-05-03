@@ -1,12 +1,15 @@
 package org.capstone.maru.controller;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.capstone.maru.dto.FollowingDto;
 import org.capstone.maru.dto.MemberCardDto;
 import org.capstone.maru.dto.MemberProfileDto;
 import org.capstone.maru.dto.request.MemberFeatureRequest;
+import org.capstone.maru.dto.request.MemberIdRequest;
 import org.capstone.maru.dto.response.APIResponse;
+import org.capstone.maru.dto.response.SimpleMemberProfileResponse;
 import org.capstone.maru.security.principal.MemberPrincipal;
 import org.capstone.maru.service.FollowService;
 import org.capstone.maru.service.ProfileService;
@@ -30,6 +33,22 @@ public class ProfileController {
     private final ProfileService profileService;
     private final FollowService followService;
 
+    /*
+     * 이메일로 사용자 프로필 검색
+     */
+    @PostMapping("/search")
+    public ResponseEntity<APIResponse> searchProfile(
+        @RequestBody String email
+    ) {
+        log.info("call searchProfile : {}", email);
+
+        SimpleMemberProfileResponse result = profileService.searchProfile(email);
+        return ResponseEntity.ok(APIResponse.success(result));
+    }
+
+    /*
+     * 내 프로필 수정
+     */
     @PutMapping("/{cardId}")
     public ResponseEntity<APIResponse> updateMemberCard(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
@@ -63,18 +82,20 @@ public class ProfileController {
         return ResponseEntity.ok(APIResponse.success(result));
     }
 
-    @GetMapping("/{memberId}")
+
+    @PostMapping
     public ResponseEntity<APIResponse> getMemberProfile(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
-        @PathVariable String memberId
+        @RequestBody MemberIdRequest request
     ) {
-        log.info("call getProfile : {}", memberId);
+        log.info("call getProfile : {}", request.memberId());
 
-        MemberProfileDto result = profileService.getMemberProfile(memberId,
+        MemberProfileDto result = profileService.getMemberProfile(request.memberId(),
             memberPrincipal.gender());
 
         return ResponseEntity.ok(APIResponse.success(result));
     }
+
 
     @GetMapping("/card/{cardId}")
     public ResponseEntity<APIResponse> getCardData(
@@ -104,12 +125,24 @@ public class ProfileController {
     /*
      * 팔로우
      */
-    @PostMapping("/{memberId}/follow")
+    @PostMapping("/follow")
     public ResponseEntity<APIResponse> follow(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
-        @PathVariable String memberId
+        @RequestBody MemberIdRequest request
     ) {
-        followService.followUser(memberPrincipal.memberId(), memberId);
+        followService.followUser(memberPrincipal.memberId(), request.memberId());
+        return ResponseEntity.ok(APIResponse.success());
+    }
+
+    /*
+     * 팔로우 취소
+     */
+    @PostMapping("/unfollow")
+    public ResponseEntity<APIResponse> unfollow(
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
+        @RequestBody MemberIdRequest request
+    ) {
+        followService.unfollowUser(memberPrincipal.memberId(), request.memberId());
         return ResponseEntity.ok(APIResponse.success());
     }
 
@@ -138,5 +171,18 @@ public class ProfileController {
         profileService.updateProfileImage(memberPrincipal.memberId(), fileName);
 
         return ResponseEntity.ok(APIResponse.success());
+    }
+
+    /*
+     * 단어가 포함된 사용자 검색 by email
+     */
+    @PostMapping("/search/contain")
+    public ResponseEntity<APIResponse> searchProfileByEmail(
+        @RequestBody String email
+    ) {
+        log.info("call searchProfileByEmail : {}", email);
+
+        List<SimpleMemberProfileResponse> result = profileService.searchContainByEmail(email);
+        return ResponseEntity.ok(APIResponse.success(result));
     }
 }

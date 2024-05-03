@@ -124,7 +124,7 @@ public class JwtTokenProvider implements TokenProvider, InitializingBean {
     @Override
     public String createRefreshToken(Authentication authentication) {
         String token = this.createToken(authentication, REFRESH_TOKEN_VALID_MILLI_SECOND);
-        refreshTokenService.saveRefreshToken(token);
+        refreshTokenService.saveRefreshToken(token, REFRESH_TOKEN_VALID_MILLI_SECOND);
         return token;
     }
 
@@ -168,78 +168,78 @@ public class JwtTokenProvider implements TokenProvider, InitializingBean {
                 + "_" + oAuth2Response.id();
 
         List<String> authorities = authentication.getAuthorities()
-            .stream()
-            .map(GrantedAuthority::getAuthority)
-            .toList();
+                                                 .stream()
+                                                 .map(GrantedAuthority::getAuthority)
+                                                 .toList();
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
 
         return Jwts.builder()
-            .subject(memberId)
-            .claim(EMAIL, oAuth2Response.email())
-            .claim(NICKNAME, oAuth2Response.nickname())
-            .claim(BIRTH_YEAR, oAuth2Response.birthYear())
-            .claim(GENDER, oAuth2Response.gender().name())
-            .claim(PHONE_NUMBER, oAuth2Response.phoneNumber())
-            .claim(AUTHORITY, authorities)
-            .issuedAt(now)
-            .expiration(expiryDate)
-            .signWith(SECRET_KEY)
-            .compact();
+                   .subject(memberId)
+                   .claim(EMAIL, oAuth2Response.email())
+                   .claim(NICKNAME, oAuth2Response.nickname())
+                   .claim(BIRTH_YEAR, oAuth2Response.birthYear())
+                   .claim(GENDER, oAuth2Response.gender().name())
+                   .claim(PHONE_NUMBER, oAuth2Response.phoneNumber())
+                   .claim(AUTHORITY, authorities)
+                   .issuedAt(now)
+                   .expiration(expiryDate)
+                   .signWith(SECRET_KEY)
+                   .compact();
     }
 
     private TokenDto createAccessTokenOnly(Claims claims) {
         Date now = new Date();
 
         String accessToken = Jwts.builder()
-            .claims(claims)
-            .issuedAt(now)
-            .expiration(
-                new Date(now.getTime() + ACCESS_TOKEN_VALID_MILLI_SECOND))
-            .signWith(SECRET_KEY)
-            .compact();
+                                 .claims(claims)
+                                 .issuedAt(now)
+                                 .expiration(
+                                     new Date(now.getTime() + ACCESS_TOKEN_VALID_MILLI_SECOND))
+                                 .signWith(SECRET_KEY)
+                                 .compact();
 
         return TokenDto.builder()
-            .grantType("Bearer")
-            .accessToken(accessToken)
-            .refreshToken("")
-            .accessTokenExpireDate(getExpiration())
-            .build();
+                       .grantType("Bearer")
+                       .accessToken(accessToken)
+                       .refreshToken("")
+                       .accessTokenExpireDate(getExpiration())
+                       .build();
     }
 
     private TokenDto createTokens(Claims claims) {
         Date now = new Date();
 
         String accessToken = Jwts.builder()
-            .claims(claims)
-            .issuedAt(now)
-            .expiration(
-                new Date(now.getTime() + ACCESS_TOKEN_VALID_MILLI_SECOND))
-            .signWith(SECRET_KEY)
-            .compact();
+                                 .claims(claims)
+                                 .issuedAt(now)
+                                 .expiration(
+                                     new Date(now.getTime() + ACCESS_TOKEN_VALID_MILLI_SECOND))
+                                 .signWith(SECRET_KEY)
+                                 .compact();
 
         String refreshToken = Jwts.builder()
-            .claims(claims)
-            .issuedAt(now)
-            .expiration(
-                new Date(now.getTime() + REFRESH_TOKEN_VALID_MILLI_SECOND))
-            .signWith(SECRET_KEY)
-            .compact();
+                                  .claims(claims)
+                                  .issuedAt(now)
+                                  .expiration(
+                                      new Date(now.getTime() + REFRESH_TOKEN_VALID_MILLI_SECOND))
+                                  .signWith(SECRET_KEY)
+                                  .compact();
 
         return TokenDto.builder()
-            .grantType("Bearer")
-            .accessToken(accessToken)
-            .refreshToken(refreshToken)
-            .accessTokenExpireDate(getExpiration())
-            .build();
+                       .grantType("Bearer")
+                       .accessToken(accessToken)
+                       .refreshToken(refreshToken)
+                       .accessTokenExpireDate(getExpiration())
+                       .build();
     }
 
     private Claims parseClaims(String token) throws JwtException {
         return Jwts.parser()
-            .verifyWith((SecretKey) SECRET_KEY)
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
+                   .verifyWith((SecretKey) SECRET_KEY)
+                   .build()
+                   .parseSignedClaims(token)
+                   .getPayload();
     }
 }

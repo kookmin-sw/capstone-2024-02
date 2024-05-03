@@ -13,7 +13,7 @@ public enum RestErrorCode {
     NOT_FOUND(404, "C001", "존재하지 않는 url 입니다."),
     DUPLICATE_VALUE(409, "C001", "이미 존재하는 값입니다."),
     MEMBER_NOT_FOUND(404, "C001", "존재하지 않는 회원입니다."),
-    ;
+    POST_NOT_FOUND(404, "C002", "존재하지 않는 게시물입니다.");
 
     // 에러 코드의 '코드 상태'을 반환한다.
     private final int status;

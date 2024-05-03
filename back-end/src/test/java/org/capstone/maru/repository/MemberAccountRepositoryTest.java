@@ -6,6 +6,8 @@ import java.util.List;
 import org.capstone.maru.config.TestJpaConfig;
 import org.capstone.maru.domain.FeatureCard;
 import org.capstone.maru.domain.MemberAccount;
+import org.capstone.maru.repository.postgre.MemberAccountRepository;
+import org.capstone.maru.repository.postgre.MemberCardRepository;
 import org.capstone.maru.util.EntityCreator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

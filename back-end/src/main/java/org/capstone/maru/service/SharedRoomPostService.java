@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.capstone.maru.config.redis.StudioViewCountCacheKey;
 import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.domain.Participation;
 import org.capstone.maru.domain.ScrapPost;
@@ -15,13 +16,14 @@ import org.capstone.maru.dto.RoomInfoDto;
 import org.capstone.maru.dto.StudioRoomPostDetailDto;
 import org.capstone.maru.dto.StudioRoomPostDto;
 import org.capstone.maru.dto.request.SearchFilterRequest;
-import org.capstone.maru.repository.MemberAccountRepository;
-import org.capstone.maru.repository.ParticipationRepository;
-import org.capstone.maru.repository.ScrapPostRepository;
-import org.capstone.maru.repository.StudioRoomPostRepository;
-import org.capstone.maru.repository.ViewPostRepository;
-import org.capstone.maru.repository.projection.ParticipantsView;
-import org.capstone.maru.repository.projection.ScrapPostView;
+import org.capstone.maru.exception.PostNotFoundException;
+import org.capstone.maru.exception.RestErrorCode;
+import org.capstone.maru.repository.postgre.MemberAccountRepository;
+import org.capstone.maru.repository.postgre.ParticipationRepository;
+import org.capstone.maru.repository.postgre.ScrapPostRepository;
+import org.capstone.maru.repository.postgre.StudioRoomPostRepository;
+import org.capstone.maru.repository.postgre.ViewPostRepository;
+import org.capstone.maru.repository.postgre.projection.ScrapPostView;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,10 @@ public class SharedRoomPostService {
     private final ParticipationRepository participationRepository;
     private final ScrapPostRepository scrapPostRepository;
     private final ViewPostRepository viewPostRepository;
+
+    private final ViewCountService viewCountService;
+
+    private static final String PREFIX = "studio";
 
     @Transactional(readOnly = true)
     public Page<StudioRoomPostDto> searchStudioRoomPosts(
@@ -88,8 +94,13 @@ public class SharedRoomPostService {
             );
     }
 
+    @Transactional(readOnly = true)
     public StudioRoomPostDetailDto getStudioRoomPostDetail(String memberId, Long postId,
         String gender) {
+        StudioRoomPost resultEntity = studioRoomPostRepository
+            .findByIdAndPublisherGender(postId, gender)
+            .orElseThrow(() -> new PostNotFoundException(RestErrorCode.POST_NOT_FOUND));
+
         // 스크랩 여부와 스크랩 개수
         final Boolean isScrapped = scrapPostRepository
             .findScrapViewByScrappedIdAndScrapperMemberId(postId, memberId)
@@ -98,16 +109,9 @@ public class SharedRoomPostService {
         final Long scrapCount = scrapPostRepository.countByScrappedIdAndIsScrapped(postId);
 
         // 조회수 +1 & 게시글 총 조회수
-        viewPostRepository.save(ViewPost.of(postId));
-        final Long viewCount = viewPostRepository.countViewPostBySharedRoomPostId(postId);
+        Long viewCount = viewCountService.increaseValue(StudioViewCountCacheKey.from(postId));
 
-        return studioRoomPostRepository
-            .findByIdAndPublisherGender(postId, gender)
-            .map(studioRoomPost -> StudioRoomPostDetailDto
-                .from(studioRoomPost, isScrapped, scrapCount,
-                    viewCount)
-            )
-            .orElseThrow(() -> new IllegalArgumentException("그런 게시물은 존재하지 않습니다."));
+        return StudioRoomPostDetailDto.from(resultEntity, isScrapped, scrapCount, viewCount);
     }
 
     public void saveStudioRoomPost(
@@ -133,9 +137,12 @@ public class SharedRoomPostService {
         roomImagesDto
             .forEach(roomImageDto -> roomImageDto.toEntity(studioRoomPost));
 
-        studioRoomPostRepository.save(
+        StudioRoomPost result = studioRoomPostRepository.save(
             studioRoomPost
         );
+
+        viewPostRepository.save(ViewPost.of(result.getId(), 0L));
+        viewCountService.setValue(StudioViewCountCacheKey.from(result.getId()), 0L);
     }
 
     public void deleteStudioRoomPost(

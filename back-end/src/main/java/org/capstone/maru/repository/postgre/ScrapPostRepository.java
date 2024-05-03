@@ -1,9 +1,9 @@
-package org.capstone.maru.repository;
+package org.capstone.maru.repository.postgre;
 
 import java.util.List;
 import java.util.Optional;
 import org.capstone.maru.domain.ScrapPost;
-import org.capstone.maru.repository.projection.ScrapPostView;
+import org.capstone.maru.repository.postgre.projection.ScrapPostView;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

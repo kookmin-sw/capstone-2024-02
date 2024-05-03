@@ -1,4 +1,4 @@
-package org.capstone.maru.repository.projection;
+package org.capstone.maru.repository.postgre.projection;
 
 public interface ScrapPostView {
 

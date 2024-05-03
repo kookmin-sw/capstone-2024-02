@@ -1,4 +1,4 @@
-package org.capstone.maru.repository.projection;
+package org.capstone.maru.repository.postgre.projection;
 
 import java.util.List;
 import org.capstone.maru.domain.MemberAccount;
