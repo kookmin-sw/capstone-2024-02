@@ -163,13 +163,14 @@ async def fetch_data():
 
     return user_male_cards, user_female_cards, post_male_cards, post_female_cards
 
+def fill_missing_values(df):
+    imputer = SimpleImputer(strategy='mean')
+    return imputer.fit_transform(df)
 
 def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_cards):
-    imputer = SimpleImputer(strategy='mean')
 
     male_cards = [*user_male_cards, *post_male_cards]
     male_df = generate_df_data(male_cards)
-    # male_df = imputer.fit_transform(male_df)
 
     female_cards = [*user_female_cards, *post_female_cards]
     female_df = generate_df_data(female_cards)
@@ -180,12 +181,16 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
     # 결측값 우선 처리
 
     male_cluster_model = DBSCAN(eps=0.2, min_samples=2)
-    male_cluster_model.fit(convert_fit_data(male_df))
+    male_cluster_model.fit(
+        convert_fit_data(fill_missing_values(male_df))
+    )
     
     print("male fit complete")
 
     female_cluster_model = DBSCAN(eps=0.2, min_samples=2)
-    female_cluster_model.fit(convert_fit_data(female_df))
+    female_cluster_model.fit(
+        fill_missing_values(convert_fit_data(female_df))
+    )
 
     print("complete clustering")
 
