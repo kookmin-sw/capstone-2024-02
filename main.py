@@ -7,8 +7,6 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 # from google.cloud import firestore
 import os
-import models 
-from database import engine
 
 import pandas as pd
 from pydantic import BaseModel
@@ -17,6 +15,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from asyncio import Lock
 from collections import defaultdict
+from sklearn.impute import SimpleImputer
 
 state_lock = Lock()
 
@@ -45,7 +44,7 @@ class DataModel(BaseModel):
     post: PostCategory
 
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = "postgresql://cheesecrust:0810jack@mydatabase.c3kmc4wcyz81.ap-northeast-2.rds.amazonaws.com/maru"
 database = Database(DATABASE_URL)
 
 
@@ -76,10 +75,16 @@ app.add_middleware(
 
 def generate_df_data(data):
     df = pd.DataFrame(data)
-
     if "features" in df.columns:
-        df["features"] = df["features"].apply(ast.literal_eval)
 
+        # 데이터 정제 (null을 None으로 변환)
+        df["features"] = df["features"].str.replace('null', 'None')
+        
+        # 데이터 정제 (숫자를 문자열로 변환)
+        df["features"] = df["features"].apply(lambda x: str(x))
+        
+        df["features"] = df["features"].apply(ast.literal_eval)
+        
         features = (
             df["features"]
             .apply(pd.Series)
@@ -103,6 +108,7 @@ def generate_df_data(data):
 
 def convert_fit_data(df, columns=["id", "gender", "card_type"]):
     result = df.drop(columns=columns, axis=1)
+    print("complete convert_fit_data")
     return result
 
 
@@ -114,19 +120,21 @@ def feature_card_cosine_similarity(card1, card2):
 
 
 async def fetch_data():
+    print("fetch_data")
+    
     query = """
-            SELECT member_id AS id, features, gender, 'my' AS card_type, birth_year
+            SELECT member_id AS id, member_features AS features, gender, 'my' AS card_type, birth_year
             FROM member_account
             JOIN feature_card ON member_account.my_card_id = feature_card.feature_card_id
             UNION ALL
-            SELECT member_id as id, features, gender, 'mate' AS card_type, birth_year
+            SELECT member_id as id, member_features AS features, gender, 'mate' AS card_type, birth_year
             FROM member_account
             JOIN feature_card ON member_account.mate_card_id = feature_card.feature_card_id
             """
     user_cards = [dict(record) for record in await database.fetch_all(query)]
 
     query = """
-            SELECT id, features, gender, 'room' AS card_type, member_account.birth_year
+            SELECT id, member_features AS features, gender, 'room' AS card_type, member_account.birth_year
             FROM shared_room_post
             JOIN feature_card ON shared_room_post.room_mate_card_id = feature_card.feature_card_id
             JOIN member_account ON member_account.member_id = shared_room_post.publisher_id
@@ -157,20 +165,34 @@ async def fetch_data():
 
 
 def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_cards):
+    imputer = SimpleImputer(strategy='mean')
+
     male_cards = [*user_male_cards, *post_male_cards]
     male_df = generate_df_data(male_cards)
+    # male_df = imputer.fit_transform(male_df)
 
     female_cards = [*user_female_cards, *post_female_cards]
     female_df = generate_df_data(female_cards)
+    
+    print("complete generate_df_data")
+    
+    # 여기의 fit 이 뭔데 값으로??
+    # 결측값 우선 처리
 
     male_cluster_model = DBSCAN(eps=0.2, min_samples=2)
     male_cluster_model.fit(convert_fit_data(male_df))
+    
+    print("male fit complete")
 
     female_cluster_model = DBSCAN(eps=0.2, min_samples=2)
     female_cluster_model.fit(convert_fit_data(female_df))
 
+    print("complete clustering")
+
     male_cluster = defaultdict(lambda: [])
+
     find_male_user_cluster = defaultdict(lambda: {"my": None, "mate": None})
+
     for index, cluster in enumerate(
         male_cluster_model.fit_predict(convert_fit_data(male_df))
     ):
@@ -264,7 +286,7 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
                             "cardType": other_card["card_type"],
                         }
                     )
-
+    print(male_recommendation_result)
     # recommendation_collection = recommendation_database.collection("recommendation")
     # for male_user_id, recommendation_result in male_recommendation_result.items():
     #     doc_ref = recommendation_collection.document(f"{male_user_id}")
@@ -284,5 +306,7 @@ async def update():
     user_male_cards, user_female_cards, post_male_cards, post_female_cards = (
         await fetch_data()
     )
+    print("fetch complete")
     clustering(user_male_cards, user_female_cards, post_male_cards, post_female_cards)
+    print("clustering complete")
     return {"detail": "ok"}
