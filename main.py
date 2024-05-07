@@ -5,8 +5,10 @@ from databases import Database
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from google.cloud import firestore
+# from google.cloud import firestore
 import os
+import models 
+from database import engine
 
 import pandas as pd
 from pydantic import BaseModel
@@ -22,7 +24,6 @@ state_lock = Lock()
 # uvicorn main:app --reload
 
 load_dotenv()  # .env 파일에서 환경 변수 로드
-
 
 class SimilarityItem(BaseModel):
     id: str
@@ -44,9 +45,8 @@ class DataModel(BaseModel):
     post: PostCategory
 
 
-DATABASE_URL = f"postgresql://{os.getenv('USER_NAME')}:{os.getenv('PASSWORD')}@{os.getenv('HOST')}/{os.getenv('DATABASE')}"
+DATABASE_URL = os.getenv("DATABASE_URL")
 database = Database(DATABASE_URL)
-recommendation_database = firestore.Client()
 
 
 @asynccontextmanager
@@ -54,7 +54,7 @@ async def lifespan(app: FastAPI):
     await database.connect()
     yield
     await database.disconnect()
-    recommendation_database.close()
+    # recommendation_database.close()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -265,13 +265,13 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
                         }
                     )
 
-    recommendation_collection = recommendation_database.collection("recommendation")
-    for male_user_id, recommendation_result in male_recommendation_result.items():
-        doc_ref = recommendation_collection.document(f"{male_user_id}")
-        doc_ref.set(recommendation_result)
-    for female_user_id, recommendation_result in female_recommendation_result.items():
-        doc_ref = recommendation_collection.document(f"{female_user_id}")
-        doc_ref.set(recommendation_result)
+    # recommendation_collection = recommendation_database.collection("recommendation")
+    # for male_user_id, recommendation_result in male_recommendation_result.items():
+    #     doc_ref = recommendation_collection.document(f"{male_user_id}")
+    #     doc_ref.set(recommendation_result)
+    # for female_user_id, recommendation_result in female_recommendation_result.items():
+    #     doc_ref = recommendation_collection.document(f"{female_user_id}")
+    #     doc_ref.set(recommendation_result)
 
 
 @app.get("/")
