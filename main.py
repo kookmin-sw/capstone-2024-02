@@ -1,4 +1,5 @@
 import ast
+import json
 from contextlib import asynccontextmanager
 from typing import List
 from databases import Database
@@ -43,8 +44,8 @@ class DataModel(BaseModel):
     user: UserCategory
     post: PostCategory
 
-
 DATABASE_URL = "postgresql://cheesecrust:0810jack@mydatabase.c3kmc4wcyz81.ap-northeast-2.rds.amazonaws.com/maru"
+# DATABASE_URL = "postgresql://localhost:5432/maru"
 database = Database(DATABASE_URL)
 
 
@@ -53,7 +54,6 @@ async def lifespan(app: FastAPI):
     await database.connect()
     yield
     await database.disconnect()
-    # recommendation_database.close()
 
 
 app = FastAPI(lifespan=lifespan)
@@ -72,19 +72,34 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def extract_features(data):
+    if data is None:
+        return []
+
+    parsed_data = json.loads(data)
+    # "options" 키의 값 추출
+    options_value = parsed_data['options']
+
+    # 문자열에서 배열로 변환
+    options_array = json.loads(options_value)
+
+    # 추가할 키의 값들 추출
+    smoking_value = parsed_data['smoking']
+    mate_age_value = parsed_data['mate_age']
+    room_sharing_option_value = parsed_data['room_sharing_option']
+
+    # 추가할 값들을 배열에 추가
+    options_array.extend([smoking_value, mate_age_value, room_sharing_option_value])
+    return options_array
 
 def generate_df_data(data):
     df = pd.DataFrame(data)
+
     if "features" in df.columns:
 
-        # 데이터 정제 (null을 None으로 변환)
-        df["features"] = df["features"].str.replace('null', 'None')
+        df["features"] = df["features"].apply(extract_features)
         
-        # 데이터 정제 (숫자를 문자열로 변환)
-        df["features"] = df["features"].apply(lambda x: str(x))
-        
-        df["features"] = df["features"].apply(ast.literal_eval)
-        
+
         features = (
             df["features"]
             .apply(pd.Series)
@@ -92,10 +107,11 @@ def generate_df_data(data):
             .reset_index(level=1, drop=True)
             .to_frame("features")
         )
-
+        
         dummies = (
             pd.get_dummies(features, prefix="", prefix_sep="").groupby(level=0).sum()
         )
+
         if "[]" in dummies:
             dummies.drop("[]", axis=1, inplace=True)
         if "null" in dummies:
@@ -108,7 +124,6 @@ def generate_df_data(data):
 
 def convert_fit_data(df, columns=["id", "gender", "card_type"]):
     result = df.drop(columns=columns, axis=1)
-    print("complete convert_fit_data")
     return result
 
 
@@ -120,21 +135,20 @@ def feature_card_cosine_similarity(card1, card2):
 
 
 async def fetch_data():
-    print("fetch_data")
     
     query = """
-            SELECT member_id AS id, member_features AS features, gender, 'my' AS card_type, birth_year
+            SELECT member_id AS id, member_features::jsonb AS features, gender, 'my' AS card_type, birth_year
             FROM member_account
             JOIN feature_card ON member_account.my_card_id = feature_card.feature_card_id
             UNION ALL
-            SELECT member_id as id, member_features AS features, gender, 'mate' AS card_type, birth_year
+            SELECT member_id as id, member_features::jsonb AS features, gender, 'mate' AS card_type, birth_year
             FROM member_account
             JOIN feature_card ON member_account.mate_card_id = feature_card.feature_card_id
             """
     user_cards = [dict(record) for record in await database.fetch_all(query)]
 
     query = """
-            SELECT id, member_features AS features, gender, 'room' AS card_type, member_account.birth_year
+            SELECT id, member_features::jsonb AS features, gender, 'room' AS card_type, member_account.birth_year
             FROM shared_room_post
             JOIN feature_card ON shared_room_post.room_mate_card_id = feature_card.feature_card_id
             JOIN member_account ON member_account.member_id = shared_room_post.publisher_id
@@ -164,6 +178,7 @@ async def fetch_data():
     return user_male_cards, user_female_cards, post_male_cards, post_female_cards
 
 def fill_missing_values(df):
+    print("fill_missing_values")
     imputer = SimpleImputer(strategy='mean')
     return imputer.fit_transform(df)
 
@@ -171,29 +186,25 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
 
     male_cards = [*user_male_cards, *post_male_cards]
     male_df = generate_df_data(male_cards)
+    print(male_df)
 
     female_cards = [*user_female_cards, *post_female_cards]
     female_df = generate_df_data(female_cards)
     
-    print("complete generate_df_data")
-    
+
     # 여기의 fit 이 뭔데 값으로??
     # 결측값 우선 처리
 
     male_cluster_model = DBSCAN(eps=0.2, min_samples=2)
     male_cluster_model.fit(
-        convert_fit_data(fill_missing_values(male_df))
+        convert_fit_data(male_df)
     )
     
-    print("male fit complete")
-
     female_cluster_model = DBSCAN(eps=0.2, min_samples=2)
     female_cluster_model.fit(
-        fill_missing_values(convert_fit_data(female_df))
+        convert_fit_data(female_df)
     )
-
-    print("complete clustering")
-
+    
     male_cluster = defaultdict(lambda: [])
 
     find_male_user_cluster = defaultdict(lambda: {"my": None, "mate": None})
@@ -201,6 +212,7 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
     for index, cluster in enumerate(
         male_cluster_model.fit_predict(convert_fit_data(male_df))
     ):
+        print(cluster)
         card = male_cards[index]
 
         male_cluster[cluster].append(male_cards[index])
@@ -223,6 +235,7 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
     male_recommendation_result = defaultdict(
         lambda: {"user": {"my": [], "mate": []}, "post": {"my": [], "mate": []}}
     )
+
     for cluster, cluster_item in male_cluster.items():
         for i, card in enumerate(cluster_item):
             if card["card_type"] == "room":
@@ -233,8 +246,8 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
             for j, other_card in enumerate(cluster_item):
                 if (
                     i == j
-                    or card_type == other_card["card_type"]
-                    or user_id == other_card["id"]
+                    # or card_type == other_card["card_type"]
+                    # or user_id == other_card["id"]
                 ):
                     continue
 
@@ -269,8 +282,8 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
             for j, other_card in enumerate(cluster_item):
                 if (
                     i == j
-                    or card_type == other_card["card_type"]
-                    or user_id == other_card["id"]
+                    # or card_type == other_card["card_type"]
+                    # or user_id == other_card["id"]
                 ):
                     continue
 
@@ -292,13 +305,9 @@ def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_
                         }
                     )
     print(male_recommendation_result)
-    # recommendation_collection = recommendation_database.collection("recommendation")
-    # for male_user_id, recommendation_result in male_recommendation_result.items():
-    #     doc_ref = recommendation_collection.document(f"{male_user_id}")
-    #     doc_ref.set(recommendation_result)
-    # for female_user_id, recommendation_result in female_recommendation_result.items():
-    #     doc_ref = recommendation_collection.document(f"{female_user_id}")
-    #     doc_ref.set(recommendation_result)
+    print(female_recommendation_result)
+    
+    # 여기에 insert
 
 
 @app.get("/")
@@ -311,7 +320,31 @@ async def update():
     user_male_cards, user_female_cards, post_male_cards, post_female_cards = (
         await fetch_data()
     )
-    print("fetch complete")
+
     clustering(user_male_cards, user_female_cards, post_male_cards, post_female_cards)
     print("clustering complete")
+
     return {"detail": "ok"}
+
+@app.get("/fetch")
+async def fetch():
+    user_male_cards, user_female_cards, post_male_cards, post_female_cards = (
+        await fetch_data()
+    )
+    # print("user male cards : ", user_male_cards)
+    # print()
+    # print("user female cards : ", user_female_cards)
+    # print()
+    # print(generate_df_data(user_male_cards))
+    # print()
+    print(user_female_cards)
+    print(generate_df_data(user_female_cards))
+
+@app.get("/insert")
+async def insert():
+    query = """
+            insert into recommend (id, user_id, card_type, recommendation_id, recommendation_card_type, score)
+            values (2,'test', 'test', 'test', 'tset', 100)
+            """
+    
+    await database.execute(query)
