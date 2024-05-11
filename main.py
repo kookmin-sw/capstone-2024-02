@@ -221,7 +221,6 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
         convert_fit_data(female_df)
     )
     
-    print("convert")
     male_cluster = defaultdict(lambda: [])
 
     find_male_user_cluster = defaultdict(lambda: {"my": None, "mate": None})
@@ -285,7 +284,6 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
                         }
                     )
 
-    print("here?")
     female_recommendation_result = defaultdict(
         lambda: {"user": {"my": [], "mate": []}, "post": {"my": [], "mate": []}}
     )
@@ -331,7 +329,11 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
 
     for recommendation_result in (male_recommendation_result, female_recommendation_result):
         for user_id in recommendation_result:
-            # print(user_id, recommendation_result[user_id])
+
+            query = """
+                    insert into recommend (user_id, card_type, recommendation_id, recommendation_card_type, score)
+                    values (:user_id, :card_type, :id, :recommendation_card_type, :score)
+                    """
 
             my_card_result = recommendation_result[user_id]["user"]["my"]
             mate_card_result = recommendation_result[user_id]["user"]["mate"]
@@ -341,26 +343,31 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
                 score = result["score"]
                 card_type = result["cardType"]
 
-                # query = """
-                #         insert into recommend (user_id, card_type, recommendation_id, recommendation_card_type, score)
-                #         values (:user_id, 'my', :id, :card_type, :score)
-                #         """
-
-                # # print("------------------------------- recommend_ result",user_id, id, score, card_type)
-                # await database.execute(query, {"user_id": user_id, "id": id, "score": score, "card_type": card_type})
-                # pass
+                await database.execute(query, {"user_id": user_id, "card_type": 'my', "id": id, "score": score, "recommendation_card_type": card_type})
 
             for result in mate_card_result:
-                pass
+                id = result["id"]
+                score = result["score"]
+                card_type = result["cardType"]
+
+                await database.execute(query, {"user_id": user_id, "card_type": 'mate', "id": id, "score": score, "recommendation_card_type": card_type})
 
             post_my_card_result = recommendation_result[user_id]["post"]["my"]
             post_mate_card_result =  recommendation_result[user_id]["post"]["mate"]
 
             for result in post_my_card_result:
-                pass
+                id = result["id"]
+                score = result["score"]
+                card_type = result["cardType"]
+
+                await database.execute(query, {"user_id": user_id, "card_type": 'my', "id": id, "score": score, "recommendation_card_type": card_type})
 
             for result in post_mate_card_result:
-                pass
+                id = result["id"]
+                score = result["score"]
+                card_type = result["cardType"]
+
+                await database.execute(query, {"user_id": user_id, "card_type": 'mate', "id": id, "score": score, "recommendation_card_type": card_type})
 
 
     print()
