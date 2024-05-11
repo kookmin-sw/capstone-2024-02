@@ -214,7 +214,6 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
     male_cluster_model.fit(
         convert_fit_data(male_df)
     )
-    print(male_df)
 
     female_cluster_model = DBSCAN(eps=0.2, min_samples=2)
     female_cluster_model.fit(
@@ -236,7 +235,9 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
             find_male_user_cluster[user_id][card["card_type"]] = cluster
 
     female_cluster = defaultdict(lambda: [])
+
     find_female_user_cluster = defaultdict(lambda: {"my": None, "mate": None})
+
     for index, cluster in enumerate(
         female_cluster_model.fit_predict(convert_fit_data(female_df))
     ):
@@ -327,6 +328,7 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
     user_id <-> id, user_card_type, score, id_type
     """
 
+    await database.execute("truncate table recommend")
     for recommendation_result in (male_recommendation_result, female_recommendation_result):
         for user_id in recommendation_result:
 
@@ -369,9 +371,6 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
 
                 await database.execute(query, {"user_id": user_id, "card_type": 'mate', "id": id, "score": score, "recommendation_card_type": card_type})
 
-
-    print()
-    print("female result : ", female_recommendation_result.values())
     # 여기에 insert
 
 
