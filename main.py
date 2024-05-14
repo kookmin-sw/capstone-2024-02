@@ -1,6 +1,8 @@
 import ast
 import json
 from contextlib import asynccontextmanager
+import time
+from tracemalloc import start
 from typing import List
 from databases import Database
 from dotenv import load_dotenv
@@ -13,10 +15,13 @@ import pandas as pd
 from pydantic import BaseModel
 from sklearn.cluster import DBSCAN
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import StandardScaler
 
 from asyncio import Lock
 from collections import defaultdict
 from sklearn.impute import SimpleImputer
+
+
 
 state_lock = Lock()
 
@@ -137,12 +142,16 @@ def generate_df_data(data):
         if "null" in dummies:
             dummies.drop("null", axis=1, inplace=True)
         
+        for column in dummies.columns:
+            if column.startswith("[") and column.endswith("]"):
+                dummies.drop(column, axis=1, inplace=True)
+        
         df = pd.concat([df, dummies], axis=1).drop("features", axis=1)
 
     return df
 
 
-def convert_fit_data(df, columns=["id", "gender", "card_type"]):
+def convert_fit_data(df, columns=["id", "gender", "card_type", 'birth_year', 'location']):
     result = df.drop(columns=columns, axis=1)
     return result
 
@@ -154,182 +163,99 @@ def feature_card_cosine_similarity(card1, card2):
     return result[0][1].item()
 
 
-async def fetch_data():
+async def fetch_data(user_id, card_type):
+
+    location_cluster = [{'강서구', '양천구'}, {'구로구', '영등포구', '금천구'}, {'동작구', '관악구'}, {'서초구', '강남구'},
+               {'송파구', '강동구'}, {'은평구', '서대문구', '마포구'}, {'종로구', '중구', '용산구'}, {'중랑구', '동대문구', '성동구', '광진구'},
+               {'성북구', '강북구', '도봉구', '노원구'}]
+
+    query = f"""
+            SELECT member_id AS id, location, member_features::jsonb AS features, gender, '{card_type}' AS card_type, birth_year
+            FROM member_account
+            JOIN feature_card
+            ON member_account.{card_type}_card_id = feature_card.feature_card_id
+            WHERE '{user_id}' = member_id
+            """
     
-    query = """
-            SELECT member_id AS id, member_features::jsonb AS features, gender, 'my' AS card_type, birth_year
-            FROM member_account
-            JOIN feature_card ON member_account.my_card_id = feature_card.feature_card_id
-            UNION ALL
-            SELECT member_id as id, member_features::jsonb AS features, gender, 'mate' AS card_type, birth_year
-            FROM member_account
-            JOIN feature_card ON member_account.mate_card_id = feature_card.feature_card_id
-            """
-    user_cards = [dict(record) for record in await database.fetch_all(query)]
+    user = await database.fetch_one(query)
+    user_location = user['location'].split()[1]
+    user_gender = user['gender']
 
-    query = """
-            SELECT id, member_features::jsonb AS features, gender, 'room' AS card_type, member_account.birth_year
-            FROM shared_room_post
-            JOIN feature_card ON shared_room_post.room_mate_card_id = feature_card.feature_card_id
-            JOIN member_account ON member_account.member_id = shared_room_post.publisher_id
-            """
-    post_cards = [dict(record) for record in await database.fetch_all(query)]
+    cluster_index = -1
+    for i, cluster in enumerate(location_cluster):
+        if user_location in cluster:
+            cluster_index = i
+            break
 
-    user_male_cards = []
-    user_female_cards = []
-    for record in user_cards:
-        user_gender = record["gender"]
+    user_cards = []
+    post_cards = []
+    for location in location_cluster[cluster_index]:
+        query = f"""
+                SELECT member_id AS id, location, member_features::jsonb AS features, gender, 'my' AS card_type, birth_year
+                FROM member_account
+                JOIN feature_card 
+                ON member_account.my_card_id = feature_card.feature_card_id
+                WHERE location like '%{location}%' and gender IN ('{user_gender.lower()}', '{user_gender.upper()}')
+                UNION ALL
+                SELECT member_id as id, location, member_features::jsonb AS features, gender, 'mate' AS card_type, birth_year
+                FROM member_account
+                JOIN feature_card 
+                ON member_account.mate_card_id = feature_card.feature_card_id
+                WHERE location like '%{location}%' and gender IN ('{user_gender.lower()}', '{user_gender.upper()}')
+                """ 
+        user_cards.extend([dict(record) for record in await database.fetch_all(query)])
 
-        cards = user_male_cards
-        if user_gender.lower() == "female":
-            cards = user_female_cards
-        cards.append(record)
+        query = f"""
+                SELECT id, location, member_features::jsonb AS features, gender, 'room' AS card_type, member_account.birth_year
+                FROM shared_room_post
+                JOIN feature_card ON shared_room_post.room_mate_card_id = feature_card.feature_card_id
+                JOIN member_account ON member_account.member_id = shared_room_post.publisher_id
+                WHERE location like '%{location}%' and gender IN ('{user_gender.lower()}', '{user_gender.upper()}')
+                """
+        post_cards.extend([dict(record) for record in await database.fetch_all(query)])
 
-    post_male_cards = []
-    post_female_cards = []
-    for record in post_cards:
-        user_gender = record["gender"]
-
-        cards = post_male_cards
-        if user_gender.lower() == "female":
-            cards = post_female_cards
-        cards.append(record)
-
-    return user_male_cards, user_female_cards, post_male_cards, post_female_cards
+    return user_cards, post_cards, dict(user)
 
 def fill_missing_values(df):
     imputer = SimpleImputer(strategy='mean')
     return imputer.fit_transform(df)
 
-async def clustering(user_male_cards, user_female_cards, post_male_cards, post_female_cards):
+async def clustering(user_cards, post_cards, user_card):
+    cards = [*user_cards, *post_cards]
 
-    male_cards = [*user_male_cards, *post_male_cards]
-
-    if male_cards == []:
-        male_cards = [{'id': 'male_default', 'features': None, 'gender': 'MALE', 'card_type': 'my', 'birth_year': '1999'}, 
+    if cards == []:
+        cards = [{'id': 'male_default', 'features': None, 'gender': 'MALE', 'card_type': 'my', 'birth_year': '1999'}, 
                       {'id': 'male_default', 'features': None, 'gender': 'MALE', 'card_type': 'mate', 'birth_year': '1999'}]
 
-    male_df = generate_df_data(male_cards)
+    total_recommendation_result = {"user": {"my": [], "mate": []}, "post": {"my": [], "mate": []}}
 
-    female_cards = [*user_female_cards, *post_female_cards]
+    for card in cards:
+        if (
+            card['card_type'] == user_card['card_type']
+            or (card['card_type'] != 'room' and card['id'] == user_card['id'])
+        ):
+            continue
 
-    if female_cards == []:
-        female_cards = [{'id': 'female_default', 'features': None, 'gender': 'MALE', 'card_type': 'my', 'birth_year': '1999'}, 
-                      {'id': 'female_default', 'features': None, 'gender': 'MALE', 'card_type': 'mate', 'birth_year': '1999'}]
+        similarity = feature_card_cosine_similarity(user_card, card)
 
-    female_df = generate_df_data(female_cards)
-    
-    male_cluster_model = DBSCAN(eps=0.2, min_samples=2)
-    male_cluster_model.fit(
-        convert_fit_data(male_df)
-    )
-
-    female_cluster_model = DBSCAN(eps=0.2, min_samples=2)
-    female_cluster_model.fit(
-        convert_fit_data(female_df)
-    )
-    
-    male_cluster = defaultdict(lambda: [])
-
-    find_male_user_cluster = defaultdict(lambda: {"my": None, "mate": None})
-
-    for index, cluster in enumerate(
-        male_cluster_model.fit_predict(convert_fit_data(male_df))
-    ):
-        card = male_cards[index]
-
-        male_cluster[cluster].append(male_cards[index])
         if card["card_type"] != "room":
-            user_id = card["id"]
-            find_male_user_cluster[user_id][card["card_type"]] = cluster
+            total_recommendation_result["user"][user_card["card_type"]].append(
+                {
+                    "id": card["id"],
+                    "score": similarity,
+                    "cardType":  card["card_type"],
+                }
+            )
+        else:
+            total_recommendation_result["post"][user_card["card_type"]].append(
+                {
+                    "id": card["id"],
+                    "score": similarity,
+                    "cardType":  card["card_type"],
+                }
+            )
 
-    female_cluster = defaultdict(lambda: [])
-
-    find_female_user_cluster = defaultdict(lambda: {"my": None, "mate": None})
-
-    for index, cluster in enumerate(
-        female_cluster_model.fit_predict(convert_fit_data(female_df))
-    ):
-        card = female_cards[index]
-
-        female_cluster[cluster].append(female_cards[index])
-        if card["card_type"] != "room":
-            user_id = card["id"]
-            find_female_user_cluster[user_id][card["card_type"]] = cluster
-
-    male_recommendation_result = defaultdict(
-        lambda: {"user": {"my": [], "mate": []}, "post": {"my": [], "mate": []}}
-    )
-
-    for cluster, cluster_item in male_cluster.items():
-        for i, card in enumerate(cluster_item):
-            if card["card_type"] == "room":
-                continue
-
-            user_id = card["id"]
-            card_type = card["card_type"]
-            for j, other_card in enumerate(cluster_item):
-                if (
-                    i == j
-                    or card_type == other_card["card_type"]
-                    or user_id == other_card["id"]
-                ):
-                    continue
-
-                similarity = feature_card_cosine_similarity(card, other_card)
-                if other_card["card_type"] != "room":
-                    male_recommendation_result[user_id]["user"][card_type].append(
-                        {
-                            "id": other_card["id"],
-                            "score": similarity,
-                            "cardType": other_card["card_type"],
-                        }
-                    )
-                else:
-                    male_recommendation_result[user_id]["post"][card_type].append(
-                        {
-                            "id": other_card["id"],
-                            "score": similarity,
-                            "cardType": other_card["card_type"],
-                        }
-                    )
-
-    female_recommendation_result = defaultdict(
-        lambda: {"user": {"my": [], "mate": []}, "post": {"my": [], "mate": []}}
-    )
-    for cluster, cluster_item in female_cluster.items():
-        for i, card in enumerate(cluster_item):
-            if card["card_type"] == "room":
-                continue
-
-            user_id = card["id"]
-            card_type = card["card_type"]
-            for j, other_card in enumerate(cluster_item):
-                if (
-                    i == j
-                    or card_type == other_card["card_type"]
-                    or user_id == other_card["id"]
-                ):
-                    continue
-
-                similarity = feature_card_cosine_similarity(card, other_card)
-                if other_card["card_type"] != "room":
-                    female_recommendation_result[user_id]["user"][card_type].append(
-                        {
-                            "id": other_card["id"],
-                            "score": similarity,
-                            "cardType": other_card["card_type"],
-                        }
-                    )
-                else:
-                    female_recommendation_result[user_id]["post"][card_type].append(
-                        {
-                            "id": other_card["id"],
-                            "score": similarity,
-                            "cardType": other_card["card_type"],
-                        }
-                    )
-
+    print("complete recommendation")
     # print("male key : ", male_recommendation_result.keys())
     # print("male result : ", male_recommendation_result.values())
     """
@@ -340,47 +266,55 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
     # print(male_recommendation_result)
     # print(female_recommendation_result)
 
-    for recommendation_result in (male_recommendation_result, female_recommendation_result):
+    query = """
+        insert into recommend (user_id, card_type, recommendation_id, recommendation_card_type, score)
+        values (:user_id, :card_type, :recommendation_id, :recommendation_card_type, :score)
+        """
 
-        for user_id in recommendation_result:
-            query = """
-                    insert into recommend (user_id, card_type, recommendation_id, recommendation_card_type, score)
-                    values (:user_id, :card_type, :id, :recommendation_card_type, :score)
-                    """
+    for card_data in total_recommendation_result["user"]["my"]:
+        recommendation_id = card_data["id"]
+        recommendation_card_type = card_data["cardType"]
+        score = card_data["score"] * 100
 
-            my_card_result = recommendation_result[user_id]["user"]["my"]
-            mate_card_result = recommendation_result[user_id]["user"]["mate"]
+        await database.execute(query, 
+                               {"user_id": user_card["id"], "card_type": user_card["card_type"], 
+                                "recommendation_id": recommendation_id, "recommendation_card_type": recommendation_card_type,
+                                "score": score
+                                })
 
-            for result in my_card_result:
-                id = result["id"]
-                score = result["score"] * 100
-                card_type = result["cardType"]
+    for card_data in total_recommendation_result["user"]["mate"]:
+        recommendation_id = card_data["id"]
+        recommendation_card_type = card_data["cardType"]
+        score = card_data["score"] * 100
 
-                await database.execute(query, {"user_id": user_id, "card_type": 'my', "id": id, "score": score, "recommendation_card_type": card_type})
+        await database.execute(query, 
+                               {"user_id": user_card["id"], "card_type": user_card["card_type"], 
+                                "recommendation_id": recommendation_id, "recommendation_card_type": recommendation_card_type,
+                                "score": score
+                                })
 
-            for result in mate_card_result:
-                id = result["id"]
-                score = result["score"] * 100
-                card_type = result["cardType"]
+    for card_data in total_recommendation_result["post"]["my"]:
+        recommendation_id = str(card_data["id"])
+        recommendation_card_type = card_data["cardType"]
+        score = card_data["score"] * 100
 
-                await database.execute(query, {"user_id": user_id, "card_type": 'mate', "id": id, "score": score, "recommendation_card_type": card_type})
+        await database.execute(query, 
+                               {"user_id": user_card["id"], "card_type": user_card["card_type"], 
+                                "recommendation_id": recommendation_id, "recommendation_card_type": recommendation_card_type,
+                                "score": score
+                                })
 
-            post_my_card_result = recommendation_result[user_id]["post"]["my"]
-            post_mate_card_result =  recommendation_result[user_id]["post"]["mate"]
+    for card_data in total_recommendation_result["post"]["mate"]:
+        recommendation_id = str(card_data["id"])
+        recommendation_card_type = card_data["cardType"]
+        score = card_data["score"] * 100
 
-            for result in post_my_card_result:
-                id = result["id"]
-                score = result["score"] * 100
-                card_type = result["cardType"]
+        await database.execute(query, 
+                               {"user_id": user_card["id"], "card_type": user_card["card_type"], 
+                                "recommendation_id": recommendation_id, "recommendation_card_type": recommendation_card_type,
+                                "score": score
+                                })
 
-                await database.execute(query, {"user_id": user_id, "card_type": 'my', "id": str(id), "score": score, "recommendation_card_type": card_type})
-
-            for result in post_mate_card_result:
-                id = result["id"]
-                score = result["score"] * 100
-                card_type = result["cardType"]
-
-                await database.execute(query, {"user_id": user_id, "card_type": 'mate', "id": str(id), "score": score, "recommendation_card_type": card_type})
 
     # 여기에 insert
 
@@ -392,23 +326,27 @@ async def root():
 
 @app.get("/recommendation/update")
 async def update():
-    user_male_cards, user_female_cards, post_male_cards, post_female_cards = (
-        await fetch_data()
+    start = time.time()
+    user_cards, post_cards, user_card = (
+        await fetch_data("kakao_0", "my")
     )
+    
+    print('fetch complete')
 
-    await clustering(user_male_cards, user_female_cards, post_male_cards, post_female_cards)
+    await clustering(user_cards, post_cards, user_card)
+
     print("clustering complete")
-
+    print("time : ", time.time() - start)
     return {"detail": "ok"}
 
 @app.get("/fetch")
 async def fetch():
-    user_male_cards, user_female_cards, post_male_cards, post_female_cards = (
-        await fetch_data()
+    user_cards, post_cards = (
+        await fetch_data("kakao_0", "my")
     )
 
-    # print(user_male_cards)
-    print(generate_df_data(post_female_cards))
+    print(user_cards)
+    print(generate_df_data(post_cards))
 
 @app.get("/insert")
 async def insert():
@@ -418,3 +356,7 @@ async def insert():
             """
     
     await database.execute(query)
+
+@app.get("/test")
+async def test():
+    await fetch_data("kakao_0", "my")
