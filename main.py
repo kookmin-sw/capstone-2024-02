@@ -44,8 +44,8 @@ class DataModel(BaseModel):
     user: UserCategory
     post: PostCategory
 
-DATABASE_URL = "postgresql://cheesecrust:0810jack@mydatabase.c3kmc4wcyz81.ap-northeast-2.rds.amazonaws.com/maru"
-# DATABASE_URL = "postgresql://localhost:5432/maru"
+# DATABASE_URL = "postgresql://cheesecrust:0810jack@mydatabase.c3kmc4wcyz81.ap-northeast-2.rds.amazonaws.com/maru"
+DATABASE_URL = "postgresql://localhost:5432/maru"
 database = Database(DATABASE_URL)
 
 
@@ -90,7 +90,16 @@ def extract_features(data):
 
     if options_value is not None:
         options_array = ast.literal_eval(options_value)
-
+    
+    result_array = []
+    for value in options_array:
+        if isinstance(value, list):
+            result_array.append(str(value))
+        # elif isinstance(value, int):
+        #     print("int value : ", value)
+        #     result_array.extend(str(value))
+        else:
+            result_array.append(value)
     # 추가할 키의 값들 추출
     smoking_value = parsed_data['smoking']
     mate_age_value = None
@@ -99,10 +108,11 @@ def extract_features(data):
     room_sharing_option_value = parsed_data['room_sharing_option']
 
     # 추가할 값들을 배열에 추가
-    options_array.extend([smoking_value, room_sharing_option_value])
+    result_array.extend([smoking_value, room_sharing_option_value])
     if mate_age_value is not None:
-        options_array.append(mate_age_value)
-    return options_array
+        result_array.append(mate_age_value)
+
+    return result_array
 
 def generate_df_data(data):
     df = pd.DataFrame(data)
@@ -118,7 +128,6 @@ def generate_df_data(data):
             .reset_index(level=1, drop=True)
             .to_frame("features")
         )
-        
         dummies = (
             pd.get_dummies(features, prefix="", prefix_sep="").groupby(level=0).sum()
         )
@@ -127,7 +136,7 @@ def generate_df_data(data):
             dummies.drop("[]", axis=1, inplace=True)
         if "null" in dummies:
             dummies.drop("null", axis=1, inplace=True)
-
+        
         df = pd.concat([df, dummies], axis=1).drop("features", axis=1)
 
     return df
@@ -197,16 +206,16 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
     male_cards = [*user_male_cards, *post_male_cards]
 
     if male_cards == []:
-        male_cards = [{'id': 'default', 'features': None, 'gender': 'MALE', 'card_type': 'my', 'birth_year': '1999'}, 
-                      {'id': 'default', 'features': None, 'gender': 'MALE', 'card_type': 'mate', 'birth_year': '1999'}]
+        male_cards = [{'id': 'male_default', 'features': None, 'gender': 'MALE', 'card_type': 'my', 'birth_year': '1999'}, 
+                      {'id': 'male_default', 'features': None, 'gender': 'MALE', 'card_type': 'mate', 'birth_year': '1999'}]
 
     male_df = generate_df_data(male_cards)
 
     female_cards = [*user_female_cards, *post_female_cards]
 
     if female_cards == []:
-        female_cards = [{'id': 'default', 'features': None, 'gender': 'MALE', 'card_type': 'my', 'birth_year': '1999'}, 
-                      {'id': 'default', 'features': None, 'gender': 'MALE', 'card_type': 'mate', 'birth_year': '1999'}]
+        female_cards = [{'id': 'female_default', 'features': None, 'gender': 'MALE', 'card_type': 'my', 'birth_year': '1999'}, 
+                      {'id': 'female_default', 'features': None, 'gender': 'MALE', 'card_type': 'mate', 'birth_year': '1999'}]
 
     female_df = generate_df_data(female_cards)
     
@@ -262,8 +271,8 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
             for j, other_card in enumerate(cluster_item):
                 if (
                     i == j
-                    # or card_type == other_card["card_type"]
-                    # or user_id == other_card["id"]
+                    or card_type == other_card["card_type"]
+                    or user_id == other_card["id"]
                 ):
                     continue
 
@@ -298,8 +307,8 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
             for j, other_card in enumerate(cluster_item):
                 if (
                     i == j
-                    # or card_type == other_card["card_type"]
-                    # or user_id == other_card["id"]
+                    or card_type == other_card["card_type"]
+                    or user_id == other_card["id"]
                 ):
                     continue
 
@@ -323,15 +332,17 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
 
     # print("male key : ", male_recommendation_result.keys())
     # print("male result : ", male_recommendation_result.values())
-
     """
     user_id <-> id, user_card_type, score, id_type
     """
 
     await database.execute("truncate table recommend")
-    for recommendation_result in (male_recommendation_result, female_recommendation_result):
-        for user_id in recommendation_result:
+    # print(male_recommendation_result)
+    # print(female_recommendation_result)
 
+    for recommendation_result in (male_recommendation_result, female_recommendation_result):
+
+        for user_id in recommendation_result:
             query = """
                     insert into recommend (user_id, card_type, recommendation_id, recommendation_card_type, score)
                     values (:user_id, :card_type, :id, :recommendation_card_type, :score)
@@ -342,14 +353,14 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
 
             for result in my_card_result:
                 id = result["id"]
-                score = result["score"]
+                score = result["score"] * 100
                 card_type = result["cardType"]
 
                 await database.execute(query, {"user_id": user_id, "card_type": 'my', "id": id, "score": score, "recommendation_card_type": card_type})
 
             for result in mate_card_result:
                 id = result["id"]
-                score = result["score"]
+                score = result["score"] * 100
                 card_type = result["cardType"]
 
                 await database.execute(query, {"user_id": user_id, "card_type": 'mate', "id": id, "score": score, "recommendation_card_type": card_type})
@@ -359,17 +370,17 @@ async def clustering(user_male_cards, user_female_cards, post_male_cards, post_f
 
             for result in post_my_card_result:
                 id = result["id"]
-                score = result["score"]
+                score = result["score"] * 100
                 card_type = result["cardType"]
 
-                await database.execute(query, {"user_id": user_id, "card_type": 'my', "id": id, "score": score, "recommendation_card_type": card_type})
+                await database.execute(query, {"user_id": user_id, "card_type": 'my', "id": str(id), "score": score, "recommendation_card_type": card_type})
 
             for result in post_mate_card_result:
                 id = result["id"]
-                score = result["score"]
+                score = result["score"] * 100
                 card_type = result["cardType"]
 
-                await database.execute(query, {"user_id": user_id, "card_type": 'mate', "id": id, "score": score, "recommendation_card_type": card_type})
+                await database.execute(query, {"user_id": user_id, "card_type": 'mate', "id": str(id), "score": score, "recommendation_card_type": card_type})
 
     # 여기에 insert
 
@@ -396,8 +407,8 @@ async def fetch():
         await fetch_data()
     )
 
-    print(user_male_cards)
-    print(generate_df_data(user_male_cards))
+    # print(user_male_cards)
+    print(generate_df_data(post_female_cards))
 
 @app.get("/insert")
 async def insert():
