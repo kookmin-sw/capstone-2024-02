@@ -21,7 +21,7 @@ from asyncio import Lock
 from collections import defaultdict
 from sklearn.impute import SimpleImputer
 
-
+from request import Recommend
 
 state_lock = Lock()
 
@@ -322,19 +322,16 @@ async def clustering(cards, user_card):
                                 })
 
 
-    # 여기에 insert
-
-
 @app.get("/")
 async def root():
     return {"detail": "ok"}
 
 
-@app.get("/recommendation/update")
-async def update():
+@app.post("/recommendation/update")
+async def update(requset: Recommend):
     start = time.time()
     cards, user_card = (
-        await fetch_data("kakao_0", "my", "member")
+        await fetch_data(requset.user_id, requset.card_type, requset.want_to_find)
     )
     
     print('fetch complete')
