@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 import time
 from tracemalloc import start
 from typing import List
+from urllib import request
 from databases import Database
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -350,15 +351,6 @@ async def fetch():
 
     print(cards)
     print(generate_df_data(cards))
-
-@app.get("/insert")
-async def insert():
-    query = """
-            insert into recommend (id, user_id, card_type, recommendation_id, recommendation_card_type, score)
-            values (2,'test', 'test', 'test', 'tset', 100)
-            """
-    
-    await database.execute(query)
 
 @app.get("/test")
 async def test():
