@@ -213,14 +213,15 @@ async def fetch_data(user_id, card_type, want_to_find):
                 cards.extend([dict(record) for record in await database.fetch_all(query)])
 
     if want_to_find == 'post':
-        query = f"""
-                SELECT id, location, member_features::jsonb AS features, gender, 'room' AS card_type, member_account.birth_year
-                FROM shared_room_post
-                JOIN feature_card ON shared_room_post.room_mate_card_id = feature_card.feature_card_id
-                JOIN member_account ON member_account.member_id = shared_room_post.publisher_id
-                WHERE location like '%{location}%' and gender IN ('{user_gender.lower()}', '{user_gender.upper()}')
-                """
-        cards.extend([dict(record) for record in await database.fetch_all(query)])
+        for location in location_cluster[cluster_index]:
+            query = f"""
+                    SELECT id, location, member_features::jsonb AS features, gender, 'room' AS card_type, member_account.birth_year
+                    FROM shared_room_post
+                    JOIN feature_card ON shared_room_post.room_mate_card_id = feature_card.feature_card_id
+                    JOIN member_account ON member_account.member_id = shared_room_post.publisher_id
+                    WHERE location like '%{location}%' and gender IN ('{user_gender.lower()}', '{user_gender.upper()}')
+                    """
+            cards.extend([dict(record) for record in await database.fetch_all(query)])
 
     return cards, dict(user)
 
@@ -262,20 +263,15 @@ async def clustering(cards, user_card):
                 }
             )
 
-    print("complete recommendation")
-    # print("male key : ", male_recommendation_result.keys())
-    # print("male result : ", male_recommendation_result.values())
     """
     user_id <-> id, user_card_type, score, id_type
     """
 
-    await database.execute("truncate table recommend")
-    # print(male_recommendation_result)
-    # print(female_recommendation_result)
-
     query = """
         insert into recommend (user_id, card_type, recommendation_id, recommendation_card_type, score)
         values (:user_id, :card_type, :recommendation_id, :recommendation_card_type, :score)
+        on conflict (user_id, card_type, recommendation_id, recommendation_card_type) 
+        do update set score = excluded.score
         """
 
     for card_data in total_recommendation_result["user"]["my"]:
@@ -350,7 +346,7 @@ async def fetch():
     )
 
     print(cards)
-    print(generate_df_data(cards))
+    print(user_card)
 
 @app.get("/test")
 async def test():
