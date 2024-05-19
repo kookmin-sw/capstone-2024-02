@@ -177,9 +177,13 @@ async def fetch_data(user_id, card_type, want_to_find):
             ON member_account.{card_type}_card_id = feature_card.feature_card_id
             WHERE '{user_id}' = member_id
             """
-    
+
     user = await database.fetch_one(query)
-    user_location = user['location'].split()[1]
+    user_location = "성북구"
+
+    if user['location'] != 'default':
+        user['location'].split()[1]
+    
     user_gender = user['gender']
 
     cluster_index = -1
@@ -327,6 +331,9 @@ async def root():
 @app.post("/recommendation/update")
 async def update(requset: Recommend):
     start = time.time()
+
+    print(requset.user_id, requset.card_type, requset.want_to_find)
+
     cards, user_card = (
         await fetch_data(requset.user_id, requset.card_type, requset.want_to_find)
     )
@@ -342,7 +349,7 @@ async def update(requset: Recommend):
 @app.get("/fetch")
 async def fetch():
     cards, user_card = (
-        await fetch_data("kakao_0", "my", "member")
+        await fetch_data("naver_htT4VdDRPKqGqKpnncpa71HCA4CVg5LdRC1cWZhCnF8", "my", "post")
     )
 
     print(cards)
