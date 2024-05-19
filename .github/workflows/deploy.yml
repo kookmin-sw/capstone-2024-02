@@ -41,8 +41,9 @@ jobs:
           key: ${{ secrets.AWS_ACCESS_SECRET_KEY }} # pem 키
           # 도커 작업
           script: |
-            git clone https://github.com/capstone-maru/maru-rec-sys.git
             cd maru-rec-sys
+
+            git pull
 
             docker stop maru-rec-sys-container
 
