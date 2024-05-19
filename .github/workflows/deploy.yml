@@ -43,5 +43,13 @@ jobs:
           script: |
             git clone https://github.com/capstone-maru/maru-rec-sys.git
             cd maru-rec-sys
+
+            docker stop maru-rec-sys-container
+
+            docker rm maru-rec-sys-container
+
+            docker rmi maru-rec-sys-image
+
             docker build --no-cache -t maru-rec-sys-image .
+
             docker run -d --name maru-rec-sys-container -p 8000:8000 maru-rec-sys-image
