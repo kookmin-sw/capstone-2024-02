@@ -50,8 +50,8 @@ class DataModel(BaseModel):
     user: UserCategory
     post: PostCategory
 
-# DATABASE_URL = "postgresql://cheesecrust:0810jack@mydatabase.c3kmc4wcyz81.ap-northeast-2.rds.amazonaws.com/maru"
-DATABASE_URL = "postgresql://localhost:5432/maru"
+DATABASE_URL = "postgresql://cheesecrust:0810jack@mydatabase.c3kmc4wcyz81.ap-northeast-2.rds.amazonaws.com/maru"
+# DATABASE_URL = "postgresql://localhost:5432/maru"
 database = Database(DATABASE_URL)
 
 
