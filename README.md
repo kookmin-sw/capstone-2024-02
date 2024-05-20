@@ -17,13 +17,12 @@
 - [프로젝트 소개](#1-프로젝트-소개)
 - [Abstract](#2-abstract)
 - [주요 기능](#3-주요-기능)
-- [보조 기능](#4-보조-기능)
-- [아키텍처](#5-아키텍처)
-- [소개 영상](#6-소개-영상)
-- [팀 소개](#7-팀-소개)
-- [사용법](#8-사용법)
-- [기술 스택](#9-stacks)
-- [기타](#10-기타)
+- [아키텍처](#4-아키텍처)
+- [소개 영상](#5-소개-영상)
+- [팀 소개](#6-팀-소개)
+- [사용법](#7-사용법)
+- [기술 스택](#8-stacks)
+- [기타](#9-기타)
 
 <br />
 
@@ -58,47 +57,38 @@ To this end, we support finding roommates or housemates that match each user's l
     - 사용자 간의 원활한 소통을 위해, 서비스 내에 채팅 기능을 제공합니다.
 <br />
 
-## 4. 보조 기능
-하기 내용은 주요 기능 진행 상황에 따라, 다채로운 서비스를 위해 후순위로 개발할 예정인 기능들입니다.
-- MBTI 와 비슷한, 자신의 생활 타입 테스트 기능
-- 부동산 매물 조회 기능
-- 커뮤니티 기능
-- 자취, 동거인들의 커뮤니티 기능 제공
-<br />
-
-
-## 5. 아키텍처
+## 4. 아키텍처
 프로젝트 내 각 파트의 아키텍처 구조와 시스템 구성도입니다.
 <br />
 
 
-## 5.1 Front-end
+## 4.1 Front-end
 <div align="center">
 <img width="800" alt="스크린샷 2024-04-04 02 59 41" src="https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/70b11cdf-f5b8-4018-bdc4-f1796641c36e">
 </div>
 <br />
 
 
-## 5.2 Back-end
+## 4.2 Back-end
 <div align="center">
 <img width="800" alt="스크린샷 2024-04-04 02 59 55" src="https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/dda418db-65ad-439d-951a-5dabd299d03c">
 </div>
 <br />
 
 
-## 5.3 Deployment
+## 4.3 Deployment
 <div align="center">
 <img width="800" alt="스크린샷 2024-04-04 03 00 24" src="https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/e3c7bd19-a597-434c-a425-ea00925717ae">
 </div>
 <br />
 
 
-## 6. 소개 영상
+## 5. 소개 영상
 
 프로젝트 소개하는 영상을 추가하세요
 <br />
 
-## 7. 팀 소개
+## 6. 팀 소개
 
 <div align="center">
 
@@ -111,12 +101,12 @@ To this end, we support finding roommates or housemates that match each user's l
 </div>
 <br />
 
-## 8. 사용법
+## 7. 사용법
 
 소스코드제출시 설치법이나 사용법을 작성하세요.
 <br />
 
-## 9. 기술 스택
+## 8. 기술 스택
 
 ### Front-end
 <img  src="https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=next.js&logoColor=white"> <img  src="https://img.shields.io/badge/sass-CC6699?style=for-the-badge&logo=sass&logoColor=white"> <img  src="https://img.shields.io/badge/styled--components-DB7093?style=for-the-badge&logo=styledcomponents&logoColor=white"> <br />
@@ -131,4 +121,4 @@ To this end, we support finding roommates or housemates that match each user's l
 <br />
 
 
-## 10. 기타
+## 9. 기타
