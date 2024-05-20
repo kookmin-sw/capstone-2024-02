@@ -45,6 +45,9 @@ jobs:
 
             git pull
 
+            touch .env
+            echo "${{ secrets.ENV }}" > .env
+
             docker stop maru-rec-sys-container
 
             docker rm maru-rec-sys-container
