@@ -184,7 +184,7 @@ async def fetch_data(user_id, card_type, want_to_find):
     user_location = "성북구"
 
     if user['location'] != 'default':
-        user['location'].split()[1]
+        user_location = user['location'].split()[1]
     
     user_gender = user['gender']
 
