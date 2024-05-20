@@ -23,6 +23,8 @@ from collections import defaultdict
 from sklearn.impute import SimpleImputer
 
 from request import Recommend
+import os
+
 
 state_lock = Lock()
 
@@ -50,7 +52,7 @@ class DataModel(BaseModel):
     user: UserCategory
     post: PostCategory
 
-DATABASE_URL = "postgresql://cheesecrust:0810jack@mydatabase.c3kmc4wcyz81.ap-northeast-2.rds.amazonaws.com/maru"
+DATABASE_URL = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASSWORD')}@{os.getenv('DB_HOST')}:{os.getenv('DB_PORT')}/{os.getenv('DB_NAME')}"
 # DATABASE_URL = "postgresql://localhost:5432/maru"
 database = Database(DATABASE_URL)
 
@@ -182,7 +184,7 @@ async def fetch_data(user_id, card_type, want_to_find):
     user_location = "성북구"
 
     if user['location'] != 'default':
-        user['location'].split()[1]
+        user_location = user['location'].split()[1]
     
     user_gender = user['gender']
 
