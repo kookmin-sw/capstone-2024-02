@@ -1,7 +1,5 @@
 package org.capstone.maru.domain;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.gson.JsonElement;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Embedded;
@@ -9,7 +7,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.util.Map;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,6 +19,7 @@ import org.capstone.maru.domain.converter.FloorTypeConverter;
 import org.capstone.maru.domain.converter.RentalTypeConverter;
 import org.capstone.maru.domain.converter.RoomTypeConverter;
 import org.capstone.maru.domain.jsonb.ExtraOption;
+import org.capstone.maru.dto.RoomInfoDto;
 import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -36,9 +34,6 @@ public class RoomInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Embedded
-    private Address address;
 
     @Convert(converter = RoomTypeConverter.class)
     @Column
@@ -67,18 +62,14 @@ public class RoomInfo {
     @Column(nullable = false)
     private Long expectedPayment;
 
-    @Column
-    private Short recruitmentCapacity;
-
     @JdbcTypeCode(SqlTypes.JSON)
     @Embedded
     private ExtraOption extraOption;
 
     // -- 생성 메서드 -- //
-    private RoomInfo(Address address, RoomType roomType, FloorType floorType, Short size,
+    private RoomInfo(RoomType roomType, FloorType floorType, Short size,
         Short numberOfRoom, Short numberOfBathRoom, Boolean hasLivingRoom, RentalType rentalType,
-        Long expectedPayment, Short recruitmentCapacity, ExtraOption extraOption) {
-        this.address = address;
+        Long expectedPayment, ExtraOption extraOption) {
         this.roomType = roomType;
         this.floorType = floorType;
         this.size = size;
@@ -87,12 +78,10 @@ public class RoomInfo {
         this.hasLivingRoom = hasLivingRoom;
         this.rentalType = rentalType;
         this.expectedPayment = expectedPayment;
-        this.recruitmentCapacity = recruitmentCapacity;
         this.extraOption = extraOption;
     }
 
     public static RoomInfo of(
-        Address address,
         RoomType roomType,
         FloorType floorType,
         Short size,
@@ -101,11 +90,9 @@ public class RoomInfo {
         Boolean hasLivingRoom,
         RentalType rentalType,
         Long expectedPayment,
-        Short recruitmentCapacity,
         ExtraOption extraOption
     ) {
         return new RoomInfo(
-            address,
             roomType,
             floorType,
             size,
@@ -114,9 +101,85 @@ public class RoomInfo {
             hasLivingRoom,
             rentalType,
             expectedPayment,
-            recruitmentCapacity,
             extraOption
         );
+    }
+
+    // -- 비지니스 로직 -- //
+    public void updateRoomInfo(RoomInfoDto dto) {
+        updateRoomType(dto.roomType());
+        updateFloorType(dto.floorType());
+        updateSize(dto.size());
+        updateNumberOfRoom(dto.numberOfRoom());
+        updateNumberOfBathRoom(dto.numberOfBathRoom());
+        updateHasLivingRoom(dto.hasLivingRoom());
+        updateRentalType(dto.rentalType());
+        updateExpectedPayment(dto.expectedPayment());
+        updateExtraOptions(dto.extraOption());
+    }
+
+    private void updateRoomType(RoomType roomType) {
+        if (this.roomType.getCode() == roomType.getCode()) {
+            return;
+        }
+        this.roomType = roomType;
+    }
+
+    private void updateFloorType(FloorType floorType) {
+        if (this.floorType.getCode() == floorType.getCode()) {
+            return;
+        }
+        this.floorType = floorType;
+    }
+
+    private void updateSize(Short size) {
+        if (Objects.equals(this.size, size)) {
+            return;
+        }
+        this.size = size;
+    }
+
+    private void updateNumberOfRoom(Short numberOfRoom) {
+        if (Objects.equals(this.numberOfRoom, numberOfRoom)) {
+            return;
+        }
+        this.numberOfRoom = numberOfRoom;
+    }
+
+    private void updateNumberOfBathRoom(Short numberOfBathRoom) {
+        if (Objects.equals(this.numberOfBathRoom, numberOfBathRoom)) {
+            return;
+        }
+        this.numberOfBathRoom = numberOfBathRoom;
+    }
+
+    private void updateHasLivingRoom(Boolean hasLivingRoom) {
+        if (Objects.equals(this.hasLivingRoom, hasLivingRoom)) {
+            return;
+        }
+        this.hasLivingRoom = hasLivingRoom;
+    }
+
+    private void updateRentalType(RentalType rentalType) {
+        if (this.rentalType.getCode() == RoomInfo.this.rentalType.getCode()) {
+            return;
+        }
+        this.rentalType = rentalType;
+    }
+
+    private void updateExpectedPayment(Long expectedPayment) {
+        if (Objects.equals(this.expectedPayment, expectedPayment)) {
+            return;
+        }
+        this.expectedPayment = expectedPayment;
+    }
+
+
+    private void updateExtraOptions(ExtraOption extraOption) {
+        if (Objects.equals(this.extraOption, extraOption)) {
+            return;
+        }
+        this.extraOption = extraOption;
     }
 
 

@@ -13,13 +13,15 @@ public record AuthResponse(
     String gender,
     String phoneNumber,
     Boolean initialized,
+    Boolean univCertified,
     Long myCardId,
     Long mateCardId
 ) {
 
     public static AuthResponse from(MemberPrincipal memberPrincipal, Boolean initialized) {
 
-        return AuthResponse.builder()
+        return AuthResponse
+            .builder()
             .memberId(memberPrincipal.memberId())
             .email(memberPrincipal.email())
             .name(memberPrincipal.nickname())
@@ -31,7 +33,8 @@ public record AuthResponse(
     }
 
     public static AuthResponse from(MemberAccount memberAccount) {
-        return AuthResponse.builder()
+        return AuthResponse
+            .builder()
             .memberId(memberAccount.getMemberId())
             .email(memberAccount.getEmail())
             .name(memberAccount.getNickname())
@@ -39,6 +42,7 @@ public record AuthResponse(
             .gender(memberAccount.getGender())
             .phoneNumber(memberAccount.getPhoneNumber())
             .initialized(memberAccount.getInitialized())
+            .univCertified(memberAccount.getUnivName() != null)
             .myCardId(memberAccount.getMyCard().getId())
             .mateCardId(memberAccount.getMateCard().getId())
             .build();

@@ -7,21 +7,13 @@ import lombok.Getter;
 @Getter
 public enum RoomType {
     @SerializedName("0")
-    ONE_ROOM_VILLA("원룸/빌라", 0),
+    ONE_ROOM("원룸", 0),
     @SerializedName("1")
-    TWO_ROOM_VILLA("투룸/빌라", 1),
+    TWO_ROOM_VILLA("빌라/투룸이상", 1),
     @SerializedName("2")
-    THREE_ROOM_VILLA("쓰리룸이상/빌라", 2),
-
+    APT("아파트", 2),
     @SerializedName("3")
-    OFFICE_TEL("원룸/오피스텔", 3),
-    @SerializedName("4")
-    TWO_ROOM_OFFICE_TEL("투룸/오피스텔", 4),
-    @SerializedName("5")
-    THREE_ROOM_OFFICE_TEL("쓰리룸이상/오피스텔", 5),
-
-    @SerializedName("6")
-    APT("아파트", 6);
+    OFFICE_TEL("원룸/오피스텔", 3);
 
 
     private final String description;

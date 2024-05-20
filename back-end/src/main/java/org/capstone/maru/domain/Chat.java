@@ -21,13 +21,17 @@ public class Chat extends AuditingFields {
 
     private String message;
 
+    private String nickname;
+
     @Builder
-    public Chat(String id, String sender, String message, Long room, LocalDateTime createdAt) {
+    public Chat(String id, String sender, String message, String nickname, Long room,
+        LocalDateTime createdAt) {
         this.id = id;
         this.roomId = room;
         this.message = message;
         this.createdBy = sender;
         this.createdAt = createdAt;
+        this.nickname = nickname;
     }
 
     public static Chat createChat(Long room, String sender, String message) {
@@ -38,9 +42,15 @@ public class Chat extends AuditingFields {
             .build();
     }
 
-    public static Chat from(String id, ChatMessage chatMessage) {
-        return new Chat(id, chatMessage.sender(), chatMessage.message(), chatMessage.roomId(),
-            chatMessage.createdAt());
+    public static Chat from(ChatMessage chatMessage) {
+        return new Chat(
+            chatMessage.messageId(),
+            chatMessage.sender(),
+            chatMessage.message(),
+            chatMessage.nickname(),
+            chatMessage.roomId(),
+            chatMessage.createdAt()
+        );
     }
 
 }

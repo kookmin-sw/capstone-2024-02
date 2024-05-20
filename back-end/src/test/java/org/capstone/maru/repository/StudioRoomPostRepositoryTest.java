@@ -148,12 +148,13 @@ class StudioRoomPostRepositoryTest {
 
         // when
         Page<StudioRoomPost> studioRoomPostsPage = studioRoomPostRepository
-            .findStudioRoomPostByDynamicFilter(MALE.name(), searchFilter, null, pageable);
+            .findStudioRoomPostByDynamicFilter(MALE.name(), searchFilter, null,
+                pageable);
 
         // then
         assertThat(
             studioRoomPostsPage.getContent().get(0).getRoomInfo().getRoomType().getDescription())
-            .containsAnyOf(RoomType.ONE_ROOM_VILLA.getDescription(),
+            .containsAnyOf(RoomType.ONE_ROOM.getDescription(),
                 RoomType.TWO_ROOM_VILLA.getDescription());
         assertThat(
             studioRoomPostsPage.getContent().get(0).getRoomInfo().getRentalType().getDescription())

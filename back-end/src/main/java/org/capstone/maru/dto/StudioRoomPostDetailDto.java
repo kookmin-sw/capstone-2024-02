@@ -2,11 +2,11 @@ package org.capstone.maru.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Random;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Builder;
-import org.capstone.maru.domain.MemberAccount;
+import org.capstone.maru.domain.Address;
 import org.capstone.maru.domain.Participation;
 import org.capstone.maru.domain.StudioRoomPost;
 
@@ -16,11 +16,13 @@ public record StudioRoomPostDetailDto(
     String title,
     String content,
     String publisherGender,
-    MemberCardDto roomMateCard,
-    List<MemberAccountDto> participants,
+    FeatureCardDto roomMateCard,
+    List<SimpleMemberProfileDto> participants,
     Set<RoomImageDto> roomImages,
     MemberAccountDto publisherAccount,
+    Address address,
     RoomInfoDto roomInfo,
+    Short recruitmentCapacity,
     Boolean isScrapped,
     Long scrapCount,
     Long viewCount,
@@ -32,7 +34,8 @@ public record StudioRoomPostDetailDto(
 
     public static StudioRoomPostDetailDto from(
         StudioRoomPost entity,
-        Boolean isScrapped,
+        Boolean isPostScrapped,
+        List<String> scrappedMemberIds,
         Long scrapCount,
         Long viewCount
     ) {
@@ -41,12 +44,21 @@ public record StudioRoomPostDetailDto(
             .id(entity.getId())
             .title(entity.getTitle())
             .content(entity.getContent())
-            .roomMateCard(MemberCardDto.from(entity.getRoomMateCard()))
+            .roomMateCard(FeatureCardDto.from(entity.getRoomMateCard()))
             .participants(
                 entity.getSharedRoomPostRecruits()
                       .stream()
                       .map(Participation::getRecruitedMemberAccount)
-                      .map(MemberAccountDto::from)
+                      .map(memberAccount ->
+                          SimpleMemberProfileDto
+                              .from(
+                                  memberAccount,
+                                  scrappedMemberIds
+                                      .stream()
+                                      .anyMatch(memberId -> Objects.equals(memberId,
+                                          memberAccount.getMemberId()))
+                              )
+                      )
                       .toList()
             )
             .roomImages(
@@ -57,8 +69,10 @@ public record StudioRoomPostDetailDto(
             )
             .publisherGender(entity.getPublisherGender())
             .publisherAccount(MemberAccountDto.from(entity.getPublisherAccount()))
+            .address(entity.getAddress())
             .roomInfo(RoomInfoDto.from(entity.getRoomInfo()))
-            .isScrapped(isScrapped)
+            .recruitmentCapacity(entity.getRecruitmentCapacity())
+            .isScrapped(isPostScrapped)
             .scrapCount(scrapCount)
             .viewCount(viewCount)
             .createdAt(entity.getCreatedAt())

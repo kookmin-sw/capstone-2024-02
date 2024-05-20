@@ -7,12 +7,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.capstone.maru.domain.FeatureCard;
 import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.domain.ProfileImage;
-import org.capstone.maru.dto.MemberCardDto;
+import org.capstone.maru.domain.Recommend;
+import org.capstone.maru.domain.jsonb.MemberFeatures;
+import org.capstone.maru.dto.FeatureCardDto;
 import org.capstone.maru.dto.MemberProfileDto;
+import org.capstone.maru.dto.SimpleMemberCardDto;
 import org.capstone.maru.dto.response.AuthResponse;
 import org.capstone.maru.dto.response.SimpleMemberProfileResponse;
 import org.capstone.maru.repository.postgre.MemberCardRepository;
 import org.capstone.maru.repository.postgre.ProfileImageRepository;
+import org.capstone.maru.repository.postgre.RecommendRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,15 +34,23 @@ public class ProfileService {
 
     private final ProfileImageRepository profileImageRepository;
 
+    private final RecommendRepository recommendRepository;
+
+    private final RecommendService recommendService;
+
     @Transactional
-    public MemberCardDto updateMyCard(String memberId, Long cardId, String location,
-        List<String> features) {
+    public FeatureCardDto updateMyCard(String memberId, Long cardId, String location,
+        MemberFeatures features) {
         log.info("updateMyCard - memberId: {}, myFeatures: {}", memberId, features);
 
         MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
 
-        FeatureCard featureCard = memberCardRepository.findById(cardId)
-            .orElseThrow(() -> new IllegalArgumentException("invaild cardId"));
+        FeatureCard featureCard = memberCardRepository
+            .findById(cardId)
+            .orElseThrow(
+                () -> new IllegalArgumentException(
+                    "invaild cardId")
+            );
 
         FeatureCard myCard = memberAccount.getMyCard();
         FeatureCard mateCard = memberAccount.getMateCard();
@@ -55,7 +67,7 @@ public class ProfileService {
         featureCard.updateLocation(location);
         featureCard.updateMemberFeatures(features);
 
-        return MemberCardDto.from(featureCard);
+        return FeatureCardDto.from(featureCard);
     }
 
     @Transactional(readOnly = true)
@@ -66,7 +78,7 @@ public class ProfileService {
         MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
 
         if (!memberAccount.getGender().equals(gender)) {
-            throw new IllegalArgumentException("MemberCard not found");
+            throw new IllegalArgumentException("성별이 다릅니다.");
         }
 
         FeatureCard myCard = memberAccount.getMyCard();
@@ -85,9 +97,10 @@ public class ProfileService {
     }
 
     @Transactional
-    public MemberCardDto updateRoomCard(String memberId, String roomCardId, List<String> strings) {
+    public FeatureCardDto updateRoomCard(String memberId, String roomCardId,
+        MemberFeatures memberFeatures) {
         log.info("updateRoomCard - memberId: {}, roomCardId: {}, myFeatures: {}", memberId,
-            roomCardId, strings);
+            roomCardId, memberFeatures);
 
         /*
          * TODO
@@ -95,17 +108,19 @@ public class ProfileService {
          * 해당 roomCardId의 글이 존재하는지 확인, 존재하는 경우 그 카드를 가져옵니다.
          * 가져온 카드의 정보를 업데이트하고 저장합니다.
          * */
-        return MemberCardDto.builder().build();
+        return FeatureCardDto.builder().build();
     }
 
     @Transactional
-    public MemberCardDto getCard(Long cardId) {
+    public FeatureCardDto getCard(Long cardId) {
         log.info("getCard - cardId: {}", cardId);
 
         FeatureCard featureCard = memberCardRepository.findById(cardId)
-            .orElseThrow(() -> new IllegalArgumentException("MemberCard not found"));
+            .orElseThrow(
+                () -> new IllegalArgumentException(
+                    "MemberCard not found"));
 
-        return MemberCardDto.from(featureCard);
+        return FeatureCardDto.from(featureCard);
     }
 
     /*
@@ -158,6 +173,41 @@ public class ProfileService {
 
             return SimpleMemberProfileResponse.from(memberAccount.getMemberId(),
                 memberAccount.getNickname(), imgURL);
+        }).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<SimpleMemberCardDto> getRecommendMember(String memberId, String gender,
+        String cardOption) {
+        log.info("cardOption: {}", cardOption);
+
+        recommendService.updateRecommendation(
+            memberId,
+            cardOption,
+            "member"
+        ).block();
+
+        String recommendType = "my".equals(cardOption) ? "mate" : "my";
+
+        List<Recommend> recommendList = recommendRepository.findAllByUserIdAndCardTypeAndRecommendationCardTypeOrderByScoreDesc(
+            memberId,
+            cardOption,
+            recommendType
+        );
+
+        return recommendList.stream().map(recommend -> {
+            MemberAccount memberAccount = memberAccountService.searchMemberAccount(
+                recommend.getRecommendationId());
+
+            if (!memberAccount.getGender().equals(gender)) {
+                return null;
+            }
+
+            ProfileImage profileImage = memberAccount.getProfileImage();
+            FeatureCard featureCard = memberAccount.getMyCard();
+
+            return SimpleMemberCardDto.from(memberAccount, featureCard, profileImage,
+                recommend.getScore());
         }).toList();
     }
 }

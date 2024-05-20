@@ -16,6 +16,7 @@ import org.capstone.maru.domain.ChatRoom;
 import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.domain.MemberRoom;
 import org.capstone.maru.dto.ChatMessage;
+import org.capstone.maru.dto.request.ChatMessageRequest;
 import org.capstone.maru.dto.response.ChatMemberProfileResponse;
 import org.capstone.maru.dto.response.ChatMessageResponse;
 import org.capstone.maru.dto.response.ChatRoomResponse;
@@ -52,30 +53,38 @@ public class ChatService {
     private final S3FileService s3FileService;
 
     @Transactional
-    public void createChat(ChatMessage message) {
+    public ChatMessageResponse createChat(ChatMessageRequest message) {
         // 채팅 메세지 버퍼와 Redis에 채팅 메세지 저장
         String messageId = UUID.randomUUID().toString();
 
-        saveChatMessageRedis(messageId, message);
+        ChatMessage chatMessage = ChatMessage.currentMessageFrom(messageId, message);
 
-        messageBuffer.addMessage(Chat.from(messageId, message));
+        saveChatMessageRedis(chatMessage);
+
+        messageBuffer.addMessage(Chat.from(chatMessage));
+
+        return ChatMessageResponse.from(chatMessage);
     }
 
     /*
     Redis에 채팅 메시지 저장
      */
     @Transactional
-    public void saveChatMessageRedis(String messageId, ChatMessage message) {
+    public void saveChatMessageRedis(ChatMessage chatMessage) {
 
         // Redis의 Hash 데이터 구조를 사용하여 채팅 메시지 저장
         ListOperations<String, String> listOperations = redisTemplate.opsForList();
 
-        log.info("messageId : {}", messageId);
+        log.info("messageId : {}", chatMessage.messageId());
 
-        String chatKey = CHAT_ROOM_PREFIX + message.roomId();
+        String chatKey = CHAT_ROOM_PREFIX + chatMessage.roomId();
 
-        listOperations.rightPushAll(chatKey, messageId, message.sender(), message.message(),
-            message.createdAt().toString());
+        listOperations.rightPushAll(chatKey,
+            chatMessage.messageId(),
+            chatMessage.sender(),
+            chatMessage.message(),
+            chatMessage.nickname(),
+            chatMessage.createdAt().toString());
 
         redisTemplate.expire(chatKey, 1, java.util.concurrent.TimeUnit.DAYS); // 1일 뒤 만료
     }
@@ -84,7 +93,7 @@ public class ChatService {
     채팅방 입장시 채팅방의 메시지 조회
      */
     @Transactional
-    public List<ChatMessageResponse> getChatMessages(Long roomId, int size, int page) {
+    public List<ChatMessageResponse> getChatMessages(Long roomId, Pageable pageable) {
 
         Comparator<ChatMessageResponse> comparator = Comparator.comparing(
             ChatMessageResponse::createdAt).reversed();
@@ -108,7 +117,6 @@ public class ChatService {
         /*
         MongoDB에서 채팅방의 메시지 조회, 최근 메시지가 먼저 조회되도록 정렬
          */
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
 
         chatRepository.findAllByRoomId(roomId, pageable).stream().map(
                 chat -> {
@@ -119,6 +127,7 @@ public class ChatService {
                             .messageId(chat.getId())
                             .sender(chat.getCreatedBy())
                             .message(chat.getMessage())
+                            .nickname(chat.getNickname())
                             .createdAt(chat.getCreatedAt())
                             .build();
                     }
@@ -137,7 +146,9 @@ public class ChatService {
      */
     @Transactional
     public ChatRoom createChatRoom(String publisher, String name, List<String> members) {
+        // 본인도 추가
         members.add(publisher);
+
         ChatRoom room = ChatRoom.createRoom(name);
 
         log.info("room : {}", room.getId());
@@ -208,13 +219,12 @@ public class ChatService {
     /*
     채팅방 리스트 보여주기
      */
+    @Transactional
     public List<ChatRoomResponse> showChatRoom(String memberId) {
 
         MemberAccount memberAccount = memberAccountRepository.findById(memberId).orElseThrow(
             () -> new IllegalArgumentException("존재하지 않는 회원입니다.")
         );
-
-        log.info("memberAccount : {}", memberAccount.getChatRooms().get(0).getId());
 
         return memberAccount.getChatRooms().stream().map(
             chatRoom -> ChatRoomResponse.from(
@@ -228,6 +238,7 @@ public class ChatService {
     /*
     redis와 mongo에서 현재 시간보다 이후의 채팅 개수 세기
      */
+    @Transactional
     public Integer countUnreadChat(MemberRoom memberRoom) {
         int unreadChatCount = 0;
         ChatRoom room = memberRoom.getChatRoom();
@@ -256,6 +267,7 @@ public class ChatService {
     /*
     채팅방의 마지막 메시지 조회
      */
+    @Transactional
     public ChatMessageResponse getLastMessage(ChatRoom room) {
 
         Long roomId = room.getId();
@@ -275,15 +287,27 @@ public class ChatService {
         // MongoDB에서 채팅방의 마지막 메시지 조회
         Chat chat = chatRepository.findFirstByRoomIdOrderByCreatedAtDesc(roomId);
 
+        if (chat == null) {
+            return ChatMessageResponse.builder()
+                .messageId("0")
+                .message("")
+                .nickname("initial")
+                .sender("initial")
+                .createdAt(LocalDateTime.now())
+                .build();
+        }
+
         return ChatMessageResponse.from(chat);
     }
 
     /*
      * 채팅방 나가는 경우
      */
+    @Transactional
     public void exitChatRoom(Long roomId, String memberId) {
+        log.info("exitChatRoom : {}, {}", roomId, memberId);
         MemberRoom memberRoom = memberRoomRepository.findByMemberIdAndChatRoomId(memberId, roomId);
-
+        log.info("memberRoom : {}", memberRoom.getId());
         memberRoom.updateLastCheckTime();
     }
 }

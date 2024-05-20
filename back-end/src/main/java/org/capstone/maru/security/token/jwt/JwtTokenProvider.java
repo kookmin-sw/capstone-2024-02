@@ -227,6 +227,8 @@ public class JwtTokenProvider implements TokenProvider, InitializingBean {
                                   .signWith(SECRET_KEY)
                                   .compact();
 
+        refreshTokenService.saveRefreshToken(refreshToken, REFRESH_TOKEN_VALID_MILLI_SECOND);
+
         return TokenDto.builder()
                        .grantType("Bearer")
                        .accessToken(accessToken)

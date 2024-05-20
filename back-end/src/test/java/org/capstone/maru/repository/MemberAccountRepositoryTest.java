@@ -6,6 +6,7 @@ import java.util.List;
 import org.capstone.maru.config.TestJpaConfig;
 import org.capstone.maru.domain.FeatureCard;
 import org.capstone.maru.domain.MemberAccount;
+import org.capstone.maru.domain.jsonb.MemberFeatures;
 import org.capstone.maru.repository.postgre.MemberAccountRepository;
 import org.capstone.maru.repository.postgre.MemberCardRepository;
 import org.capstone.maru.util.EntityCreator;
@@ -73,7 +74,7 @@ class MemberAccountRepositoryTest {
             .isEqualTo(previousCardCount + 2);
 
         assertThat(memberAccountTest.getMyCard().getMemberFeatures())
-            .isEmpty();
+            .isNull();
     }
 
     @DisplayName("[MemberCard] update 테스트")
@@ -87,7 +88,7 @@ class MemberAccountRepositoryTest {
         var memberAccountTest = memberAccountRepository.save(memberAccount);
 
         FeatureCard featureCard = memberAccountTest.getMyCard();
-        featureCard.updateMemberFeatures(List.of("아침형", "흡연", "음주"));
+        featureCard.updateMemberFeatures(MemberFeatures.of("흡연", "같은 방", (short) 5, null));
 
         long previousCardCount = memberCardRepository.count();
 

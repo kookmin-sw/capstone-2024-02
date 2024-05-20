@@ -6,25 +6,25 @@ import org.capstone.maru.exception.PostNotFoundException;
 import org.capstone.maru.exception.RestErrorCode;
 
 @Getter
-public class StudioViewCountCacheKey {
+public class SharedViewCountCacheKey {
 
-    private static final String PREFIX = "studio:";
+    private static final String PREFIX = "shared:";
 
     private final Long postId;
 
-    private StudioViewCountCacheKey(Long postId) {
+    private SharedViewCountCacheKey(Long postId) {
         if (Objects.isNull(postId)) {
             throw new PostNotFoundException(RestErrorCode.POST_NOT_FOUND);
         }
         this.postId = postId;
     }
 
-    public static StudioViewCountCacheKey from(String postId) {
-        return new StudioViewCountCacheKey(Long.parseLong(postId));
+    public static SharedViewCountCacheKey from(String postId) {
+        return new SharedViewCountCacheKey(Long.parseLong(postId));
     }
 
-    public static StudioViewCountCacheKey from(Long postId) {
-        return new StudioViewCountCacheKey(postId);
+    public static SharedViewCountCacheKey from(Long postId) {
+        return new SharedViewCountCacheKey(postId);
     }
 
     @Override

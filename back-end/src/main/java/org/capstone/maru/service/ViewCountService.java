@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import org.capstone.maru.config.redis.StudioViewCountCacheKey;
+import org.capstone.maru.config.redis.SharedViewCountCacheKey;
 import org.capstone.maru.domain.ViewPost;
 import org.capstone.maru.exception.PostNotFoundException;
 import org.capstone.maru.exception.RestErrorCode;
@@ -25,25 +25,25 @@ public class ViewCountService {
     private final ViewPostRepository viewPostRepository;
 
     private final RedisTemplate<String, String> stringRedisTemplate;
-    private final ValueOperations<StudioViewCountCacheKey, Long> studioOperations;
+    private final ValueOperations<SharedViewCountCacheKey, Long> studioOperations;
 
-    private static final String STUDIO_PATTERN = "studio:*";
+    private static final String SHARED_PATTERN = "shared:*";
 
     public ViewCountService(
         @Autowired ViewPostRepository viewPostRepository,
-        @Qualifier("studioViewCountRedisTemplate") RedisTemplate<StudioViewCountCacheKey, Long> studioRedisTemplate,
-        @Qualifier("redisTemplate") RedisTemplate<String, String> redisTemplate
+        @Qualifier("sharedViewCountRedisTemplate") RedisTemplate<SharedViewCountCacheKey, Long> studioRedisTemplate,
+        @Autowired RedisTemplate<String, String> redisTemplate
     ) {
         this.viewPostRepository = viewPostRepository;
         this.studioOperations = studioRedisTemplate.opsForValue();
         this.stringRedisTemplate = redisTemplate;
     }
 
-    public void setValue(StudioViewCountCacheKey key, Long value) {
+    public void setValue(SharedViewCountCacheKey key, Long value) {
         studioOperations.set(key, value, Duration.ofMinutes(30L));
     }
 
-    public Long increaseValue(StudioViewCountCacheKey key) {
+    public Long increaseValue(SharedViewCountCacheKey key) {
         Long viewCount = studioOperations.get(key);
 
         if (viewCount == null) {
@@ -57,12 +57,12 @@ public class ViewCountService {
         return studioOperations.increment(key);
     }
 
-    public Long getAndDeleteValue(StudioViewCountCacheKey key) {
+    public Long getAndDeleteValue(SharedViewCountCacheKey key) {
         return studioOperations.getAndDelete(key);
     }
 
     public void syncToDatabase() {
-        Set<Entry<Long, Long>> entries = getAllViewCount(STUDIO_PATTERN).entrySet();
+        Set<Entry<Long, Long>> entries = getAllViewCount(SHARED_PATTERN).entrySet();
 
         for (Entry<Long, Long> entry : entries) {
             Optional<ViewPost> viewPost = viewPostRepository
@@ -88,7 +88,7 @@ public class ViewCountService {
         for (String key : keys) {
             // TODO: 안전하지 않은 코드
             Long postId = Long.parseLong(key.split(":")[1]);
-            Long viewCount = getAndDeleteValue(StudioViewCountCacheKey.from(postId));
+            Long viewCount = getAndDeleteValue(SharedViewCountCacheKey.from(postId));
 
             if (viewCount == null) {
                 continue;

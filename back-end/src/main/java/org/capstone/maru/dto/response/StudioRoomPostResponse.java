@@ -2,11 +2,14 @@ package org.capstone.maru.dto.response;
 
 import java.time.LocalDateTime;
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
+import org.capstone.maru.domain.Address;
 import org.capstone.maru.dto.StudioRoomPostDto;
 
 /**
  * 게시판에서 보는 게시글 response
  */
+@Slf4j
 @Builder
 public record StudioRoomPostResponse(
     Long id,
@@ -14,6 +17,7 @@ public record StudioRoomPostResponse(
     String content,
     RoomImageResponse thumbnail,
     MemberAccountResponse publisherAccount,
+    Address address,
     RoomInfoResponse roomInfo,
     Boolean isScrapped,
     LocalDateTime createdAt,
@@ -30,7 +34,8 @@ public record StudioRoomPostResponse(
             .content(dto.content())
             .thumbnail(RoomImageResponse.from(dto.thumbnail()))
             .publisherAccount(MemberAccountResponse.from(dto.publisherAccount()))
-            .roomInfo(RoomInfoResponse.from(dto.roomInfo()))
+            .address(dto.address())
+            .roomInfo(RoomInfoResponse.from(dto.roomInfo(), dto.recruitmentCapacity()))
             .isScrapped(dto.isScrapped())
             .createdAt(dto.createdAt())
             .createdBy(dto.createdBy())

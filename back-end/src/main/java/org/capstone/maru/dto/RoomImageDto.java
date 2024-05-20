@@ -3,6 +3,7 @@ package org.capstone.maru.dto;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import org.capstone.maru.domain.RoomImage;
+import org.capstone.maru.domain.SharedRoomPost;
 import org.capstone.maru.domain.StudioRoomPost;
 
 @Builder
@@ -29,8 +30,8 @@ public record RoomImageDto(
             .build();
     }
 
-    public RoomImage toEntity(StudioRoomPost studioRoomPost) {
-        return RoomImage.of(fileName, isThumbnail, order, studioRoomPost);
+    public RoomImage toEntity(SharedRoomPost roomPost) {
+        return RoomImage.of(fileName, isThumbnail, order, roomPost);
     }
 
 }

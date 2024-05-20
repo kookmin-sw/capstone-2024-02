@@ -16,10 +16,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.capstone.maru.domain.jsonb.MemberFeatures;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.DynamicInsert;
 import org.springframework.data.domain.Persistable;
@@ -63,6 +65,9 @@ public class MemberAccount extends AuditingFields implements Persistable<String>
     @Column
     private String phoneNumber;
 
+    @Column
+    private String univName;
+
     @Column(nullable = false)
     private Boolean initialized;
 
@@ -100,9 +105,10 @@ public class MemberAccount extends AuditingFields implements Persistable<String>
     private ProfileImage profileImage;
 
     // 연관관계 table
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<MemberRoom> chatRooms;
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<MemberRoom> chatRooms = new ArrayList<>();
 
+    @Builder
     private MemberAccount(
         String memberId,
         String email,
@@ -158,8 +164,8 @@ public class MemberAccount extends AuditingFields implements Persistable<String>
             phoneNumber,
             null,
             true,
-            FeatureCard.of(null, List.of()),
-            FeatureCard.of(null, List.of()),
+            FeatureCard.of(null, null),
+            FeatureCard.of(null, null),
             new HashSet<>(),
             new HashSet<>(),
             ProfileImage.defaultImage(memberId),
@@ -237,11 +243,11 @@ public class MemberAccount extends AuditingFields implements Persistable<String>
        false면 user의 특성이 있는 것으로 판단
        true면 user의 특성이 없는 것으로 판단
      */
-    public void updateInitialized(List<String> myFeatures) {
+    public void updateInitialized(MemberFeatures myFeatures) {
         /*
         feature 가 없는 경우
         */
-        if (myFeatures == null || myFeatures.isEmpty()) {
+        if (myFeatures == null) {
             this.initialized = true;
             return;
         }
@@ -258,5 +264,9 @@ public class MemberAccount extends AuditingFields implements Persistable<String>
         }
         this.recommendOn = recommendOn;
         return this.recommendOn;
+    }
+
+    public void updateUnivName(String univName) {
+        this.univName = univName;
     }
 }

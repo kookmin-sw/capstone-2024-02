@@ -26,7 +26,6 @@ public class SchedulerConfig {
 
     @Scheduled(fixedDelay = 30000)
     public void saveBufferedMessagesToDatabase() {
-        log.info("saveBufferedMessagesToDatabase");
         messageBuffer.saveBufferedMessagesToDatabase();
     }
 

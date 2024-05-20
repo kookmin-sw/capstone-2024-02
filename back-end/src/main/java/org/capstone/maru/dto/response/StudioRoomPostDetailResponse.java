@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Builder;
+import org.capstone.maru.domain.Address;
+import org.capstone.maru.domain.jsonb.MemberFeatures;
 import org.capstone.maru.dto.MemberAccountDto;
 import org.capstone.maru.dto.StudioRoomPostDetailDto;
 import org.capstone.maru.dto.StudioRoomPostDto;
@@ -19,10 +21,11 @@ public record StudioRoomPostDetailResponse(
     Long id,
     String title,
     String content,
-    List<String> roomMateFeatures,
+    MemberFeatures roomMateFeatures,
     List<ParticipantResponse> participants,
     List<RoomImageResponse> roomImages,
     MemberAccountResponse publisherAccount,
+    Address address,
     RoomInfoResponse roomInfo,
     Boolean isScrapped,
     Long scrapCount,
@@ -54,7 +57,8 @@ public record StudioRoomPostDetailResponse(
                    .toList()
             )
             .publisherAccount(MemberAccountResponse.from(dto.publisherAccount()))
-            .roomInfo(RoomInfoResponse.from(dto.roomInfo()))
+            .address(dto.address())
+            .roomInfo(RoomInfoResponse.from(dto.roomInfo(), dto.recruitmentCapacity()))
             .isScrapped(dto.isScrapped())
             .scrapCount(dto.scrapCount())
             .viewCount(dto.viewCount())

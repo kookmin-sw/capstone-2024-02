@@ -1,22 +1,17 @@
 package org.capstone.maru.config.redis;
 
-import java.nio.charset.StandardCharsets;
 import lombok.extern.slf4j.Slf4j;
-import org.capstone.maru.security.token.RefreshToken;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.event.EventListener;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.RedisKeyExpiredEvent;
 import org.springframework.data.redis.core.RedisKeyValueAdapter;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @EnableCaching
@@ -48,10 +43,10 @@ public class RedisConfig {
     }
 
     @Bean
-    RedisTemplate<StudioViewCountCacheKey, Long> studioViewCountRedisTemplate() {
-        RedisTemplate<StudioViewCountCacheKey, Long> redisTemplate = new RedisTemplate<>();
+    RedisTemplate<SharedViewCountCacheKey, Long> sharedViewCountRedisTemplate() {
+        RedisTemplate<SharedViewCountCacheKey, Long> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory());
-        redisTemplate.setKeySerializer(new StudioViewCountCacheKeySerializer());
+        redisTemplate.setKeySerializer(new SharedViewCountCacheKeySerializer());
         redisTemplate.setValueSerializer(new LongRedisSerializer());
         return redisTemplate;
     }

@@ -14,8 +14,8 @@ public record ChatMessageResponse(
     String messageId,
     String sender,
     String message,
+    String nickname,
     LocalDateTime createdAt
-
 ) {
 
     public static List<ChatMessageResponse> from(List<String> messages) {
@@ -23,12 +23,13 @@ public record ChatMessageResponse(
 
         log.info("messages : {}", messages);
 
-        for (int i = 0; i < messages.size(); i += 4) {
+        for (int i = 0; i < messages.size(); i += 5) {
             chatMessages.add(ChatMessageResponse.builder()
                 .messageId(messages.get(i))
                 .sender(messages.get(i + 1))
                 .message(messages.get(i + 2))
-                .createdAt(LocalDateTime.parse(messages.get(i + 3)))
+                .nickname(messages.get(i + 3))
+                .createdAt(LocalDateTime.parse(messages.get(i + 4)))
                 .build());
         }
 
@@ -41,7 +42,18 @@ public record ChatMessageResponse(
             .messageId(chat.getId())
             .sender(chat.getCreatedBy())
             .message(chat.getMessage())
+            .nickname(chat.getNickname())
             .createdAt(chat.getCreatedAt())
+            .build();
+    }
+
+    public static ChatMessageResponse from(ChatMessage chatMessage) {
+        return ChatMessageResponse.builder()
+            .messageId(chatMessage.messageId())
+            .sender(chatMessage.sender())
+            .message(chatMessage.message())
+            .nickname(chatMessage.nickname())
+            .createdAt(chatMessage.createdAt())
             .build();
     }
 

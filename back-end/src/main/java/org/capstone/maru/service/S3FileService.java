@@ -26,8 +26,8 @@ public class S3FileService {
         Date expiration = getPreSignedUrlExpiration();
 
         String imageURL = amazonS3.generatePresignedUrl(bucket, filename, expiration,
-                HttpMethod.PUT)
-            .toString();
+                                      HttpMethod.PUT)
+                                  .toString();
 
         return ImageDto.from(imageURL, filename);
     }
@@ -38,14 +38,11 @@ public class S3FileService {
 
         if (filename.contains("default.png")) {
             return amazonS3.generatePresignedUrl(bucket, "images/default.png", expiration)
-                .toString();
-        }
-        if (StringUtils.isNotBlank(filename)) {
-            filename = "images/" + filename;
+                           .toString();
         }
 
         return amazonS3.generatePresignedUrl(bucket, filename, expiration)
-            .toString();
+                       .toString();
     }
 
     private Date getPreSignedUrlExpiration() {

@@ -1,18 +1,18 @@
 package org.capstone.maru.dto;
 
-import java.util.List;
 import lombok.Builder;
 import org.capstone.maru.domain.FeatureCard;
+import org.capstone.maru.domain.jsonb.MemberFeatures;
 
 @Builder
-public record MemberCardDto(
+public record FeatureCardDto(
     Long id,
     String location,
-    List<String> myFeatures
+    MemberFeatures myFeatures
 ) {
 
-    public static MemberCardDto from(FeatureCard entity) {
-        return MemberCardDto
+    public static FeatureCardDto from(FeatureCard entity) {
+        return FeatureCardDto
             .builder()
             .id(entity.getId())
             .location(entity.getLocation())

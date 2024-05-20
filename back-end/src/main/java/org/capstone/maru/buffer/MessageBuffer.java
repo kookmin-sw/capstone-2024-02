@@ -30,9 +30,7 @@ public class MessageBuffer {
 
     // 최근 채팅은 redis에서 긁어오기
     public void saveBufferedMessagesToDatabase() {
-
-        log.info("saveBufferedMessagesToDatabase, {} : ", messageBuffer.size());
-
+        
         messageBuffer.forEach(
             chat -> {
                 log.info("chat : {}", chat);
@@ -41,7 +39,13 @@ public class MessageBuffer {
 
         long currentTime = System.currentTimeMillis();
         // 버퍼에 있는 메시지를 일괄 저장하는 로직
-        if (messageBuffer.size() > BUFFER_SIZE) {
+        int currentBufferSize = messageBuffer.size();
+
+        if (currentBufferSize == 0) {
+            return;
+        }
+
+        if (currentBufferSize > BUFFER_SIZE) {
             // 1000개 이상 메시지가 쌓이면 데이터베이스에 저장
             // bulk insert 의 경우 한번에 여러개의 데이터를 저장하기 때문에 속도가 빠름, 8,388,608 문자를 저장할 수 있다.
             // 이때 발생하는 문제는 오랬동안 안찼을때

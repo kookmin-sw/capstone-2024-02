@@ -18,6 +18,7 @@ import org.capstone.maru.repository.postgre.MemberAccountRepository;
 import org.capstone.maru.security.exception.MemberAccountNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class MemberAccountService {
 
     private final MemberAccountRepository memberAccountRepository;
+
+//    private final RecommendService recommendService;
 
     @Transactional(readOnly = true)
     public MemberAccountDto searchMember(String memberId) {
@@ -65,8 +68,8 @@ public class MemberAccountService {
 
         if (memberAccount.isEmpty()) {
 
-            FeatureCard myCard = FeatureCard.of(null, List.of());
-            FeatureCard mateCard = FeatureCard.of(null, List.of());
+            FeatureCard myCard = FeatureCard.of(null, null);
+            FeatureCard mateCard = FeatureCard.of(null, null);
 
             Set<Follow> followers = new HashSet<>();
             Set<Follow> followings = new HashSet<>();
@@ -92,11 +95,9 @@ public class MemberAccountService {
                 chatRooms
             );
 
-            return MemberAccountDto.from(
-                memberAccountRepository.save(
-                    member
-                )
-            );
+            MemberAccount newMemberAccount = memberAccountRepository.save(member);
+
+            return MemberAccountDto.from(newMemberAccount);
         }
 
         if (memberAccount.get().getMemberId().equals(memberId)) {
@@ -118,7 +119,8 @@ public class MemberAccountService {
      */
     public MemberAccount searchMemberAccountByEmail(String email) {
         return memberAccountRepository.findByEmail(email)
-            .orElseThrow(() -> new MemberAccountNotFoundException(RestErrorCode.MEMBER_NOT_FOUND));
+                                      .orElseThrow(() -> new MemberAccountNotFoundException(
+                                          RestErrorCode.MEMBER_NOT_FOUND));
     }
 
     public List<MemberAccount> searchContainByEmail(String word) {

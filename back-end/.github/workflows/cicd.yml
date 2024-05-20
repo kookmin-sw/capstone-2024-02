@@ -5,10 +5,17 @@ on:
     branches: [ "main" ]
     types: [ closed ]
   workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+      tags:
+        description: 'Test scenario tags'
 
 jobs:
   build:
-    if: github.event.pull_request.merged == true
+    # if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -72,13 +79,19 @@ jobs:
             touch ~/docker-compose.yml
             echo "${{ secrets.DOCKER_COMPOSE }}" > ~/docker-compose.yml
             
+            EXCLUDE_CONTAINER_NAME="maru-rec-sys-container"
+            
+            EXCLUDE_CONTAINER_ID=$(docker ps -qf "name=$EXCLUDE_CONTAINER_NAME")
+            
             CONTAINERS=$(docker ps -q)
             
             for CONTAINER in $CONTAINERS; do
-              docker stop $CONTAINER
+            if [ "$CONTAINER" != "$EXCLUDE_CONTAINER_ID" ]; then
+            docker stop $CONTAINER
+            fi
             done
             
-            docker rm $(docker ps -aq)
+            docker ps -aq | grep -v $EXCLUDE_CONTAINER_ID | xargs docker rm
             
             docker rmi $(docker images -q)
             

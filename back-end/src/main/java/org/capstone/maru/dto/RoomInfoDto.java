@@ -12,7 +12,6 @@ import org.capstone.maru.domain.jsonb.ExtraOption;
 @Builder
 public record RoomInfoDto(
     Long id,
-    Address address,
     RoomType roomType,
     FloorType floorType,
     Short size,
@@ -21,7 +20,6 @@ public record RoomInfoDto(
     Boolean hasLivingRoom,
     RentalType rentalType,
     Long expectedPayment,
-    Short recruitmentCapacity,
     ExtraOption extraOption
 ) {
 
@@ -29,7 +27,6 @@ public record RoomInfoDto(
         return RoomInfoDto
             .builder()
             .id(entity.getId())
-            .address(entity.getAddress())
             .roomType(entity.getRoomType())
             .floorType(entity.getFloorType())
             .size(entity.getSize())
@@ -38,14 +35,12 @@ public record RoomInfoDto(
             .hasLivingRoom(entity.getHasLivingRoom())
             .rentalType(entity.getRentalType())
             .expectedPayment(entity.getExpectedPayment())
-            .recruitmentCapacity(entity.getRecruitmentCapacity())
             .extraOption(entity.getExtraOption())
             .build();
     }
 
     public RoomInfo toEntity() {
         return RoomInfo.of(
-            address,
             roomType,
             floorType,
             size,
@@ -54,7 +49,6 @@ public record RoomInfoDto(
             hasLivingRoom,
             rentalType,
             expectedPayment,
-            recruitmentCapacity,
             extraOption
         );
     }

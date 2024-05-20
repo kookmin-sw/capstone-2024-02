@@ -62,6 +62,10 @@ public class Participation {
         return result;
     }
 
+    public void updateSharedRoomPost(SharedRoomPost sharedRoomPost) {
+        this.recruitsSharedRoomPost = sharedRoomPost;
+    }
+
     // -- Equals & Hash -- //
     @Override
     public boolean equals(Object o) {

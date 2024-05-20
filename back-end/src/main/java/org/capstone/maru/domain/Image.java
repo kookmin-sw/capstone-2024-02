@@ -33,6 +33,11 @@ public abstract class Image extends AuditingFields {
         this.fileName = fileName;
     }
 
+    // -- 비지니스 로직 -- //
+    public void updateFileName(String fileName) {
+        this.fileName = fileName;
+    }
+    
     // -- Equals & Hash -- //
     @Override
     public boolean equals(Object o) {

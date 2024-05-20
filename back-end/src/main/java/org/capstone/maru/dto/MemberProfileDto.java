@@ -8,8 +8,8 @@ import org.capstone.maru.dto.response.AuthResponse;
 public record MemberProfileDto(
     AuthResponse authResponse,
     String profileImage,
-    MemberCardDto myCard,
-    MemberCardDto mateCard
+    FeatureCardDto myCard,
+    FeatureCardDto mateCard
 ) {
 
     public static MemberProfileDto from(String imgURL, FeatureCard myCard,
@@ -18,8 +18,8 @@ public record MemberProfileDto(
         return MemberProfileDto
             .builder()
             .profileImage(imgURL)
-            .myCard(MemberCardDto.from(myCard))
-            .mateCard(MemberCardDto.from(mateCard))
+            .myCard(FeatureCardDto.from(myCard))
+            .mateCard(FeatureCardDto.from(mateCard))
             .authResponse(authResponse)
             .build();
     }

@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Objects;
 
 import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
+import org.capstone.maru.domain.Address;
 import org.capstone.maru.domain.FeatureCard;
 import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.domain.RoomInfo;
 import org.capstone.maru.domain.StudioRoomPost;
 import org.capstone.maru.repository.postgre.projection.ScrapPostView;
 
+@Slf4j
 @Builder
 public record StudioRoomPostDto(
     Long id,
@@ -19,7 +22,9 @@ public record StudioRoomPostDto(
     String publisherGender,
     List<RoomImageDto> roomImages,
     MemberAccountDto publisherAccount,
+    Address address,
     RoomInfoDto roomInfo,
+    Short recruitmentCapacity,
     Boolean isScrapped,
     LocalDateTime createdAt,
     String createdBy,
@@ -42,7 +47,9 @@ public record StudioRoomPostDto(
             )
             .publisherGender(entity.getPublisherGender())
             .publisherAccount(MemberAccountDto.from(entity.getPublisherAccount()))
+            .address(entity.getAddress())
             .roomInfo(RoomInfoDto.from(entity.getRoomInfo()))
+            .recruitmentCapacity(entity.getRecruitmentCapacity())
             .isScrapped(
                 scrapViewEntity
                     .stream()
@@ -68,8 +75,10 @@ public record StudioRoomPostDto(
             title,
             content,
             publisherGender,
-            roomMateCardEntity,
+            recruitmentCapacity,
             publisherAccountEntity,
+            roomMateCardEntity,
+            address,
             roomInfoEntity
         );
     }

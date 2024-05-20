@@ -10,7 +10,6 @@ import org.capstone.maru.dto.RoomInfoDto;
 @Builder
 public record RoomInfoResponse(
     Long id,
-    Address address,
     String roomType,
     String floorType,
     Short size,
@@ -23,18 +22,17 @@ public record RoomInfoResponse(
     ExtraOption extraOption
 ) {
 
-    public static RoomInfoResponse from(RoomInfoDto dto) {
+    public static RoomInfoResponse from(RoomInfoDto dto, Short recruitmentCapacity) {
         return RoomInfoResponse
             .builder()
             .id(dto.id())
-            .address(dto.address())
             .roomType(dto.roomType().getDescription())
             .floorType(dto.floorType().getDescription())
             .size(dto.size())
             .numberOfRoom(dto.numberOfRoom())
             .numberOfBathRoom(dto.numberOfBathRoom())
             .hasLivingRoom(dto.hasLivingRoom())
-            .recruitmentCapacity(dto.recruitmentCapacity())
+            .recruitmentCapacity(recruitmentCapacity)
             .rentalType(dto.rentalType().getDescription())
             .expectedPayment(dto.expectedPayment())
             .extraOption(dto.extraOption())

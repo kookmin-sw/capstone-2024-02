@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
+import org.capstone.maru.domain.jsonb.MemberFeatures;
 import org.capstone.maru.dto.MemberAccountWithCardsDto;
 
 
@@ -15,8 +16,8 @@ public record MemberAccountWithCardsResponse(
     String birthYear,
     String gender,
     String phoneNumber,
-    List<String> myCardFeatures,
-    List<String> mateCardFeatures,
+    MemberFeatures myCardFeatures,
+    MemberFeatures mateCardFeatures,
     LocalDateTime createdAt,
     String createdBy,
     LocalDateTime modifiedAt,

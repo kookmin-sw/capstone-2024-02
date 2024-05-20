@@ -8,12 +8,11 @@ import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import org.capstone.maru.annotation.ImageFilesConstraints;
 import org.capstone.maru.domain.Address;
-import org.capstone.maru.domain.Address.CITY;
 import org.capstone.maru.domain.constant.FloorType;
 import org.capstone.maru.domain.constant.RentalType;
 import org.capstone.maru.domain.constant.RoomType;
 import org.capstone.maru.domain.jsonb.ExtraOption;
-import org.capstone.maru.dto.MemberCardDto;
+import org.capstone.maru.dto.FeatureCardDto;
 import org.capstone.maru.dto.RoomImageDto;
 import org.capstone.maru.dto.RoomInfoDto;
 import org.capstone.maru.dto.StudioRoomPostDto;
@@ -31,8 +30,8 @@ public record StudioRoomPostRequest(
     @Valid
     LocationData locationData,
     MemberFeatureRequest roomMateCardData,
-    @NotNull(message = "참가자를 반드시 넣어주세요.")
-    List<String> participationMemberIds
+    @Valid
+    ParticipationData participationData
 ) {
 
     // -- 생성자 -- //
@@ -42,11 +41,13 @@ public record StudioRoomPostRequest(
             .title(postData.title)
             .content(postData.content)
             .publisherGender(publisherGender)
+            .address(Address.of(locationData.oldAddress, locationData.roadAddress))
+            .recruitmentCapacity(participationData.recruitmentCapacity)
             .build();
     }
 
-    public MemberCardDto toMemberCardDto() {
-        return MemberCardDto
+    public FeatureCardDto toMemberCardDto() {
+        return FeatureCardDto
             .builder()
             .location(roomMateCardData.location())
             .myFeatures(roomMateCardData.features())
@@ -70,11 +71,6 @@ public record StudioRoomPostRequest(
     public RoomInfoDto toRoomInfoDto() {
         return RoomInfoDto
             .builder()
-            .address(
-                Address.of(locationData.city, locationData.oldAddress,
-                    locationData.roadAddress, locationData.detailAddress
-                )
-            )
             .roomType(roomDetailData.roomType)
             .floorType(roomDetailData.floorType)
             .size(roomDetailData.size)
@@ -83,7 +79,6 @@ public record StudioRoomPostRequest(
             .hasLivingRoom(roomDetailData.hasLivingRoom)
             .rentalType(transactionData.rentalType)
             .expectedPayment(transactionData.expectedPayment)
-            .recruitmentCapacity(roomDetailData.recruitmentCapacity)
             .extraOption(roomDetailData.extraOption)
             .build();
     }
@@ -137,20 +132,24 @@ public record StudioRoomPostRequest(
         Short numberOfBathRoom,
         @NotNull(message = "거실 유무 입력 값이 잘못 되었습니다.")
         Boolean hasLivingRoom,
-        @Min(value = 0, message = "모집 인원은 음수 일 수 없습니다.")
-        @Max(value = 10, message = "모집 인원에 이상치 값이 입력 되었습니다.")
-        Short recruitmentCapacity,
         ExtraOption extraOption
     ) {
 
     }
 
     public record LocationData(
-        @NotNull(message = "도시 입력 값이 잘못 되었습니다.")
-        CITY city,
         String oldAddress,
-        String roadAddress,
-        String detailAddress
+        String roadAddress
+    ) {
+
+    }
+
+    public record ParticipationData(
+        @Min(value = 0, message = "모집 인원은 음수 일 수 없습니다.")
+        @Max(value = 10, message = "모집 인원에 이상치 값이 입력 되었습니다.")
+        Short recruitmentCapacity,
+        @NotNull(message = "참가자를 반드시 넣어주세요.")
+        List<String> participationMemberIds
     ) {
 
     }

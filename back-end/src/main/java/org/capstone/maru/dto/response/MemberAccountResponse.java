@@ -13,6 +13,7 @@ public record MemberAccountResponse(
     String birthYear,
     String gender,
     String phoneNumber,
+    String profileImageFileName,
     LocalDateTime createdAt,
     String createdBy,
     LocalDateTime modifiedAt,
@@ -28,6 +29,7 @@ public record MemberAccountResponse(
             .birthYear(dto.birthYear())
             .gender(dto.gender())
             .phoneNumber(dto.phoneNumber())
+            .profileImageFileName(dto.profileImageFileName())
             .createdAt(dto.createdAt())
             .createdBy(dto.createdBy())
             .modifiedAt(dto.modifiedAt())

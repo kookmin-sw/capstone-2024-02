@@ -1,6 +1,5 @@
 package org.capstone.maru.dto;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import lombok.Builder;
 import org.capstone.maru.domain.MemberAccount;
@@ -13,8 +12,8 @@ public record MemberAccountWithCardsDto(
     String birthYear,
     String gender,
     String phoneNumber,
-    MemberCardDto myCard,
-    MemberCardDto mateCard,
+    FeatureCardDto myCard,
+    FeatureCardDto mateCard,
     LocalDateTime createdAt,
     String createdBy,
     LocalDateTime modifiedAt,
@@ -30,8 +29,8 @@ public record MemberAccountWithCardsDto(
             .birthYear(entity.getBirthYear())
             .gender(entity.getGender())
             .phoneNumber(entity.getPhoneNumber())
-            .myCard(MemberCardDto.from(entity.getMyCard()))
-            .mateCard(MemberCardDto.from(entity.getMateCard()))
+            .myCard(FeatureCardDto.from(entity.getMyCard()))
+            .mateCard(FeatureCardDto.from(entity.getMateCard()))
             .createdAt(entity.getCreatedAt())
             .createdBy(entity.getCreatedBy())
             .modifiedAt(entity.getModifiedAt())

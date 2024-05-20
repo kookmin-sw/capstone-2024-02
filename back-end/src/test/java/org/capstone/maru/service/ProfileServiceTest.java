@@ -13,6 +13,7 @@ import org.capstone.maru.dto.MemberProfileDto;
 import org.capstone.maru.repository.postgre.MemberAccountRepository;
 import org.capstone.maru.repository.postgre.MemberCardRepository;
 import org.capstone.maru.security.principal.MemberPrincipal;
+import org.capstone.maru.util.EntityCreator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,8 +42,8 @@ class ProfileServiceTest {
     @Test
     void givenMemberId_whenSearching_thenReturnsMemberProfile() {
         // given
-        String memberId = "testId";
-        MemberAccount memberAccount = createMemberAccount(memberId);
+        String memberId = "test_1";
+        MemberAccount memberAccount = EntityCreator.createMemberAccount(1);
         MemberPrincipal memberPrincipal = createMemberPrincipal(memberId);
 
         // when
@@ -54,39 +55,6 @@ class ProfileServiceTest {
         assertThat(memberProfile).isNotNull();
         assertThat(memberProfile.myCard().id()).isEqualTo(1L);
         assertThat(memberProfile.mateCard().id()).isEqualTo(2L);
-    }
-
-    private FeatureCard createMyCard() {
-        return FeatureCard.of(
-            1L,
-            List.of("feature1", "feature2", "feature3")
-        );
-    }
-
-    private FeatureCard createMateCard() {
-        return FeatureCard.of(
-            2L,
-            List.of("feature1", "feature2", "feature3")
-        );
-    }
-
-    private MemberAccount createMemberAccount(String memberId) {
-        return MemberAccount.of(
-            memberId,
-            "test@mail.com",
-            "nickname",
-            "2024",
-            "MALE",
-            "010-1234-5678",
-            "nickname",
-            true,
-            true,
-            createMyCard(),
-            createMateCard(),
-            new HashSet<>(),
-            new HashSet<>(),
-            ProfileImage.defaultImage("test@mail.com")
-        );
     }
 
     private MemberPrincipal createMemberPrincipal(String memberId) {

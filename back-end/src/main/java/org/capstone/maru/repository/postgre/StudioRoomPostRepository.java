@@ -17,5 +17,7 @@ public interface StudioRoomPostRepository extends
 
     Optional<StudioRoomPost> findByIdAndPublisherGender(Long postId, String gender);
 
-    void deleteByIdAndAndPublisherAccount_MemberId(Long postId, String memberId);
+    Optional<StudioRoomPost> findByIdAndPublisherAccount_MemberId(Long postId, String memberId);
+
+    void deleteByIdAndPublisherAccount_MemberId(Long postId, String memberId);
 }
