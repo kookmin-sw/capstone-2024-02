@@ -18,7 +18,7 @@
 - [Abstract](#2-abstract)
 - [주요 기능](#3-주요-기능)
 - [아키텍처](#4-아키텍처)
-- [소개 영상](#5-소개-영상)
+- [시연 동영상](#5-시연-동영상)
 - [팀 소개](#6-팀-소개)
 - [사용법](#7-사용법)
 - [기술 스택](#8-stacks)
@@ -83,10 +83,10 @@ To this end, we support finding roommates or housemates that match each user's l
 <br />
 
 
-## 5. 소개 영상
+## 5. 시연 동영상
 
-프로젝트 소개하는 영상을 추가하세요
-<br />
+https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/72610780-185a-4a35-a5ac-e66bf060ac49
+
 
 ## 6. 팀 소개
 
