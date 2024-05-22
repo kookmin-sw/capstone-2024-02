@@ -1,6 +1,6 @@
 <div align="center">
   
-# [MARU](https://front-end-wine-phi.vercel.app/)
+# [MARU](https://capstone-maru.vercel.app/)
 
 청년들의 주거비 경제적 어려움을 공유 경제를 통해 해결하고, 함께 살아가는 플랫폼.
 
@@ -102,8 +102,133 @@ To this end, we support finding roommates or housemates that match each user's l
 <br />
 
 ## 7. 사용법
+- Prerequisite
+    - node.js
+    - npm or yarn
+    - yarn
+    - PostgreSQL
+    - Redis
+    - MongoDB
+    - AWS S3 Bucket (IAM 사용자 생성, public 차단)
+    - python3
+    - pip3
+- 공통 매뉴얼
+    ```bash
+    git clone https://github.com/kookmin-sw/capstone-2024-02/
+    ```
+- Front-end
 
-소스코드제출시 설치법이나 사용법을 작성하세요.
+    ```bash
+    cd front-end
+    yarn
+    yarn dev
+
+    or
+
+    npm install
+    npm run dev
+    ```
+- Back-end
+    ```bash
+    cd back-end
+    ./gradlew clean build -x test
+    java -jar build/libs/*.jar 
+    ```
+- Rec-sys
+    ```bash
+    cd rec-sys
+    pip install -r requirement.txt
+    uvicorn main:app —reload 
+    ```
+- 환경 설정
+    - Front-end
+        - 환경 변수 파일을 설정합니다.
+            ```plaintext
+            // .env.local
+            NEXT_PUBLIC_API_URL={SERVER API LOCATION}
+            NEXT_PUBLIC_CLIENT_URL=http://localhost:3000
+            NEXT_PUBLIC_NAVER_MAP_CLIENT_ID={Naver MAP API Client ID}
+            NEXT_PUBLIC_NAVER_MAP_CLIENT_SECRET={Naver MAP API SECRET VALUE}
+            ```
+    - Back-end
+        - application-cloud.yaml 파일 설정 (이 때, aws iam 사용자에 s3 접근 role 을 부여해야 합니다.)
+            ```yaml
+            cloud:
+                aws:
+                s3:
+                    bucket: {S3 bucket name}
+                credentials:
+                    access-key: {AWS IAM access-key}
+                    secret-key: {AWS IAM secret-key}
+                region:
+                    static: ap-northeast-2
+                stack:
+                    auto: false
+            ```
+        - application-datasource.yml 파일 설정 (먼저, 추천 시스템을 배포해야합니다.)
+            ```yaml
+            external-server:
+                url: {추천 시스템 배포 url}
+
+            spring:
+                datasource:
+                    url: jdbc:postgresql://{db_host}:{db_port}/{db_name}
+                    username: {db_username}
+                    password: {db_password}
+                    driver-class-name: org.postgresql.Driver
+                data:
+                    redis:
+                        host: localhost
+                        port: 6379
+                    mongodb:
+                        host: {db_host}
+                        port: 27017
+                        authentication-database: maru
+                        username: {db_username}
+                        password: {db_password}
+                        database: {db_name}
+                        auto-index-creation: true
+            ```
+        - application-oauth.yml 파일 설정
+            ```yaml
+            spring:
+            security:
+            oauth2:
+                client:
+                registration:
+                    kakao:
+                    client-id: {social_client_id}
+                    client-secret: {social_client_secret}
+                    authorization-grant-type: authorization_code
+                    
+                    redirect-uri: {callback_uri}
+                    client-authentication-method: client_secret_post
+                    naver:
+                    client-id: {social_client_id}
+                    client-secret: {social_client_secret}
+                    authorization-grant-type: authorization_code
+                    redirect-uri: {callback_uri}
+                provider:
+                    kakao:
+                    authorization-uri: https://kauth.kakao.com/oauth/authorize
+                    token-uri: https://kauth.kakao.com/oauth/token
+                    user-info-uri: https://kapi.kakao.com/v2/user/me
+                    user-name-attribute: id
+                    naver:
+                    authorization-uri: https://nid.naver.com/oauth2.0/authorize
+                    token-uri: https://nid.naver.com/oauth2.0/token
+                    user-info-uri: https://openapi.naver.com/v1/nid/me
+                    user-name-attribute: response
+            ```
+    - Rec-sys
+        ```plaintext
+        DB_NAME={db_name}
+        DB_USER={db_username}  # 데이터베이스 사용자 이름
+        DB_HOST={db_host}
+        DB_PORT=5432  # 기본 포트는 5432
+        DB_PASSWORD={db_password}
+        ```
+
 <br />
 
 ## 8. 기술 스택
