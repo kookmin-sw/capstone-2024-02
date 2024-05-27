@@ -1,6 +1,6 @@
 <div align="center">
   
-# [MARU](https://front-end-wine-phi.vercel.app/)
+# [MARU](https://capstone-maru.vercel.app/)
 
 청년들의 주거비 경제적 어려움을 공유 경제를 통해 해결하고, 함께 살아가는 플랫폼.
 
@@ -17,13 +17,12 @@
 - [프로젝트 소개](#1-프로젝트-소개)
 - [Abstract](#2-abstract)
 - [주요 기능](#3-주요-기능)
-- [보조 기능](#4-보조-기능)
-- [아키텍처](#5-아키텍처)
-- [소개 영상](#6-소개-영상)
-- [팀 소개](#7-팀-소개)
-- [사용법](#8-사용법)
-- [기술 스택](#9-stacks)
-- [기타](#10-기타)
+- [아키텍처](#4-아키텍처)
+- [시연 동영상](#5-시연-동영상)
+- [팀 소개](#6-팀-소개)
+- [사용법](#7-사용법)
+- [기술 스택](#8-stacks)
+- [기타](#9-기타)
 
 <br />
 
@@ -58,47 +57,38 @@ To this end, we support finding roommates or housemates that match each user's l
     - 사용자 간의 원활한 소통을 위해, 서비스 내에 채팅 기능을 제공합니다.
 <br />
 
-## 4. 보조 기능
-하기 내용은 주요 기능 진행 상황에 따라, 다채로운 서비스를 위해 후순위로 개발할 예정인 기능들입니다.
-- MBTI 와 비슷한, 자신의 생활 타입 테스트 기능
-- 부동산 매물 조회 기능
-- 커뮤니티 기능
-- 자취, 동거인들의 커뮤니티 기능 제공
-<br />
-
-
-## 5. 아키텍처
+## 4. 아키텍처
 프로젝트 내 각 파트의 아키텍처 구조와 시스템 구성도입니다.
 <br />
 
 
-## 5.1 Front-end
+## 4.1 Front-end
 <div align="center">
 <img width="800" alt="스크린샷 2024-04-04 02 59 41" src="https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/70b11cdf-f5b8-4018-bdc4-f1796641c36e">
 </div>
 <br />
 
 
-## 5.2 Back-end
+## 4.2 Back-end
 <div align="center">
 <img width="800" alt="스크린샷 2024-04-04 02 59 55" src="https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/dda418db-65ad-439d-951a-5dabd299d03c">
 </div>
 <br />
 
 
-## 5.3 Deployment
+## 4.3 Deployment
 <div align="center">
 <img width="800" alt="스크린샷 2024-04-04 03 00 24" src="https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/e3c7bd19-a597-434c-a425-ea00925717ae">
 </div>
 <br />
 
 
-## 6. 소개 영상
+## 5. 시연 동영상
 
-프로젝트 소개하는 영상을 추가하세요
-<br />
+https://github.com/kookmin-sw/capstone-2024-02/assets/55117867/72610780-185a-4a35-a5ac-e66bf060ac49
 
-## 7. 팀 소개
+
+## 6. 팀 소개
 
 <div align="center">
 
@@ -111,12 +101,137 @@ To this end, we support finding roommates or housemates that match each user's l
 </div>
 <br />
 
-## 8. 사용법
+## 7. 사용법
+- Prerequisite
+    - node.js
+    - npm or yarn
+    - yarn
+    - PostgreSQL
+    - Redis
+    - MongoDB
+    - AWS S3 Bucket (IAM 사용자 생성, public 차단)
+    - python3
+    - pip3
+- 공통 매뉴얼
+    ```bash
+    git clone https://github.com/kookmin-sw/capstone-2024-02/
+    ```
+- Front-end
 
-소스코드제출시 설치법이나 사용법을 작성하세요.
+    ```bash
+    cd front-end
+    yarn
+    yarn dev
+
+    or
+
+    npm install
+    npm run dev
+    ```
+- Back-end
+    ```bash
+    cd back-end
+    ./gradlew clean build -x test
+    java -jar build/libs/*.jar 
+    ```
+- Rec-sys
+    ```bash
+    cd rec-sys
+    pip install -r requirement.txt
+    uvicorn main:app —reload 
+    ```
+- 환경 설정
+    - Front-end
+        - 환경 변수 파일을 설정합니다.
+            ```plaintext
+            // .env.local
+            NEXT_PUBLIC_API_URL={SERVER API LOCATION}
+            NEXT_PUBLIC_CLIENT_URL=http://localhost:3000
+            NEXT_PUBLIC_NAVER_MAP_CLIENT_ID={Naver MAP API Client ID}
+            NEXT_PUBLIC_NAVER_MAP_CLIENT_SECRET={Naver MAP API SECRET VALUE}
+            ```
+    - Back-end
+        - application-cloud.yaml 파일 설정 (이 때, aws iam 사용자에 s3 접근 role 을 부여해야 합니다.)
+            ```yaml
+            cloud:
+                aws:
+                s3:
+                    bucket: {S3 bucket name}
+                credentials:
+                    access-key: {AWS IAM access-key}
+                    secret-key: {AWS IAM secret-key}
+                region:
+                    static: ap-northeast-2
+                stack:
+                    auto: false
+            ```
+        - application-datasource.yml 파일 설정 (먼저, 추천 시스템을 배포해야합니다.)
+            ```yaml
+            external-server:
+                url: {추천 시스템 배포 url}
+
+            spring:
+                datasource:
+                    url: jdbc:postgresql://{db_host}:{db_port}/{db_name}
+                    username: {db_username}
+                    password: {db_password}
+                    driver-class-name: org.postgresql.Driver
+                data:
+                    redis:
+                        host: localhost
+                        port: 6379
+                    mongodb:
+                        host: {db_host}
+                        port: 27017
+                        authentication-database: maru
+                        username: {db_username}
+                        password: {db_password}
+                        database: {db_name}
+                        auto-index-creation: true
+            ```
+        - application-oauth.yml 파일 설정
+            ```yaml
+            spring:
+            security:
+            oauth2:
+                client:
+                registration:
+                    kakao:
+                    client-id: {social_client_id}
+                    client-secret: {social_client_secret}
+                    authorization-grant-type: authorization_code
+                    
+                    redirect-uri: {callback_uri}
+                    client-authentication-method: client_secret_post
+                    naver:
+                    client-id: {social_client_id}
+                    client-secret: {social_client_secret}
+                    authorization-grant-type: authorization_code
+                    redirect-uri: {callback_uri}
+                provider:
+                    kakao:
+                    authorization-uri: https://kauth.kakao.com/oauth/authorize
+                    token-uri: https://kauth.kakao.com/oauth/token
+                    user-info-uri: https://kapi.kakao.com/v2/user/me
+                    user-name-attribute: id
+                    naver:
+                    authorization-uri: https://nid.naver.com/oauth2.0/authorize
+                    token-uri: https://nid.naver.com/oauth2.0/token
+                    user-info-uri: https://openapi.naver.com/v1/nid/me
+                    user-name-attribute: response
+            ```
+    - Rec-sys
+        ```plaintext
+        DB_NAME={db_name}
+        DB_USER={db_username}  # 데이터베이스 사용자 이름
+        DB_HOST={db_host}
+        DB_PORT=5432  # 기본 포트는 5432
+        DB_PASSWORD={db_password}
+        ```
+
 <br />
 
-## 9. 기술 스택
+## 8. 기술 스택
 
 ### Front-end
 <img  src="https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=next.js&logoColor=white"> <img  src="https://img.shields.io/badge/sass-CC6699?style=for-the-badge&logo=sass&logoColor=white"> <img  src="https://img.shields.io/badge/styled--components-DB7093?style=for-the-badge&logo=styledcomponents&logoColor=white"> <br />
@@ -131,4 +246,4 @@ To this end, we support finding roommates or housemates that match each user's l
 <br />
 
 
-## 10. 기타
+## 9. 기타
