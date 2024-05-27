@@ -46,7 +46,8 @@ public class FeatureCard {
         this.memberFeatures = memberFeatures;
     }
 
-    private FeatureCard(MemberFeatures memberFeatures) {
+    private FeatureCard(String location, MemberFeatures memberFeatures) {
+        this.location = location;
         this.memberFeatures = memberFeatures;
     }
 
@@ -69,12 +70,8 @@ public class FeatureCard {
         this.location = location;
     }
 
-    public static FeatureCard of(Long memberCardId, MemberFeatures memberFeatures) {
-        return new FeatureCard(memberCardId, memberFeatures);
-    }
-
-    public static FeatureCard of(MemberFeatures memberFeatures) {
-        return new FeatureCard(memberFeatures);
+    public static FeatureCard of(String location, MemberFeatures memberFeatures) {
+        return new FeatureCard(location, memberFeatures);
     }
 
     @Override

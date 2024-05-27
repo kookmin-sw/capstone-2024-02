@@ -22,6 +22,7 @@ public record FeatureCardDto(
 
     public FeatureCard toEntity() {
         return FeatureCard.of(
+            this.location,
             this.myFeatures
         );
     }

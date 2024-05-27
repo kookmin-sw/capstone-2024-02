@@ -11,8 +11,10 @@ import org.capstone.maru.domain.Recommend;
 import org.capstone.maru.domain.jsonb.MemberFeatures;
 import org.capstone.maru.dto.FeatureCardDto;
 import org.capstone.maru.dto.MemberProfileDto;
+import org.capstone.maru.dto.SharedRoomPostDto;
 import org.capstone.maru.dto.SimpleMemberCardDto;
 import org.capstone.maru.dto.response.AuthResponse;
+import org.capstone.maru.dto.response.SharedRoomPostResponse;
 import org.capstone.maru.dto.response.SimpleMemberProfileResponse;
 import org.capstone.maru.repository.postgre.MemberCardRepository;
 import org.capstone.maru.repository.postgre.ProfileImageRepository;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProfileService {
 
     private final MemberAccountService memberAccountService;
+    private final SharedRoomPostService sharedRoomPostService;
 
     private final S3FileService s3FileService;
 
@@ -76,6 +79,11 @@ public class ProfileService {
         log.info("getMyCard - memberId: {}", memberId);
 
         MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
+        List<SharedRoomPostResponse> memberPosts = sharedRoomPostService
+            .getMySharedRoomPosts(memberId)
+            .stream()
+            .map(SharedRoomPostResponse::from)
+            .toList();
 
         if (!memberAccount.getGender().equals(gender)) {
             throw new IllegalArgumentException("성별이 다릅니다.");
@@ -93,7 +101,7 @@ public class ProfileService {
 
         AuthResponse authResponse = AuthResponse.from(memberAccount);
 
-        return MemberProfileDto.from(imgURL, myCard, mateCard, authResponse);
+        return MemberProfileDto.from(imgURL, myCard, mateCard, authResponse, memberPosts);
     }
 
     @Transactional
@@ -116,9 +124,9 @@ public class ProfileService {
         log.info("getCard - cardId: {}", cardId);
 
         FeatureCard featureCard = memberCardRepository.findById(cardId)
-            .orElseThrow(
-                () -> new IllegalArgumentException(
-                    "MemberCard not found"));
+                                                      .orElseThrow(
+                                                          () -> new IllegalArgumentException(
+                                                              "MemberCard not found"));
 
         return FeatureCardDto.from(featureCard);
     }
@@ -209,5 +217,11 @@ public class ProfileService {
             return SimpleMemberCardDto.from(memberAccount, featureCard, profileImage,
                 recommend.getScore());
         }).toList();
+    }
+
+    @Transactional
+    public void updateRecommendOnOff(String memberId, Boolean recommendOn) {
+        MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
+        memberAccount.updateRecommendOn(recommendOn);
     }
 }

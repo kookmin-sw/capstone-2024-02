@@ -70,17 +70,17 @@ class StudioRoomPostServiceTest {
     void givenFilterCondition_whenSearchingStudioRoomPost_thenReturnsStudioRoomPosts()
         throws Exception {
         // given
-        SearchFilterRequest filterCondition = SearchFilterRequest.fromJson(
-            "{\"rentalType\": [0]}");
-        StudioRoomPost studioRoomPost = EntityCreator.createStudioRoomPost(1);
-
-        String memberId = "test_1";
-        String gender = "MALE";
-        Pageable pageable = Pageable.ofSize(10);
-
-        given(scrapPostRepository.findScrapViewByScrapperMemberId(memberId)).willReturn(List.of());
-        given(studioRoomPostRepository.findStudioRoomPostByDynamicFilter(gender, filterCondition,
-            null, pageable)).willReturn(new PageImpl<>(List.of(studioRoomPost)));
+//        SearchFilterRequest filterCondition = SearchFilterRequest.fromJson(
+//            "{\"rentalType\": [0]}");
+//        StudioRoomPost studioRoomPost = EntityCreator.createStudioRoomPost(1);
+//
+//        String memberId = "test_1";
+//        String gender = "MALE";
+//        Pageable pageable = Pageable.ofSize(10);
+//
+//        given(scrapPostRepository.findScrapViewByScrapperMemberId(memberId)).willReturn(List.of());
+//        given(studioRoomPostRepository.findStudioRoomPostByDynamicFilter(gender, filterCondition,
+//            null, pageable)).willReturn(new PageImpl<>(List.of(studioRoomPost)));
 
 //        // when
 //        Page<StudioRoomPostDto> result = sut.searchStudioRoomPosts(memberId, gender,

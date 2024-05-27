@@ -165,6 +165,13 @@ public class ProfileController {
         return ResponseEntity.ok(APIResponse.success(result));
     }
 
+    @GetMapping("/mutual/follow")
+    public ResponseEntity<APIResponse> mutualFollowings(
+        @AuthenticationPrincipal MemberPrincipal principal) {
+        FollowingDto result = followService.getMutualFollower(principal.memberId());
+        return ResponseEntity.ok(APIResponse.success(result));
+    }
+
     /*
      * 프로필 이미지 수정
      */
@@ -231,9 +238,24 @@ public class ProfileController {
             memberPrincipal.memberId(), memberPrincipal.gender(), cardOption);
 
         List<SimpleMemberCardResponse> result = recommendMember.stream()
-                                                               .map(SimpleMemberCardResponse::from)
-                                                               .toList();
+            .map(SimpleMemberCardResponse::from)
+            .toList();
 
         return ResponseEntity.ok(APIResponse.success(result));
+    }
+
+    /*
+    추천 on/off
+     */
+    @PatchMapping("/recommend/onoff")
+    public ResponseEntity<APIResponse> updateRecommendOnOff(
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
+        @RequestParam(name = "recommendOn") Boolean recommendOn
+    ) {
+        log.info("call updateRecommendOnOff : {}", memberPrincipal.memberId());
+
+        profileService.updateRecommendOnOff(memberPrincipal.memberId(), recommendOn);
+
+        return ResponseEntity.ok(APIResponse.success());
     }
 }

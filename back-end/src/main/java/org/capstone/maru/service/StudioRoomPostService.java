@@ -183,7 +183,9 @@ public class StudioRoomPostService {
             .map(ScrapPostView::getIsScrapped)
             .orElse(false);
         final Long scrapCount = scrapPostRepository.countByScrappedIdAndIsScrapped(postId);
-        List<String> scrappedMemberIds = followRepository.findFollowingIdsByFollowerId(memberId);
+
+        // 모집된 인원과 사용자의 팔로우 관계
+        List<String> followingIds = followRepository.findFollowingIdsByFollowerId(memberId);
 
         // 조회수 +1 & 게시글 총 조회수
         Long viewCount = viewCountService.increaseValue(SharedViewCountCacheKey.from(postId));
@@ -206,7 +208,7 @@ public class StudioRoomPostService {
                         .getPreSignedUrlForLoad(roomImage.getFileName())
                 )
             );
-        return StudioRoomPostDetailDto.from(resultEntity, isScrapped, scrappedMemberIds, scrapCount,
+        return StudioRoomPostDetailDto.from(resultEntity, isScrapped, followingIds, scrapCount,
             viewCount);
     }
 

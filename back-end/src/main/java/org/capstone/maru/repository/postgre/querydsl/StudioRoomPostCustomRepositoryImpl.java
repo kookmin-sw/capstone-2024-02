@@ -44,82 +44,6 @@ public class StudioRoomPostCustomRepositoryImpl implements
     }
 
     @Override
-    public Page<StudioRoomPost> findStudioRoomPostByDynamicFilter(
-        String gender,
-        @Nonnull SearchFilterRequest searchFilterRequest,
-        String searchKeyWords,
-        Pageable pageable
-    ) {
-        List<StudioRoomPost> content = jpaQueryFactory
-            .selectFrom(studioRoomPost)
-            .join(studioRoomPost.roomInfo, roomInfo)
-            .fetchJoin()
-            .where(
-                eqGender(gender),
-                inRoomTypes(searchFilterRequest.roomTypes()),
-                inRentalTypes(searchFilterRequest.rentalTypes()),
-                eqHasLivingRoom(searchFilterRequest.hasLivingRoom()),
-                eqNumberOfRoom(searchFilterRequest.numberOfRoom()),
-                eqNumberOfBathRoom(searchFilterRequest.numberOfBathRoom()),
-                betweenRoomSize(searchFilterRequest.roomSizeRange()),
-                inFloorTypes(searchFilterRequest.floorTypes()),
-                betweenExpectedPayment(searchFilterRequest.expectedPaymentRange()),
-                containSearchKeyWords(searchKeyWords)
-            )
-            .orderBy(postSort(pageable))
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .fetch();
-
-        JPAQuery<Long> countQuery = jpaQueryFactory
-            .select(studioRoomPost.count())
-            .from(studioRoomPost)
-            .where(
-                eqGender(gender),
-                inRoomTypes(searchFilterRequest.roomTypes()),
-                inRentalTypes(searchFilterRequest.rentalTypes()),
-                eqHasLivingRoom(searchFilterRequest.hasLivingRoom()),
-                eqNumberOfRoom(searchFilterRequest.numberOfRoom()),
-                eqNumberOfBathRoom(searchFilterRequest.numberOfBathRoom()),
-                betweenRoomSize(searchFilterRequest.roomSizeRange()),
-                inFloorTypes(searchFilterRequest.floorTypes()),
-                betweenExpectedPayment(searchFilterRequest.expectedPaymentRange()),
-                containSearchKeyWords(searchKeyWords)
-            );
-
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
-    }
-
-    @Override
-    public Page<StudioRoomPost> findStudioRoomPostBySearchKeyWords(
-        String gender,
-        String searchKeyWords,
-        Pageable pageable
-    ) {
-        List<StudioRoomPost> content = jpaQueryFactory
-            .selectFrom(studioRoomPost)
-            .where(
-                eqGender(gender),
-                containSearchKeyWords(searchKeyWords)
-            )
-            .offset(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .orderBy(postSort(pageable))
-            .fetch();
-
-        // 개수
-        JPAQuery<Long> countQuery = jpaQueryFactory
-            .select(studioRoomPost.count())
-            .from(studioRoomPost)
-            .where(
-                eqGender(gender),
-                containSearchKeyWords(searchKeyWords)
-            );
-
-        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
-    }
-
-    @Override
     public Page<StudioRoomRecommendPost> findStudioRoomPostByRecommendDynamicFilter(
         String gender,
         @Nonnull SearchFilterRequest searchFilterRequest,
@@ -133,6 +57,8 @@ public class StudioRoomPostCustomRepositoryImpl implements
             .from(studioRoomPost)
             .join(recommend)
             .on(studioRoomPost.id.stringValue().eq(recommend.recommendationId))
+            .join(studioRoomPost.roomInfo, roomInfo)
+            .fetchJoin()
             .where(
                 recommend.userId.eq(memberId),
                 recommend.cardType.eq(cardOption),
@@ -148,6 +74,8 @@ public class StudioRoomPostCustomRepositoryImpl implements
                 containSearchKeyWords(searchKeyWords)
             )
             .orderBy(recommend.score.desc())
+            .offset(pageable.getOffset())
+            .limit(pageable.getPageSize())
             .fetch();
 
         // 개수
@@ -193,9 +121,9 @@ public class StudioRoomPostCustomRepositoryImpl implements
                 recommend.userId.eq(memberId),
                 recommend.cardType.eq(cardOption)
             )
+            .orderBy(postSort(pageable))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .orderBy(postSort(pageable))
             .fetch();
 
         // 개수
@@ -231,12 +159,10 @@ public class StudioRoomPostCustomRepositoryImpl implements
                 recommend.cardType.eq(cardOption),
                 eqGender(gender)
             )
+            .orderBy(postSort(pageable))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .orderBy(postSort(pageable))
             .fetch();
-
-        log.info("[Debug] content: {}", content);
 
         JPAQuery<Long> countQuery = jpaQueryFactory
             .select(studioRoomPost.count())

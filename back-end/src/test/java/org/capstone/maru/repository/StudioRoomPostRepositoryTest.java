@@ -8,12 +8,14 @@ import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import org.capstone.maru.config.P6spyConfig;
 import org.capstone.maru.config.TestJpaConfig;
+import org.capstone.maru.domain.Image;
 import org.capstone.maru.domain.MemberAccount;
 import org.capstone.maru.domain.RoomImage;
 import org.capstone.maru.domain.StudioRoomPost;
 import org.capstone.maru.domain.constant.Gender;
 import org.capstone.maru.domain.constant.RentalType;
 import org.capstone.maru.domain.constant.RoomType;
+import org.capstone.maru.dto.StudioRoomRecommendPost;
 import org.capstone.maru.dto.request.SearchFilterRequest;
 import org.capstone.maru.repository.postgre.MemberAccountRepository;
 import org.capstone.maru.repository.postgre.RoomImageRepository;
@@ -70,27 +72,27 @@ class StudioRoomPostRepositoryTest {
     @BeforeEach
     public void setUpPagingData() {
         this.pageable = PageRequest.of(PAGE_NUMBER, PAGE_SIZE, Sort.by(
-            Sort.Order.desc("createdAt")
+            Sort.Order.desc("score")
         ));
     }
 
-    @BeforeEach
-    public void setUpStudioRoomPostData() {
-        for (int i = 0; i < 100; i++) {
-            MemberAccount memberAccount = EntityCreator.createMemberAccount(i);
-            memberAccountRepository.save(memberAccount);
-        }
-
-        for (int i = 1; i <= TOTAL_POST_COUNT; i++) {
-            StudioRoomPost studioRoomPost = EntityCreator.createStudioRoomPost(i);
-            studioRoomPostRepository.save(studioRoomPost);
-            for (int j = 1; j <= 3; j++) {
-                RoomImage roomImage = EntityCreator.createRoomImage(j, studioRoomPost);
-                roomImageRepository.save(roomImage);
-            }
-        }
-        entityManager.clear();
-    }
+//    @BeforeEach
+//    public void setUpStudioRoomPostData() {
+//        for (int i = 0; i < 100; i++) {
+//            MemberAccount memberAccount = EntityCreator.createMemberAccount(i);
+//            memberAccountRepository.save(memberAccount);
+//        }
+//
+//        for (int i = 1; i <= TOTAL_POST_COUNT; i++) {
+//            StudioRoomPost studioRoomPost = EntityCreator.createStudioRoomPost(i);
+//            studioRoomPostRepository.save(studioRoomPost);
+//            for (int j = 1; j <= 3; j++) {
+//                RoomImage roomImage = EntityCreator.createRoomImage(j, studioRoomPost);
+//                roomImageRepository.save(roomImage);
+//            }
+//        }
+//        entityManager.clear();
+//    }
 
     @DisplayName("[StudioRoomPost] select 테스트 (전체)")
     @Test
@@ -147,9 +149,15 @@ class StudioRoomPostRepositoryTest {
             .fromJson("{\"roomTypes\": [0, 1], \"rentalTypes\": [0]}");
 
         // when
-        Page<StudioRoomPost> studioRoomPostsPage = studioRoomPostRepository
-            .findStudioRoomPostByDynamicFilter(MALE.name(), searchFilter, null,
-                pageable);
+        Page<StudioRoomRecommendPost> studioRoomPostsPage = studioRoomPostRepository
+            .findStudioRoomPostByRecommendDynamicFilter(
+                MALE.name(),
+                searchFilter,
+                null,
+                "test_1",
+                "room",
+                pageable
+            );
 
         // then
         assertThat(
@@ -168,8 +176,9 @@ class StudioRoomPostRepositoryTest {
         String searchKeyWords = "test";
 
         // when
-        Page<StudioRoomPost> studioRoomPostsPage = studioRoomPostRepository
-            .findStudioRoomPostBySearchKeyWords(MALE.name(), searchKeyWords, pageable);
+        Page<StudioRoomRecommendPost> studioRoomPostsPage = studioRoomPostRepository
+            .findStudioRoomRecommendPostBySearchKeyWords("test_1", MALE.name(), searchKeyWords,
+                "my", pageable);
 
         // then
         assertThat(studioRoomPostsPage.getContent()).hasSize(pageable.getPageSize());

@@ -22,7 +22,7 @@ public class MainController {
 
     @GetMapping("/")
     public String root() {
-        return "health check is running!";
+        return "health check";
     }
 
     @GetMapping("/test")

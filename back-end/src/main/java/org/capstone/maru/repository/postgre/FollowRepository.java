@@ -14,4 +14,9 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     @Query("select fol.following.memberId from Follow fol where fol.follower.memberId = :followerId")
     List<String> findFollowingIdsByFollowerId(String followerId);
+
+    @Query("select f1.following from Follow f1 "
+        + "inner join Follow f2 on f1.follower.memberId = f2.following.memberId "
+        + "where f1.following.memberId = f2.follower.memberId and f1.follower.memberId = :memberId")
+    List<MemberAccount> findAllMutualFollower(String memberId);
 }

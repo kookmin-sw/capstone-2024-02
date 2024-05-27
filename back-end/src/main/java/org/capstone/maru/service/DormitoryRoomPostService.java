@@ -133,7 +133,8 @@ public class DormitoryRoomPostService {
             .map(ScrapPostView::getIsScrapped)
             .orElse(false);
         final Long scrapCount = scrapPostRepository.countByScrappedIdAndIsScrapped(postId);
-        List<String> scrappedMemberIds = followRepository.findFollowingIdsByFollowerId(memberId);
+
+        List<String> followingIds = followRepository.findFollowingIdsByFollowerId(memberId);
 
         Long viewCount = viewCountService.increaseValue(SharedViewCountCacheKey.from(postId));
 
@@ -154,7 +155,7 @@ public class DormitoryRoomPostService {
                     s3FileService.getPreSignedUrlForLoad(roomImage.getFileName())
                 )
             );
-        return DormitoryRoomPostDetailDto.from(resultEntity, isScrapped, scrappedMemberIds,
+        return DormitoryRoomPostDetailDto.from(resultEntity, isScrapped, followingIds,
             scrapCount, viewCount);
     }
 

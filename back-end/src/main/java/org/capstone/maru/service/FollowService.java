@@ -57,6 +57,25 @@ public class FollowService {
         return FollowingDto.from(followingList);
     }
 
+    @Transactional(readOnly = true)
+    public FollowingDto getMutualFollower(String memberId) {
+        return FollowingDto.from(
+            followRepository
+                .findAllMutualFollower(memberId)
+                .stream()
+                .collect(
+                    Collectors.toMap(
+                        MemberAccount::getMemberId,
+                        follow -> List.of(
+                            follow.getNickname(),
+                            s3FileService.getPreSignedUrlForLoad(
+                                follow.getProfileImage().getFileName())
+                        )
+                    )
+                )
+        );
+    }
+
     public void unfollowUser(String memberId, String followingMemberId) {
         MemberAccount followerAccount = memberAccountService.searchMemberAccount(memberId);
         MemberAccount followingAccount = memberAccountService.searchMemberAccount(

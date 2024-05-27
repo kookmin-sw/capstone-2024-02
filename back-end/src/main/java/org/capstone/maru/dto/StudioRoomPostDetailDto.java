@@ -35,7 +35,7 @@ public record StudioRoomPostDetailDto(
     public static StudioRoomPostDetailDto from(
         StudioRoomPost entity,
         Boolean isPostScrapped,
-        List<String> scrappedMemberIds,
+        List<String> followingIds,
         Long scrapCount,
         Long viewCount
     ) {
@@ -53,7 +53,7 @@ public record StudioRoomPostDetailDto(
                           SimpleMemberProfileDto
                               .from(
                                   memberAccount,
-                                  scrappedMemberIds
+                                  followingIds
                                       .stream()
                                       .anyMatch(memberId -> Objects.equals(memberId,
                                           memberAccount.getMemberId()))

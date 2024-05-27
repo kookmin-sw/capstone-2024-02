@@ -46,9 +46,9 @@ public class DormitoryRoomPostCustomRepositoryImpl implements DormitoryRoomPostC
                 recommend.cardType.eq(cardOption),
                 eqGender(gender)
             )
+            .orderBy(postSort(pageable))
             .offset(pageable.getOffset())
             .limit(pageable.getPageSize())
-            .orderBy(postSort(pageable))
             .fetch();
 
         JPAQuery<Long> countQuery = jpaQueryFactory

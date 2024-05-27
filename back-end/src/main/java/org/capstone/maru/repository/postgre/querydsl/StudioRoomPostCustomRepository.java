@@ -9,19 +9,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface StudioRoomPostCustomRepository {
 
-    Page<StudioRoomPost> findStudioRoomPostByDynamicFilter(
-        String gender,
-        @Nonnull SearchFilterRequest searchFilterRequest,
-        String searchKeyWords,
-        Pageable pageable
-    );
-
-    Page<StudioRoomPost> findStudioRoomPostBySearchKeyWords(
-        String gender,
-        String searchKeyWords,
-        Pageable pageable
-    );
-
     Page<StudioRoomRecommendPost> findStudioRoomPostByRecommendDynamicFilter(
         String gender,
         @Nonnull SearchFilterRequest searchFilterRequest,
