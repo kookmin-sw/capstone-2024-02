@@ -1,6 +1,7 @@
 'use client';
 
 import styled from 'styled-components';
+import { v4 as uuidv4 } from 'uuid';
 
 const styles = {
   container: styled.div`
@@ -169,10 +170,7 @@ export function LandingPage() {
   return (
     <styles.container>
       <styles.section1>
-        <styles.img
-          alt="Brazuca Date Night"
-          src="https://s3-alpha-sig.figma.com/img/cee1/f195/09c0e7edb4b99b5d73a56afd3391e70c?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=mGbLX64XEb4~I8MnA4qswCUMllOL~P7U2jkKUuzLYa6x3Fr2kB6NFyORGvAhWNjkQ1PGIkTB9bul-F4o2hdS-jE5~1y0Ss1sLqK-j8bFMsFvJSm7qqTShNsBKHYXnbXA0d8tl74LDrhwNADsVQbR2p7xG~syVQ3l-NSmzaGaeEF3g0tnUIB3dybwZY1llwLcazj7yBXhVY-NMWg8ekFaFNU7ZRsK7HhK81bQJb1CBNughUXF1O1xDvQZjh3IKx~f2TP5qJAkB5Z1Nw9i5SoZF9YEo-odhDSrvzy7Gbfqw9W0xyXesJVGTRF~AZ3z8D5Zn2E~aZDvg5i3SWJHfFuFXg__"
-        />
+        <styles.img alt="Brazuca Date Night" src="/landing-page-image.png" />
         <styles.description>
           <h1>공동주거생활의 A to Z</h1>
           <p>
@@ -183,18 +181,12 @@ export function LandingPage() {
             <a
               href={`${process.env.NEXT_PUBLIC_API_URL}/oauth2/authorize/kakao?redirect_uri=${process.env.NEXT_PUBLIC_CLIENT_URL}/login`}
             >
-              <img
-                alt="kakao"
-                src="https://s3-alpha-sig.figma.com/img/3d3c/d1f5/021fb8c1c71bbfcfdbd58571b78fafa3?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Jgm070ukGhSkHRxajO10LZQixoKIVm2S6l7xuP6MY0UJD54Rosq2xvca-UgdiThbu-TLnIu2xuoP0gOXtw-L4PDccdMPBnaURCuygfJSH6ELelnq12~hR9YuwNLifCAl48tAnjwwkCZCPlGlbK1HiUIhAZ5HnF2qXc2PQjq4Zfu0WBZOhttWhRRlZhmHOFFrus--5xYMq4lIw6n0Or8aGJ~Amf9HDlVQmj4ioeSG9HZB3DAEpoIcgqhzzSjqG64Z-U5k~cYZc8V~y5qmm3bVX1n3HCfKi4F~25zmS3A9tNX~y2VcaS-L018gcMtHVke9Qb6C0B9foBMZI6TobWy-Ng__"
-              />
+              <img alt="kakao" src="/kakao-login.png" />
             </a>
             <a
               href={`${process.env.NEXT_PUBLIC_API_URL}/oauth2/authorize/naver?redirect_uri=${process.env.NEXT_PUBLIC_CLIENT_URL}/login`}
             >
-              <img
-                alt="naver"
-                src="https://s3-alpha-sig.figma.com/img/bc24/1c57/afda23776f60b331a41aa67a9eaaf66c?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=dk8rQuwlcSV6HVLJZQ3SI4Cf5tGL8HbnfAisVrT5kE5-rqlQ71CKGQtz0xTKX-7bt4OVOOsMaaQX5IsqhHnX2ZEudp4AN2M6lGQf9lE9iLvKT~5uAnYiwMHCXIJ-zuu6qLpDu~rDAPZ92ki8Bc6Dp-OIxkWU75wb54T7erfxNZgATHwEBre-5I7~pPWo-GETubNWL7zF~QFP97Cqf34gORT7GlRg~qPHnBJfeER7AcExfyXG8CXyqjkk5uudH5FD7zU3a9PGunNQDRdComHZRx6MOQBltHa6mPT78MBB8mPyDlJxuRNrpkyFJKDa3I3JWwL-Ns-qJlwBW0WDnPsYQA__"
-              />
+              <img alt="naver" src="/naver-login.png" />
             </a>
           </styles.loginButtons>
         </styles.description>
@@ -210,7 +202,7 @@ export function LandingPage() {
                     <img alt={url} src={url} />
                   </styles.box>
                 ) : (
-                  <styles.box key={crypto.randomUUID()} />
+                  <styles.box key={uuidv4()} />
                 ),
               )}
             </styles.boxColumn>

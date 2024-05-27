@@ -20,15 +20,28 @@ const styles = {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+
+    @media (max-width: 768px) {
+      padding: 1rem;
+      width: 60dvw;
+    }
   `,
   row: styled.div`
     display: flex;
     flex-direction: row;
     gap: 0.5rem;
     align-items: end;
+
+    @media (max-width: 768px) {
+      flex-wrap: wrap;
+    }
   `,
   title: styled.h1`
     font-size: 1.25rem;
+
+    @media (max-width: 768px) {
+      font-size: 1rem;
+    }
   `,
   caption: styled.span`
     font-size: 0.85rem;

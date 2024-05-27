@@ -3,6 +3,7 @@
 import styled from 'styled-components';
 
 import { type SharedPostsType } from '@/entities/shared-posts-filter';
+import { useAuthValue, useUserData } from '@/features/auth';
 
 const styles = {
   container: styled.div`
@@ -11,6 +12,10 @@ const styles = {
 
     display: flex;
     justify-content: space-evenly;
+
+    @media (max-width: 768px) {
+      padding: 0 0.8rem;
+    }
   `,
   item: styled.div`
     -webkit-user-select: none;
@@ -41,6 +46,15 @@ const styles = {
       line-height: 1.5rem;
 
       border-bottom: 2px solid #e15637;
+
+      @media (max-width: 768px) {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      font-size: 1rem;
+      padding: 0.25rem 0.5rem;
     }
   `,
 };
@@ -55,6 +69,9 @@ export function SharedPostsMenu({
   handleSelect,
   className,
 }: Props & React.ComponentProps<'div'>) {
+  const auth = useAuthValue();
+  const { data: user } = useUserData(auth?.accessToken != null);
+
   return (
     <styles.container className={className}>
       <styles.item
@@ -73,14 +90,16 @@ export function SharedPostsMenu({
       >
         방 없는 메이트
       </styles.item>
-      <styles.item
-        onClick={() => {
-          handleSelect('dormitory');
-        }}
-        className={selected === 'dormitory' ? 'selected' : ''}
-      >
-        기숙사 메이트
-      </styles.item>
+      {user?.univCertified ?? (
+        <styles.item
+          onClick={() => {
+            handleSelect('dormitory');
+          }}
+          className={selected === 'dormitory' ? 'selected' : ''}
+        >
+          기숙사 메이트
+        </styles.item>
+      )}
     </styles.container>
   );
 }

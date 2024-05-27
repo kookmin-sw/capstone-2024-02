@@ -28,10 +28,18 @@ const styles = {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+
+    @media (max-width: 768px) {
+      padding: 1.2rem;
+    }
   `,
   title: styled.h1`
     font-size: 1.25rem;
     margin-bottom: 1rem;
+
+    @media (max-width: 768px) {
+      font-size: 0.875rem;
+    }
   `,
   locationInput: styled.input<{ $empty: boolean }>`
     width: 100%;
@@ -47,6 +55,11 @@ const styles = {
     font-size: 1.1rem;
     &:focus {
       outline: none;
+    }
+
+    @media (max-width: 768px) {
+      padding: 0.5rem;
+      font-size: 0.75rem;
     }
   `,
   addressSearchResult: styled.ul`
@@ -65,6 +78,11 @@ const styles = {
     border-bottom: 0.5px solid #19191980;
 
     cursor: pointer;
+
+    @media (max-width: 768px) {
+      padding: 0.5rem;
+      font-size: 0.75rem;
+    }
   `,
 };
 

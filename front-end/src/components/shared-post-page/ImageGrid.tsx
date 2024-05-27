@@ -30,6 +30,10 @@ const styles = {
     grid-auto-rows: 20.625rem;
     gap: 0.81rem;
 
+    @media (max-width: 768px) {
+      grid-auto-rows: 10.25rem;
+    }
+
     img {
       width: 100%;
       height: 100%;
@@ -103,7 +107,7 @@ export function ImageGrid({ images: imagesParam, className }: Props) {
           image !== 'none' ? (
             <img
               key={image}
-              alt={image}
+              alt=""
               src={image}
               className={index % 2 === 0 ? 'left' : 'right'}
             />

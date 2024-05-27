@@ -1,15 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 import { CircularButton } from '@/components';
 import { UserCard } from '@/components/main-page';
-import { useAuthActions, useAuthValue, useUserData } from '@/features/auth';
+import { useAuthValue } from '@/features/auth';
 import { getGeolocation } from '@/features/geocoding';
-import { useRecommendationMate } from '@/features/recommendation';
+import { useRecommendMates } from '@/features/profile';
 
 const styles = {
   container: styled.div`
@@ -87,16 +86,10 @@ const styles = {
 };
 
 export function MainPage() {
-  const router = useRouter();
-
   const auth = useAuthValue();
-  const { setAuthUserData } = useAuthActions();
 
-  const { data: userData } = useUserData(auth?.accessToken !== undefined);
-
-  const { data: recommendationMates } = useRecommendationMate({
-    memberId: auth?.user?.memberId ?? 'undefined',
-    cardType: 'mate',
+  const { data: recommendationMates } = useRecommendMates({
+    cardOption: 'my',
     enabled: auth?.accessToken != null,
   });
 
@@ -138,15 +131,6 @@ export function MainPage() {
     });
   }, []);
 
-  useEffect(() => {
-    if (userData !== undefined) {
-      setAuthUserData(userData);
-      if (userData.initialized) {
-        // router.replace('/profile');
-      }
-    }
-  }, [userData, router, setAuthUserData]);
-
   return (
     <styles.container>
       <styles.map id="map">
@@ -168,14 +152,18 @@ export function MainPage() {
             onClick={handleScrollLeft}
           />
           <styles.mateRecommendation ref={scrollRef}>
-            {recommendationMates?.map(({ name, similarity, userId }) => (
-              <Link key={userId} href={`/profile/${userId}`}>
-                <UserCard
-                  name={name}
-                  percentage={Math.floor(similarity * 100)}
-                />
-              </Link>
-            ))}
+            {recommendationMates?.data?.map(
+              ({ memberId, score, nickname, location, profileImageUrl }) => (
+                <Link href={`/profile/${memberId}`} key={memberId}>
+                  <UserCard
+                    name={nickname}
+                    percentage={score}
+                    profileImage={profileImageUrl}
+                    location={location}
+                  />
+                </Link>
+              ),
+            )}
           </styles.mateRecommendation>
           <CircularButton
             direction="right"

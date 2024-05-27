@@ -1,12 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRecoilState } from 'recoil';
 import styled from 'styled-components';
 
 import { Bookmark, CircularProfileImage } from '@/components';
-import { ImageGrid } from '@/components/shared-post-page';
+import { CardToggleButton, ImageGrid } from '@/components/shared-post-page';
 import { useAuthValue } from '@/features/auth';
-import { useScrapSharedPost, useSharedPost } from '@/features/shared';
+import { chatOpenState, useCreateChatRoom } from '@/features/chat';
+import { fromAddrToCoord } from '@/features/geocoding';
+import { useFollowUser, useUnfollowUser } from '@/features/profile';
+import {
+  useDeleteSharedPost,
+  useDormitorySharedPost,
+  useScrapSharedPost,
+  useSharedPost,
+} from '@/features/shared';
+import { useToast } from '@/features/toast';
 import { getAge } from '@/shared';
 
 const styles = {
@@ -351,6 +362,7 @@ const styles = {
     padding: 0.5rem 1.5rem;
     justify-content: center;
     align-items: center;
+    align-self: stretch;
     gap: 0.25rem;
     flex: 1 0 0;
 
@@ -365,50 +377,218 @@ const styles = {
     font-weight: 600;
     line-height: 1.5rem;
   `,
+  rowForDeleteAndModify: styled.div`
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+
+    align-self: end;
+  `,
+  postModifyButton: styled.button`
+    all: unset;
+    cursor: pointer;
+
+    display: flex;
+    width: fit-content;
+    height: fit-content;
+    padding: 0.5rem 1.5rem;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 8px;
+    border: 1px solid var(--Gray-3, #888);
+    background: var(--White, #fff);
+
+    color: var(--Gray-3, #888);
+    font-family: Pretendard;
+    font-size: 1.125rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.5rem;
+  `,
+  postDeleteButton: styled.div`
+    all: unset;
+    cursor: pointer;
+
+    display: flex;
+    width: fit-content;
+    height: fit-content;
+    padding: 0.5rem 1.5rem;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 0.5rem;
+    background: #e15637;
+
+    color: #fff;
+    text-align: right;
+    font-family: Pretendard;
+    font-size: 1.125rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.5rem;
+  `,
+  mateCardContainer: styled.div`
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 1rem;
+    align-self: stretch;
+
+    border-radius: 1rem;
+    background: #fff;
+
+    color: #000;
+    font-family: 'Noto Sans KR';
+    font-size: 1rem;
+    font-style: normal;
+    line-height: normal;
+
+    .content {
+      display: flex;
+      width: 100%;
+      flex-direction: column;
+      padding-inline: calc(24px + 0.75rem);
+      gap: 1rem;
+
+      font-size: 0.9rem;
+
+      div {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        h3 {
+          font-size: 1rem;
+          font-weight: bold;
+        }
+      }
+    }
+  `,
 };
 
-const dummyImages = [
-  'https://s3-alpha-sig.figma.com/img/efd0/12b5/6a0078a4aa75b0e9a9fb53a6d9a7c560?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=ciMXf2L3kV1XzY76T5Ak5h2Ii1fEeZvK7KAykXxq3BIrlhdagKrN13jKM7UcWH5KgkEkHQjTDTHgII6Wv9Ffzswzz1ZabaSwefdVk9~NveeheHxjY2asCCinzAyQOtSXSqFavmapvkqIsc3YKmtqm6ic13PHPfaKEkoqm9lIrpb2fE60VY9A9gWTK1JycwjACH4hy4R44fDTNWaji9ItzR4Ch-vzDWd3rqINyRRFYbnIFj-ow6CSsBDqKWu-5X3Bq2teT9N8Xj2mULZjQtfd7pLtd55QoMHtRzzqtR-M-Pf4cLpmBZYN-0hkC4XHY3rq2HKQHOSd16k~azGjBkOBqQ__',
-  'https://s3-alpha-sig.figma.com/img/ff85/788d/96b4a3ec1b31b6baf36b11c772529753?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=nvS2kVR-bHmV41ZhIADPEQMxhHJcFPtvDB2S4-h6IVQRRaRrzmPfYac5YIKkghcQELjIqKfePgsmRO-jVIQj-k6GVCcMQPkXxYJjT7x6UVeygGkBx5AVkmgE4yBgrpv~UzCIPKMY5TrK1KnCkZp9N9rus-8ooKMenzuYjbqqNS41WzYkQQvHD9KHafnRU7nb7pgA0fMe88teFauhpW3sCAgJvEWdkQQTtBgedIiphLU7vX9Kww54tCoNZ3vshSbggZW6L4wG39ztH5oSpjiRyviYmZ6z5WXUCno3YPGSVQLfzpfBYYh-tPEaicdxyUD5QhP9rDTee1aU3DDkPCwx1g__',
-];
-
-// const dummyMates = [
-//   'https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Ou47yOoRJ57c0QqtWD~w0S6BP1UYWpmpCOCgsq9YTqfbNq~TmwfAI2T24-fYxpKSiBDv8y1Tkup68OTc5v2ZHIG~~CLwn6NCBF7QqTu7sQB0oPCvdRFdBm~y4wI8VEIErYhPsCuV2k7L0GVlJss4KkeM1tt1RX0kwfINvh03yzFf8wtjd0xsUJjMaKjNxU3muS2Cj8BZymckjgNGrTvafiGbAfHt0Bw2fTkH8tctfNNXpnZgqrEeDldEuENV~g-fSsLSFbMceZGN5ILEd9gd6fnY2YYeB7qtb9xozvczwTbz6kYIzzHJc7veYTsvxjqx~qTiKF2Yrn45cn5pXvOv1w__',
-// ];
-
-export function SharedPostPage({ postId }: { postId: number }) {
+export function SharedPostPage({
+  postId,
+  type,
+}: {
+  postId: number;
+  type: 'hasRoom' | 'dormitory';
+}) {
   const auth = useAuthValue();
-  const [, setMap] = useState<naver.maps.Map | null>(null);
 
-  const { data: sharedPost } = useSharedPost({
+  const [, setMap] = useState<naver.maps.Map | null>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
+
+  const router = useRouter();
+  const { createToast } = useToast();
+
+  const { mutate: deleteSharedPost } = useDeleteSharedPost();
+
+  const { isLoading: isSharedPostLoading, data: sharedPost } = useSharedPost({
     postId,
-    enabled: auth?.accessToken !== undefined,
+    enabled: type === 'hasRoom' && auth?.accessToken != null,
   });
+
+  const { isLoading: isDormitorySharedPostLoading, data: dormitorySharedPost } =
+    useDormitorySharedPost({
+      postId,
+      enabled: type === 'dormitory' && auth?.accessToken != null,
+    });
+
+  useEffect(() => {
+    if (sharedPost?.data.address.roadAddress != null) {
+      fromAddrToCoord({ query: sharedPost?.data.address.roadAddress }).then(
+        res => {
+          const address = res.data.addresses.shift();
+          if (address != null && mapRef.current != null) {
+            const center = new naver.maps.LatLng(+address.y, +address.x);
+            setMap(
+              new naver.maps.Map(mapRef.current, {
+                center,
+                disableKineticPan: false,
+                scrollWheel: false,
+              }),
+            );
+          }
+        },
+      );
+    }
+  }, [sharedPost]);
+
+  const [, setIsChatOpen] = useRecoilState(chatOpenState);
+
+  const { mutate: chattingMutate } = useCreateChatRoom();
+
+  const isLoading = useMemo(
+    () =>
+      type === 'hasRoom' ? isSharedPostLoading : isDormitorySharedPostLoading,
+    [type, isSharedPostLoading, isDormitorySharedPostLoading],
+  );
+
+  const post = useMemo(
+    () => (type === 'hasRoom' ? sharedPost : dormitorySharedPost),
+    [type, sharedPost, dormitorySharedPost],
+  );
+
+  const [showMateCard, setShowMateCard] = useState(false);
+
+  let mateAge: string;
+  if (post?.data.roomMateFeatures.mateAge == null) mateAge = '상관없어요';
+  else if (post?.data.roomMateFeatures.mateAge === '0') mateAge = '동갑';
+  else mateAge = `±${post.data.roomMateFeatures.mateAge}`;
+
+  const [selected, setSelected] = useState<
+    | {
+        memberId: string;
+        nickname: string;
+        profileImageFileName: string;
+        birthYear: string;
+        isScrapped: boolean;
+      }
+    | undefined
+  >(post != null ? post.data.participants[0] : undefined);
+
+  useEffect(() => {
+    if (post == null || selected != null) return;
+
+    setSelected(post.data.participants[0]);
+  }, [selected, post]);
 
   const { mutate: scrapPost } = useScrapSharedPost();
 
+  const { mutate: follow } = useFollowUser(selected?.memberId ?? '');
+  const { mutate: unfollow } = useUnfollowUser(selected?.memberId ?? '');
+
+  const [followList, setFollowList] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
-    const center = new naver.maps.LatLng(37.6090857, 126.9966865);
-    setMap(
-      new naver.maps.Map('map', {
-        center,
-        disableKineticPan: false,
-        scrollWheel: false,
-      }),
-    );
-  }, []);
+    if (post == null) return;
+
+    const { participants } = post.data;
+    const newFollowList: Record<string, boolean> = {};
+    participants.forEach(({ memberId, isScrapped }) => {
+      newFollowList[memberId] = isScrapped;
+    });
+    setFollowList(newFollowList);
+  }, [post]);
+
+  if (isLoading || post == null) return <></>;
 
   return (
     <styles.container>
       <styles.contentContainer>
         <styles.postContainer>
-          <styles.ImageGrid images={dummyImages} />
+          <styles.ImageGrid
+            images={post.data.roomImages.map(({ fileName }) => fileName)}
+          />
           <styles.postInfoContainer>
             <div>
-              <h1>{sharedPost?.data.title}</h1>
+              <h1>{post.data.title}</h1>
               <Bookmark
                 hasBorder={false}
-                marked={sharedPost?.data.isScrapped ?? false}
+                marked={post.data.isScrapped}
                 onToggle={() => {
                   scrapPost(postId);
                 }}
@@ -416,114 +596,216 @@ export function SharedPostPage({ postId }: { postId: number }) {
               />
             </div>
             <styles.postInfoContent>
-              <span>모집 1명 / 총원 2명</span>
-              <span>원룸 / 방 1</span>
+              {'roomInfo' in post.data && (
+                <>
+                  <span>모집 {post.data.roomInfo.recruitmentCapacity}명</span>
+                  <span>
+                    {post.data.roomInfo.roomType} · 방{' '}
+                    {post.data.roomInfo.numberOfRoom} · 화장실{' '}
+                    {post.data.roomInfo.numberOfBathRoom}
+                  </span>
+                </>
+              )}
               <div>
-                <span>희망 월 분담금 65만원</span>
-                <span>저장 4 · 조회 22</span>
+                {'roomInfo' in post.data && (
+                  <span>
+                    희망 월 분담금 {post.data.roomInfo.expectedPayment}만원
+                  </span>
+                )}
+                <span>
+                  저장 {post.data.scrapCount} · 조회 {post.data.viewCount}
+                </span>
               </div>
             </styles.postInfoContent>
           </styles.postInfoContainer>
           <styles.postContentContainer>
             <h2>상세 정보</h2>
-            <p>
-              안녕하세요! 저는 현재 룸메이트를 찾고 있는 정연수입니다. 서울시
-              정릉동에서 함께 살아갈 룸메이트를 구하고 있습니다. 주로 밤에
-              작업을 하며 새벽 2시~3시쯤에 취침합니다. 관심있으신 분들 연락
-              주세요!
-            </p>
+            <p>{post.data.content}</p>
           </styles.postContentContainer>
           <styles.divider />
-          <styles.dealInfoContainer>
-            <h2>거래 정보</h2>
-            <div>
-              <span>거래 방식</span>
-              <span>월세</span>
-            </div>
-            <div>
-              <span>희망 월 분담금</span>
-              <span>65만원</span>
-            </div>
-          </styles.dealInfoContainer>
-          <styles.roomInfoContainer>
-            <h2>방 정보</h2>
-            <div>
-              <span>방 종류</span>
-              <span>원룸</span>
-            </div>
-            <div>
-              <span>거실 보유</span>
-              <span>있음</span>
-            </div>
-            <div>
-              <span>방 개수</span>
-              <span>2개</span>
-            </div>
-            <div>
-              <span>화장실 개수</span>
-              <span>1개</span>
-            </div>
-            <div>
-              <span>평수</span>
-              <span>14평</span>
-            </div>
-          </styles.roomInfoContainer>
+          {'roomInfo' in post.data && (
+            <>
+              <styles.dealInfoContainer>
+                <h2>거래 정보</h2>
+                <div>
+                  <span>거래 방식</span>
+                  <span>{post.data.roomInfo.rentalType}</span>
+                </div>
+                <div>
+                  <span>희망 월 분담금</span>
+                  <span>{post.data.roomInfo.expectedPayment}만원</span>
+                </div>
+              </styles.dealInfoContainer>
+              <styles.roomInfoContainer>
+                <h2>방 정보</h2>
+                <div>
+                  <span>방 종류</span>
+                  <span>{post.data.roomInfo.roomType}</span>
+                </div>
+                <div>
+                  <span>거실 보유</span>
+                  <span>{post.data.roomInfo.hasLivingRoom ? '유' : '무'}</span>
+                </div>
+                <div>
+                  <span>방 개수</span>
+                  <span>{post.data.roomInfo.numberOfRoom}개</span>
+                </div>
+                <div>
+                  <span>화장실 개수</span>
+                  <span>{post.data.roomInfo.numberOfBathRoom}개</span>
+                </div>
+                <div>
+                  <span>평수</span>
+                  <span>{post.data.roomInfo.size}평</span>
+                </div>
+              </styles.roomInfoContainer>
+            </>
+          )}
           <styles.locationInfoContainer>
             <h2>위치 정보</h2>
-            <p>{sharedPost?.data.roomInfo.address.roadAddress}</p>
-            <div id="map" />
+            <p>{post.data.address.roadAddress}</p>
+            <div ref={mapRef} id="map" />
           </styles.locationInfoContainer>
+          {post.data.publisherAccount.memberId === auth?.user?.memberId && (
+            <styles.rowForDeleteAndModify>
+              <styles.postModifyButton
+                onClick={() => {
+                  router.push(
+                    `/shared/writing/${type === 'hasRoom' ? 'room' : 'dormitory'}/${post.data.id}`,
+                  );
+                }}
+              >
+                수정하기
+              </styles.postModifyButton>
+              <styles.postDeleteButton
+                onClick={() => {
+                  deleteSharedPost(postId, {
+                    onSuccess: () => {
+                      createToast({
+                        message: '정상적으로 삭제되었습니다.',
+                        option: {
+                          duration: 3000,
+                        },
+                      });
+                      router.back();
+                    },
+                    onError: () => {
+                      createToast({
+                        message: '삭제하는데 실패하였습니다.',
+                        option: {
+                          duration: 3000,
+                        },
+                      });
+                    },
+                  });
+                }}
+              >
+                삭제하기
+              </styles.postDeleteButton>
+            </styles.rowForDeleteAndModify>
+          )}
         </styles.postContainer>
         <styles.mateContainer>
           <styles.mates>
-            <styles.mate
-              $selected
-              $zIndex={3}
-              src="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Ou47yOoRJ57c0QqtWD~w0S6BP1UYWpmpCOCgsq9YTqfbNq~TmwfAI2T24-fYxpKSiBDv8y1Tkup68OTc5v2ZHIG~~CLwn6NCBF7QqTu7sQB0oPCvdRFdBm~y4wI8VEIErYhPsCuV2k7L0GVlJss4KkeM1tt1RX0kwfINvh03yzFf8wtjd0xsUJjMaKjNxU3muS2Cj8BZymckjgNGrTvafiGbAfHt0Bw2fTkH8tctfNNXpnZgqrEeDldEuENV~g-fSsLSFbMceZGN5ILEd9gd6fnY2YYeB7qtb9xozvczwTbz6kYIzzHJc7veYTsvxjqx~qTiKF2Yrn45cn5pXvOv1w__"
-            />
-            <styles.mate
-              $zIndex={2}
-              src="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Ou47yOoRJ57c0QqtWD~w0S6BP1UYWpmpCOCgsq9YTqfbNq~TmwfAI2T24-fYxpKSiBDv8y1Tkup68OTc5v2ZHIG~~CLwn6NCBF7QqTu7sQB0oPCvdRFdBm~y4wI8VEIErYhPsCuV2k7L0GVlJss4KkeM1tt1RX0kwfINvh03yzFf8wtjd0xsUJjMaKjNxU3muS2Cj8BZymckjgNGrTvafiGbAfHt0Bw2fTkH8tctfNNXpnZgqrEeDldEuENV~g-fSsLSFbMceZGN5ILEd9gd6fnY2YYeB7qtb9xozvczwTbz6kYIzzHJc7veYTsvxjqx~qTiKF2Yrn45cn5pXvOv1w__"
-            />
-            <styles.mate
-              $zIndex={1}
-              src="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Ou47yOoRJ57c0QqtWD~w0S6BP1UYWpmpCOCgsq9YTqfbNq~TmwfAI2T24-fYxpKSiBDv8y1Tkup68OTc5v2ZHIG~~CLwn6NCBF7QqTu7sQB0oPCvdRFdBm~y4wI8VEIErYhPsCuV2k7L0GVlJss4KkeM1tt1RX0kwfINvh03yzFf8wtjd0xsUJjMaKjNxU3muS2Cj8BZymckjgNGrTvafiGbAfHt0Bw2fTkH8tctfNNXpnZgqrEeDldEuENV~g-fSsLSFbMceZGN5ILEd9gd6fnY2YYeB7qtb9xozvczwTbz6kYIzzHJc7veYTsvxjqx~qTiKF2Yrn45cn5pXvOv1w__"
-            />
+            {post.data.participants.map((participant, index) => (
+              <styles.mate
+                key={participant.memberId}
+                $selected={participant.memberId === selected?.memberId}
+                $zIndex={index}
+                src={participant.profileImageFileName}
+                onClick={() => {
+                  setSelected(participant);
+                }}
+              />
+            ))}
           </styles.mates>
           <styles.selectedMateContainer>
             <styles.profile>
               <CircularProfileImage
                 diameter={110}
                 percentage={50}
-                url="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Ou47yOoRJ57c0QqtWD~w0S6BP1UYWpmpCOCgsq9YTqfbNq~TmwfAI2T24-fYxpKSiBDv8y1Tkup68OTc5v2ZHIG~~CLwn6NCBF7QqTu7sQB0oPCvdRFdBm~y4wI8VEIErYhPsCuV2k7L0GVlJss4KkeM1tt1RX0kwfINvh03yzFf8wtjd0xsUJjMaKjNxU3muS2Cj8BZymckjgNGrTvafiGbAfHt0Bw2fTkH8tctfNNXpnZgqrEeDldEuENV~g-fSsLSFbMceZGN5ILEd9gd6fnY2YYeB7qtb9xozvczwTbz6kYIzzHJc7veYTsvxjqx~qTiKF2Yrn45cn5pXvOv1w__"
+                url={selected?.profileImageFileName ?? ''}
               />
               <styles.profileInfo>
-                <p className="name">
-                  {sharedPost?.data.publisherAccount.nickname}
-                </p>
+                <p className="name">{selected?.nickname}</p>
                 <div>
                   <p>
-                    {sharedPost?.data.publisherAccount.birthYear != null
-                      ? getAge(+sharedPost.data.publisherAccount.birthYear)
+                    {selected?.birthYear != null
+                      ? `${getAge(+selected.birthYear)}세`
                       : new Date().getFullYear()}
                   </p>
-                  <p>서웉특별시 성북구</p>
                 </div>
               </styles.profileInfo>
             </styles.profile>
             <styles.buttons>
-              <styles.chattingButton>채팅하기</styles.chattingButton>
+              <styles.chattingButton
+                onClick={() => {
+                  if (selected == null) return;
+
+                  chattingMutate({
+                    roomName: selected.nickname,
+                    members: [selected.memberId],
+                  });
+
+                  setTimeout(() => {
+                    setIsChatOpen(true);
+                  }, 200);
+                }}
+              >
+                채팅하기
+              </styles.chattingButton>
               <div>
                 <styles.showProfileButton>프로필 보기</styles.showProfileButton>
                 <Bookmark
+                  marked={followList[selected?.memberId ?? ''] ?? false}
+                  onToggle={() => {
+                    if (
+                      selected == null ||
+                      followList[selected.memberId] == null
+                    )
+                      return;
+                    if (followList[selected.memberId]) unfollow();
+                    else follow();
+                  }}
                   hasBorder
                   color="#888"
-                  marked={false}
-                  onToggle={() => {}}
                 />
               </div>
             </styles.buttons>
           </styles.selectedMateContainer>
+          <styles.mateCardContainer>
+            <CardToggleButton
+              label="메이트카드"
+              isOpen={showMateCard}
+              onClick={() => {
+                setShowMateCard(prev => !prev);
+              }}
+            />
+            {showMateCard && (
+              <div className="content">
+                <div>
+                  <h3>흡연 여부</h3>
+                  <p>{post.data.roomMateFeatures.smoking}</p>
+                </div>
+                <div>
+                  <h3>메이트와 방 공유 여부</h3>
+                  <p>{post.data.roomMateFeatures.roomSharingOption}</p>
+                </div>
+                <div>
+                  <h3>나이</h3>
+                  <p>{mateAge}</p>
+                </div>
+                <div>
+                  <h3>선택 옵션</h3>
+                  <p>
+                    {(
+                      JSON.parse(post.data.roomMateFeatures.options) as string[]
+                    ).join(', ')}
+                  </p>
+                </div>
+              </div>
+            )}
+          </styles.mateCardContainer>
         </styles.mateContainer>
       </styles.contentContainer>
     </styles.container>

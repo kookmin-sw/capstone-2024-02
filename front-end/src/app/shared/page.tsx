@@ -1,5 +1,10 @@
-import { SharedPostsPage } from '../pages';
+'use client';
+
+import { SharedPostsPage } from '@/app/pages';
+import { MobileSharedPostsPage } from '@/app/pages/mobile';
+import { useIsMobile } from '@/shared/mobile';
 
 export default function Page() {
-  return <SharedPostsPage />;
+  const isMobile = useIsMobile();
+  return <>{isMobile ? <MobileSharedPostsPage /> : <SharedPostsPage />}</>;
 }

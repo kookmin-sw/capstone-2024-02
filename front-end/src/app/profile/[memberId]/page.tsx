@@ -1,9 +1,22 @@
+'use client';
+
 import { ProfilePage } from '@/app/pages';
+import { MobileProfilePage } from '@/app/pages/mobile';
+import { useIsMobile } from '@/shared/mobile';
 
 export default function Page({
   params: { memberId },
 }: {
   params: { memberId: string };
 }) {
-  return <ProfilePage memberId={memberId} />;
+  const isMobile = useIsMobile();
+  return (
+    <>
+      {isMobile ? (
+        <MobileProfilePage memberId={memberId} />
+      ) : (
+        <ProfilePage memberId={memberId} />
+      )}
+    </>
+  );
 }

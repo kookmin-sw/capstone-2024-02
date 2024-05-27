@@ -3,7 +3,7 @@
 import styled from 'styled-components';
 
 import {
-  type ExtraInfoType,
+  type AdditionalInfoType,
   useSharedPostsFilter,
 } from '@/entities/shared-posts-filter';
 
@@ -15,6 +15,12 @@ const styles = {
     align-items: flex-start;
     gap: 1rem;
 
+    @media (max-width: 768px) {
+      width: 12rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
     h1 {
       color: #000;
       font-family: 'Noto Sans KR';
@@ -22,6 +28,10 @@ const styles = {
       font-style: normal;
       font-weight: 500;
       line-height: normal;
+
+      @media (max-width: 768px) {
+        font-size: 1rem;
+      }
     }
 
     div {
@@ -52,6 +62,11 @@ const styles = {
         font-weight: 400;
         line-height: normal;
 
+        @media (max-width: 768px) {
+          font-size: 0.75rem;
+          padding: 0.5rem 1rem;
+        }
+
         transition:
           150ms border ease-in-out,
           150ms background-color ease-in-out,
@@ -71,9 +86,9 @@ const styles = {
 export function ExtraInfoFilter() {
   const { filter, setFilter } = useSharedPostsFilter();
 
-  const handleOptionClick = (option: ExtraInfoType) => {
+  const handleOptionClick = (option: AdditionalInfoType) => {
     setFilter(prev => {
-      const value = prev.extraInfo[option] ?? true;
+      const value = prev.extraInfo[option] ?? false;
       return {
         ...prev,
         extraInfo: {
@@ -84,7 +99,7 @@ export function ExtraInfoFilter() {
     });
   };
 
-  const isSelectedChecker = (option: ExtraInfoType) =>
+  const isSelectedChecker = (option: AdditionalInfoType) =>
     filter.extraInfo[option] === true;
 
   return (
@@ -93,9 +108,9 @@ export function ExtraInfoFilter() {
       <div>
         <button
           type="button"
-          className={isSelectedChecker('주차 가능') ? 'selected' : ''}
+          className={isSelectedChecker('주차가능') ? 'selected' : ''}
           onClick={() => {
-            handleOptionClick('주차 가능');
+            handleOptionClick('주차가능');
           }}
         >
           주차 가능
@@ -129,30 +144,12 @@ export function ExtraInfoFilter() {
         </button>
         <button
           type="button"
-          className={isSelectedChecker('엘리베이터') ? 'selected' : ''}
-          onClick={() => {
-            handleOptionClick('엘리베이터');
-          }}
-        >
-          엘리베이터
-        </button>
-        <button
-          type="button"
           className={isSelectedChecker('베란다/테라스') ? 'selected' : ''}
           onClick={() => {
             handleOptionClick('베란다/테라스');
           }}
         >
           베란다/테라스
-        </button>
-        <button
-          type="button"
-          className={isSelectedChecker('복층형') ? 'selected' : ''}
-          onClick={() => {
-            handleOptionClick('복층형');
-          }}
-        >
-          복층형
         </button>
       </div>
     </styles.container>

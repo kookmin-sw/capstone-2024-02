@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const styles = {
@@ -23,8 +23,24 @@ const styles = {
   `,
 };
 
-export function SearchBox() {
+export function SearchBox({
+  onContentChange,
+  onEnter,
+}: {
+  onContentChange: React.Dispatch<React.SetStateAction<string>>;
+  onEnter: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const [content, setContent] = useState('');
+
+  useEffect(() => {
+    onContentChange(content);
+  }, [content]);
+
+  function handleKeyUp(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.keyCode === 13) {
+      onEnter(true);
+    }
+  }
 
   return (
     <styles.container>
@@ -34,6 +50,7 @@ export function SearchBox() {
         onChange={e => {
           setContent(e.target.value);
         }}
+        onKeyUp={handleKeyUp}
       />
     </styles.container>
   );

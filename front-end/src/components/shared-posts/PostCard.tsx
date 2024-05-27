@@ -1,10 +1,14 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
 
-import { HorizontalDivider } from '..';
-
-import { type SharedPostListItem } from '@/entities/shared-post';
+import { HorizontalDivider } from '@/components';
+import {
+  type DormitorySharedPostListItem,
+  type SharedPostListItem,
+} from '@/entities/shared-post';
+import { useIsMobile } from '@/shared/mobile';
 
 const styles = {
   container: styled.div`
@@ -13,6 +17,10 @@ const styles = {
 
     display: flex;
     gap: 1.56rem;
+
+    @media (max-width: 768px) {
+      height: 11rem;
+    }
   `,
   thumbnail: styled.img`
     width: 16.125rem;
@@ -22,6 +30,13 @@ const styles = {
     border-radius: 16px;
 
     object-fit: cover;
+
+    @media (max-width: 768px) {
+      width: 8.5625rem;
+      height: 8.625rem;
+    }
+
+    cursor: pointer;
   `,
   content: styled.div`
     flex-grow: 1;
@@ -42,6 +57,12 @@ const styles = {
         font-style: normal;
         font-weight: 700;
         line-height: normal;
+
+        cursor: pointer;
+
+        @media (max-width: 768px) {
+          font-size: 0.875rem;
+        }
       }
 
       h2 {
@@ -51,6 +72,10 @@ const styles = {
         font-style: normal;
         font-weight: 400;
         line-height: normal;
+
+        @media (max-width: 768px) {
+          font-size: 0.75rem;
+        }
       }
 
       p {
@@ -60,11 +85,17 @@ const styles = {
         font-style: normal;
         font-weight: 500;
         line-height: normal;
+
+        @media (max-width: 768px) {
+          font-size: 0.75rem;
+        }
       }
     }
   `,
   writer: styled.div`
     position: relative;
+
+    cursor: pointer;
 
     display: flex;
     flex-shrink: 0;
@@ -83,6 +114,11 @@ const styles = {
       border-radius: 50%;
 
       object-fit: cover;
+
+      @media (max-width: 768px) {
+        width: 3.375rem;
+        height: 3.375rem;
+      }
     }
 
     p {
@@ -109,6 +145,11 @@ const styles = {
     background: #fff;
     box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.04);
 
+    @media (max-width: 768px) {
+      padding: 0.5rem 0.2rem;
+      top: 40%;
+    }
+
     p {
       color: #e15637;
       font-family: Pretendard;
@@ -116,39 +157,88 @@ const styles = {
       font-style: normal;
       font-weight: 600;
       line-height: 1.5rem;
+
+      @media (max-width) {
+        font-size: 0.625rem;
+      }
     }
   `,
 };
 
-export function PostCard({ post }: { post: SharedPostListItem }) {
+export function PostCard({
+  post,
+  onClick,
+}: {
+  post: SharedPostListItem | DormitorySharedPostListItem;
+  onClick: () => void;
+}) {
+  const router = useRouter();
+
+  const recruitmentCapacity =
+    'roomInfo' in post
+      ? post.roomInfo.recruitmentCapacity
+      : post.recruitmentCapacity;
+
+  const isMobile = useIsMobile();
   return (
     <div>
       <styles.container>
         <styles.thumbnail
+          onClick={onClick}
           alt=""
-          src="https://s3-alpha-sig.figma.com/img/2d52/bfda/0a900d41e2a6d77dd731fac06577540c?Expires=1712534400&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Q9zefEFzqJ-RNfzsNdrJTBDLNSZWOpY-3j8DE04rk-t2MmcZieVHD4MJG5EAEVd1PLLCpN~BKGfMyCHGgjGTr6XcjSifghDXqpxM2fUQSWznNWBdmn4ZrylLoeV17NzynTtmPSND8eo5r86Gv5DAHWNWwmnP6kDtApBlJjoeVSzqTiC7JS4COohy1Wb6Z7Du-ra9apbhzsvoYFytJR68WVqYI0eNAltK3iy23Pn-dysqHoLvty67TI60IYQkcRuU93K6bx4W8tZkxtTg7EW-dZ9uOSLSdwFQ2s14WXXKgQQySfbJH2~g1-usTVjv5u4nVBmV-afBaQbyDbPkkksW8Q__"
+          src={post.thumbnail.fileName}
         />
-        <styles.content>
+        <styles.content onClick={onClick}>
           <div>
             <h1>{post.title}</h1>
-            <h2>{post.roomInfo.address.roadAddress}</h2>
+            <h2>{post.address.roadAddress}</h2>
           </div>
-          <div>
-            <p>모집 1명 / 총원 2명</p>
-            <p>원룸 · 방1</p>
-            <p>500 / 50 / 5</p>
+          <div
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+            }}
+          >
+            <div>
+              <p>모집 {recruitmentCapacity}명</p>
+              {'roomInfo' in post && (
+                <>
+                  <p>
+                    {post.roomInfo.roomType} · 방 {post.roomInfo.numberOfRoom} ·
+                    화장실 {post.roomInfo.numberOfBathRoom}
+                  </p>
+                  <p>희망 월 분담금 {post.roomInfo.expectedPayment}만원</p>
+                </>
+              )}
+            </div>
+            {isMobile ? (
+              <styles.writer
+                onClick={() => {
+                  router.push(`/profile/${post.publisherAccount.memberId}`);
+                }}
+              >
+                <img alt="" src={post.publisherAccount.profileImageFileName} />
+                <styles.percentage>
+                  <p>{post.score}</p>
+                </styles.percentage>
+              </styles.writer>
+            ) : null}
           </div>
         </styles.content>
-        <styles.writer>
-          <img
-            alt=""
-            src="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1712534400&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=otR4I8Y0NumUlQW6NsUkXOvTzPqQhjjq1BLNd~EcweuN0Q0vRcVUvMuhlAx2vlsr2lOiqAgoyuXkYlVrK2qknRxQffQDRjGbRsK6CyebC76kXWw5Zu0SxlwtUdiYVV8VI0lWwoRsKqnoI4DXOqChcEMKPQamtpUmTx~NHx8t5cKSdvAMu0tqlPPdF7Sa51Vcuzrryfj~mcZXXEdEltEACAxPsFxhCelyDPB2Se7ZihPK1RGrtvovJZkc-64whNnji8Z0AOm-~irZhl0WQh0jhsaUpp2T5h9drq8-UwVdco3GBNXLSk3ygioYruN0j4U7SkqKVt7~ng1G7IH7395B4A__"
-          />
-          <styles.percentage>
-            <p>50%</p>
-          </styles.percentage>
-          <p>{post.publisherAccount.nickname}</p>
-        </styles.writer>
+        {!isMobile ? (
+          <styles.writer
+            onClick={() => {
+              router.push(`/profile/${post.publisherAccount.memberId}`);
+            }}
+          >
+            <img alt="" src={post.publisherAccount.profileImageFileName} />
+            <styles.percentage>
+              <p>{post.score}%</p>
+            </styles.percentage>
+            <p>{post.publisherAccount.nickname}</p>
+          </styles.writer>
+        ) : null}
       </styles.container>
       <HorizontalDivider />
     </div>

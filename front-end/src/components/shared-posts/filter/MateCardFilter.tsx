@@ -19,6 +19,11 @@ const styles = {
     font-weight: 400;
     line-height: normal;
 
+    @media (max-width: 768px) {
+      font-size: 0.875rem;
+      gap: 0.5rem;
+    }
+
     button {
       all: unset;
 
@@ -27,6 +32,11 @@ const styles = {
       transition: 200ms background-color ease-in-out;
       border-radius: 8px;
       min-width: 15rem;
+
+      @media (max-width: 768px) {
+        min-width: 10rem;
+        padding: 0.5rem;
+      }
     }
 
     button:hover {
@@ -35,7 +45,11 @@ const styles = {
   `,
 };
 
-export function MateCardFilter() {
+export function MateCardFilter({
+  selected,
+}: {
+  selected: 'hasRoom' | 'homeless' | 'dormitory';
+}) {
   const auth = useAuthValue();
   const { data: userData } = useUserData(auth?.accessToken != null);
 
@@ -49,7 +63,9 @@ export function MateCardFilter() {
           setFilter(prev => ({ ...prev, cardType: 'mate' }));
         }}
       >
-        {userData?.name}님이 원하는 방 찾기
+        {selected !== 'homeless'
+          ? `${userData?.name}님이 원하는 방 찾기`
+          : '메이트 카드'}
       </button>
       <button
         type="button"
@@ -57,7 +73,9 @@ export function MateCardFilter() {
           setFilter(prev => ({ ...prev, cardType: 'my' }));
         }}
       >
-        {userData?.name}님을 원하는 방 찾기
+        {selected !== 'homeless'
+          ? `${userData?.name}님을 원하는 방 찾기`
+          : '마이 카드'}
       </button>
     </styles.container>
   );

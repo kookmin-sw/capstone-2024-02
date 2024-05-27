@@ -107,11 +107,9 @@ export function RangeSlider({ min, max, step, onChange }: Props) {
   }, [containerRef, state, max, min]);
 
   useEffect(() => {
-    setState({
-      low: (min + max - 1) * 0.25,
-      high: (min + max - 1) * 0.75,
-    });
-  }, []);
+    // width 값을 초기에 계산하기 위해 추가된 effect.
+    setState({ low: min, high: max });
+  }, [setState, min, max]);
 
   return (
     <styles.container ref={containerRef} $width={width} $margin={margin}>

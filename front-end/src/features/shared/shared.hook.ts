@@ -1,19 +1,36 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { type AxiosResponse } from 'axios';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRecoilState, useResetRecoilState } from 'recoil';
 
 import {
+  createDormitorySharedPost,
   createSharedPost,
+  deleteDormitorySharedPost,
   deleteSharedPost,
+  getDormitorySharedPost,
+  getDormitorySharedPosts,
   getSharedPost,
   getSharedPosts,
+  scrapDormitoryPost,
   scrapPost,
+  updateSharedPost,
 } from './shared.api';
+import { sharedPostPropState } from './shared.atom';
 import {
-  type CreateSharedPostProps,
+  type GetDormitorySharedPostDTO,
+  type GetSharedPostDTO,
+} from './shared.dto';
+import {
   type GetSharedPostsProps,
+  type SelectedExtraOptions,
+  type SelectedOptions,
+  type SharedPostProps,
 } from './shared.type';
+import { fromAddrToCoord } from '../geocoding';
 
+import { useAuthValue, useUserData } from '@/features/auth';
+import { useDebounce } from '@/shared/debounce';
 import { type FailureDTO, type SuccessBaseDTO } from '@/shared/types';
 
 export const usePaging = ({
@@ -83,28 +100,273 @@ export const usePaging = ({
   );
 };
 
+export const useSharedPostProps = ({
+  postId,
+  type,
+}: {
+  postId?: number;
+  type?: 'hasRoom' | 'dormitory';
+}) => {
+  const [state, setState] = useRecoilState(sharedPostPropState);
+  const reset = useResetRecoilState(sharedPostPropState);
+
+  useEffect(() => {
+    reset();
+
+    if (postId == null) return;
+
+    const setStateWithPost = ({
+      data,
+    }: GetSharedPostDTO | GetDormitorySharedPostDTO) => {
+      fromAddrToCoord({ query: data.address.roadAddress })
+        .then(res => {
+          const address = res.data.addresses.shift();
+          if (address != null) setState(prev => ({ ...prev, address }));
+        })
+        .catch(err => {
+          console.error(err);
+        });
+
+      let roomCount = '1개';
+      let restRoomCount = '1개';
+      if ('roomInfo' in data) {
+        if (data.roomInfo.numberOfRoom === 2) roomCount = '2개';
+        else if (data.roomInfo.numberOfRoom === 3) roomCount = '3개 이상';
+
+        if (data.roomInfo.numberOfBathRoom === 2) restRoomCount = '2개';
+        else if (data.roomInfo.numberOfBathRoom === 3) restRoomCount = '3개';
+      }
+
+      if ('roomInfo' in data) {
+        setState({
+          ...state,
+          title: data.title,
+          content: data.content,
+          images: data.roomImages.map(({ fileName }) => ({
+            url: fileName,
+            uploaded: true,
+          })),
+          mateLimit: data.roomInfo.recruitmentCapacity,
+          expectedMonthlyFee: data.roomInfo.expectedPayment,
+          houseSize: data.roomInfo.size,
+          selectedOptions: {
+            roomType: data.roomInfo.roomType,
+            roomCount,
+            budget: data.roomInfo.rentalType,
+            floorType: data.roomInfo.floorType,
+            livingRoom: data.roomInfo.hasLivingRoom ? '유' : '무',
+            restRoomCount,
+          },
+          selectedExtraOptions: {
+            canPark: data.roomInfo.extraOption.canPark,
+            hasAirConditioner: data.roomInfo.extraOption.hasAirConditioner,
+            hasRefrigerator: data.roomInfo.extraOption.hasRefrigerator,
+            hasWasher: data.roomInfo.extraOption.hasWasher,
+            hasTerrace: data.roomInfo.extraOption.hasTerrace,
+          },
+          mateCard: {
+            ...state.mateCard,
+            location: data.address.roadAddress,
+            features: {
+              smoking: data.roomMateFeatures.smoking,
+              roomSharingOption: data.roomMateFeatures.roomSharingOption,
+              mateAge:
+                data.roomMateFeatures.mateAge != null
+                  ? +data.roomMateFeatures.mateAge
+                  : undefined,
+              options: new Set(
+                JSON.parse(data.roomMateFeatures.options) as string[],
+              ),
+            },
+          },
+        });
+      } else {
+        setState({
+          ...state,
+          title: data.title,
+          content: data.content,
+          images: data.roomImages.map(({ fileName }) => ({
+            url: fileName,
+            uploaded: true,
+          })),
+          mateLimit: data.recruitmentCapacity,
+          expectedMonthlyFee: 0,
+          houseSize: 0,
+          selectedOptions: {},
+          selectedExtraOptions: {},
+          mateCard: {
+            ...state.mateCard,
+            location: data.address.roadAddress,
+            features: {
+              smoking: data.roomMateFeatures.smoking,
+              roomSharingOption: data.roomMateFeatures.roomSharingOption,
+              mateAge:
+                data.roomMateFeatures.mateAge != null
+                  ? +data.roomMateFeatures.mateAge
+                  : undefined,
+              options: new Set(
+                JSON.parse(data.roomMateFeatures.options) as string[],
+              ),
+            },
+          },
+        });
+      }
+    };
+
+    (async () => {
+      const post =
+        type === 'hasRoom'
+          ? await getSharedPost(postId)
+          : await getDormitorySharedPost(postId);
+
+      setStateWithPost(post.data);
+    })();
+  }, []);
+
+  const handleOptionClick = (
+    optionName: keyof SelectedOptions,
+    item: string,
+  ) => {
+    setState(prev => ({
+      ...prev,
+      selectedOptions: {
+        ...prev.selectedOptions,
+        [optionName]: prev.selectedOptions[optionName] === item ? null : item,
+      },
+    }));
+  };
+
+  const handleExtraOptionClick = (option: keyof SelectedExtraOptions) => {
+    setState(prev => {
+      const value = prev.selectedExtraOptions[option] ?? false;
+      return {
+        ...prev,
+        selectedExtraOptions: {
+          ...prev.selectedExtraOptions,
+          [option]: !value,
+        },
+      };
+    });
+  };
+
+  const isOptionSelected = (optionName: keyof SelectedOptions, item: string) =>
+    state.selectedOptions[optionName] === item;
+
+  const isExtraOptionSelected = (item: keyof SelectedExtraOptions) =>
+    state.selectedExtraOptions[item] === true;
+
+  const handleMateCardEssentialFeatureChange = (
+    key: 'smoking' | 'roomSharingOption' | 'mateAge',
+    value: string | number | undefined,
+  ) => {
+    setState(prev => {
+      if (prev.mateCard.features[key] === value) {
+        const newFeatures = { ...prev.mateCard.features };
+        newFeatures[key] = undefined;
+        return {
+          ...prev,
+          mateCard: { ...prev.mateCard, features: newFeatures },
+        };
+      }
+      return {
+        ...prev,
+        mateCard: {
+          ...prev.mateCard,
+          features: { ...prev.mateCard.features, [key]: value },
+        },
+      };
+    });
+  };
+
+  const handleMateCardOptionalFeatureChange = (option: string) => {
+    setState(prev => {
+      const { options } = prev.mateCard.features;
+      const newOptions = new Set(options);
+
+      if (options.has(option)) newOptions.delete(option);
+      else newOptions.add(option);
+
+      return {
+        ...prev,
+        mateCard: {
+          ...prev.mateCard,
+          features: { ...prev.mateCard.features, options: newOptions },
+        },
+      };
+    });
+  };
+
+  const derivedMateCardFeatures = useMemo(() => {
+    const options: string[] = [];
+    const { features } = state.mateCard;
+    features.options.forEach(option => options.push(option));
+
+    return {
+      smoking: features?.smoking ?? '상관없어요',
+      roomSharingOption: features?.roomSharingOption ?? '상관없어요',
+      mateAge: state.mateCard.birthYear,
+      options: JSON.stringify(options),
+    };
+  }, [state.mateCard]);
+
+  const auth = useAuthValue();
+  const { data: user } = useUserData(auth?.accessToken != null);
+
+  useEffect(() => {
+    if (user?.gender != null) {
+      setState(prev => ({
+        ...prev,
+        mateCard: {
+          ...prev.mateCard,
+          gender: user.gender,
+        },
+      }));
+    }
+  }, [user, setState]);
+
+  return {
+    ...state,
+    derivedMateCardFeatures,
+    setSharedPostProps: setState,
+    reset,
+    handleOptionClick,
+    handleExtraOptionClick,
+    isOptionSelected,
+    isExtraOptionSelected,
+    handleMateCardOptionalFeatureChange,
+    handleMateCardEssentialFeatureChange,
+  };
+};
+
 export const useCreateSharedPost = () =>
-  useMutation<AxiosResponse<SuccessBaseDTO>, FailureDTO, CreateSharedPostProps>(
-    {
-      mutationFn: createSharedPost,
-    },
-  );
+  useMutation<AxiosResponse<SuccessBaseDTO>, FailureDTO, SharedPostProps>({
+    mutationFn: createSharedPost,
+  });
 
 export const useSharedPosts = ({
   filter,
   search,
+  cardOption,
   page,
   enabled,
-}: GetSharedPostsProps & { enabled: boolean }) =>
-  useQuery({
-    queryKey: ['/api/shared/posts/studio', { filter, search, page }],
+}: GetSharedPostsProps & { enabled: boolean }) => {
+  const debounceFilter = useDebounce(filter, 1000);
+
+  return useQuery({
+    queryKey: [
+      '/api/shared/posts/studio',
+      { cardOption, debounceFilter, search, page },
+    ],
     queryFn: async () =>
-      await getSharedPosts({ filter, search, page }).then(
-        response => response.data,
-      ),
-    staleTime: 60000,
+      await getSharedPosts({
+        cardOption,
+        filter: debounceFilter,
+        search,
+        page,
+      }).then(response => response.data),
     enabled,
   });
+};
 
 export const useSharedPost = ({
   postId,
@@ -120,7 +382,79 @@ export const useSharedPost = ({
     enabled,
   });
 
-export const useDeleteSharedPost = ({
+export const useUpdateSharedPost = () =>
+  useMutation<
+    AxiosResponse<SuccessBaseDTO>,
+    FailureDTO,
+    { postId: number; postData: SharedPostProps }
+  >({
+    mutationFn: updateSharedPost,
+  });
+
+export const useDeleteSharedPost = () =>
+  useMutation<AxiosResponse<SuccessBaseDTO>, FailureDTO, number>({
+    mutationFn: deleteSharedPost,
+  });
+
+export const useScrapSharedPost = () =>
+  useMutation<AxiosResponse<SuccessBaseDTO>, FailureDTO, number>({
+    mutationFn: scrapPost,
+  });
+
+export const useCreateDormitorySharedPost = () =>
+  useMutation<AxiosResponse<SuccessBaseDTO>, FailureDTO, SharedPostProps>({
+    mutationFn: createDormitorySharedPost,
+  });
+
+export const useDormitorySharedPosts = ({
+  filter,
+  search,
+  cardOption,
+  page,
+  enabled,
+}: GetSharedPostsProps & { enabled: boolean }) => {
+  const debounceFilter = useDebounce(filter, 1000);
+
+  return useQuery({
+    queryKey: [
+      '/api/shared/posts/dormitory',
+      { cardOption, debounceFilter, search, page },
+    ],
+    queryFn: async () =>
+      await getDormitorySharedPosts({
+        cardOption,
+        filter: debounceFilter,
+        search,
+        page,
+      }).then(response => response.data),
+    enabled,
+  });
+};
+
+export const useDormitorySharedPost = ({
+  postId,
+  enabled,
+}: {
+  postId: number;
+  enabled: boolean;
+}) =>
+  useQuery({
+    queryKey: [`/api/shared/posts/dormitory/${postId}`],
+    queryFn: async () =>
+      await getDormitorySharedPost(postId).then(response => response.data),
+    enabled,
+  });
+
+export const useUpdateDormitorySharedPost = () =>
+  useMutation<
+    AxiosResponse<SuccessBaseDTO>,
+    FailureDTO,
+    { postId: number; postData: SharedPostProps }
+  >({
+    mutationFn: updateSharedPost,
+  });
+
+export const useDeleteDormitorySharedPost = ({
   postId,
   onSuccess,
   onError,
@@ -131,12 +465,12 @@ export const useDeleteSharedPost = ({
 }) =>
   useMutation({
     mutationFn: async () =>
-      await deleteSharedPost(postId).then(response => response.data),
+      await deleteDormitorySharedPost(postId).then(response => response.data),
     onSuccess,
     onError,
   });
 
-export const useScrapSharedPost = () =>
+export const useScrapDormitorySharedPost = () =>
   useMutation<AxiosResponse<SuccessBaseDTO>, FailureDTO, number>({
-    mutationFn: scrapPost,
+    mutationFn: scrapDormitoryPost,
   });

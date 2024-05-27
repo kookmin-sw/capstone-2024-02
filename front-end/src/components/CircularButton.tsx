@@ -21,6 +21,12 @@ const styles = {
       position: absolute;
       margin: auto;
     }
+
+    @media (max-width: 768px) {
+      width: 2.25rem;
+      height: 2.25rem;
+      flex-shrink: 0;
+    }
   `,
 };
 

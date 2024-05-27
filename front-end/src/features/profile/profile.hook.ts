@@ -1,18 +1,25 @@
 import { useQuery, useMutation } from '@tanstack/react-query';
 
 import {
-  getUserProfileData,
   getUserCard,
   getFollowingListData,
-  postFollowData,
   putUserCard,
+  postSearchUser,
+  postUnfollowUser,
+  postFollowUser,
+  postUserProfile,
+  postEmail,
+  postCertificate,
+  getRecommendMates,
 } from './profile.api';
 
-export const useProfileData = (memberId: string) =>
-  useQuery({
-    queryKey: [`/api/profile/${memberId}`],
-    queryFn: async () => await getUserProfileData(memberId),
-    enabled: memberId !== undefined,
+import { type CardType } from '@/entities/shared-posts-filter';
+
+export const useUserProfile = (memberId: string) =>
+  useMutation({
+    mutationFn: async () => await postUserProfile(memberId),
+    onSuccess: data => data.data,
+    onError: error => error,
   });
 
 export const useUserCard = (cardId: number) =>
@@ -26,7 +33,12 @@ export const usePutUserCard = (cardId: number) =>
   useMutation({
     mutationFn: async (data: {
       location: string;
-      features: Array<string | undefined>;
+      features: {
+        smoking: string;
+        roomSharingOption: string;
+        mateAge: number;
+        options: string;
+      };
     }) => await putUserCard(cardId, data.location, data.features),
   });
 
@@ -36,9 +48,50 @@ export const useFollowingListData = () =>
     queryFn: getFollowingListData,
   });
 
-export const useFollowData = () =>
+export const useFollowUser = (memberId: string) =>
   useMutation({
-    mutationFn: async (memberId: string) => {
-      await postFollowData(memberId);
+    mutationFn: async () => {
+      await postFollowUser(memberId);
     },
+  });
+
+export const useUnfollowUser = (memberId: string) =>
+  useMutation({
+    mutationFn: async () => {
+      await postUnfollowUser(memberId);
+    },
+  });
+
+export const useSearchUser = (email: string) =>
+  useMutation({
+    mutationFn: async () => await postSearchUser(email),
+    onSuccess: data => data.data,
+  });
+
+export const useGetCode = (email: string, univName: string) =>
+  useMutation({
+    mutationFn: async () => await postEmail(email, univName),
+  });
+
+export const useCertification = (
+  email: string,
+  univName: string,
+  code: number,
+) =>
+  useMutation({
+    mutationFn: async () => await postCertificate(email, univName, code),
+    onSuccess: data => data.data,
+  });
+
+export const useRecommendMates = ({
+  enabled,
+  cardOption,
+}: {
+  enabled: boolean;
+  cardOption: CardType;
+}) =>
+  useQuery({
+    queryKey: ['/api/profile/recommend', cardOption],
+    queryFn: async () => await getRecommendMates(cardOption),
+    enabled,
   });

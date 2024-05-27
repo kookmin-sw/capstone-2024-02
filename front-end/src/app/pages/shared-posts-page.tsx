@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 import { CircularButton } from '@/components';
@@ -16,10 +16,15 @@ import {
   useSharedPostsFilter,
   type SharedPostsType,
 } from '@/entities/shared-posts-filter';
-import { useAuthActions, useAuthValue, useUserData } from '@/features/auth';
-import { useRecommendationMate } from '@/features/recommendation';
-import { usePaging, useSharedPosts } from '@/features/shared';
-import { type GetSharedPostsDTO } from '@/features/shared/';
+import { useAuthValue } from '@/features/auth';
+import { useRecommendMates } from '@/features/profile';
+import {
+  useDormitorySharedPosts,
+  usePaging,
+  useSharedPosts,
+  type GetDormitorySharedPostsDTO,
+  type GetSharedPostsDTO,
+} from '@/features/shared';
 
 const styles = {
   container: styled.div`
@@ -116,13 +121,11 @@ export function SharedPostsPage() {
   const auth = useAuthValue();
   const [selected, setSelected] = useState<SharedPostsType>('hasRoom');
   const [totalPageCount, setTotalPageCount] = useState(0);
-  const [prevSharedPosts, setPrevSharedPosts] =
-    useState<GetSharedPostsDTO | null>(null);
-  const { setAuthUserData } = useAuthActions();
+  const [prevSharedPosts, setPrevSharedPosts] = useState<
+    GetSharedPostsDTO | GetDormitorySharedPostsDTO | null
+  >(null);
 
-  const { filter, reset } = useSharedPostsFilter();
-
-  const { data: userData } = useUserData(auth?.accessToken !== undefined);
+  const { filter, derivedFilter, reset: resetFilter } = useSharedPostsFilter();
 
   const {
     page,
@@ -139,66 +142,89 @@ export function SharedPostsPage() {
   });
 
   const { data: sharedPosts } = useSharedPosts({
+    filter: derivedFilter,
+    cardOption: filter.cardType ?? 'my',
     enabled: auth?.accessToken != null && selected === 'hasRoom',
     page: page - 1,
   });
 
-  const { data: recommendationMates } = useRecommendationMate({
-    memberId: auth?.user?.memberId ?? 'undefined',
-    cardType: filter.cardType ?? 'mate',
+  const { data: dormitorySharedPosts } = useDormitorySharedPosts({
+    filter: derivedFilter,
+    cardOption: filter.cardType ?? 'my',
+    enabled: auth?.accessToken != null && selected === 'dormitory',
+    page: page - 1,
+  });
+
+  const posts = useMemo(
+    () => (selected === 'hasRoom' ? sharedPosts : dormitorySharedPosts),
+    [selected, sharedPosts, dormitorySharedPosts],
+  );
+
+  const { data: recommendationMates } = useRecommendMates({
     enabled: auth?.accessToken != null && selected === 'homeless',
+    cardOption: filter.cardType ?? 'my',
   });
 
   useEffect(() => {
-    reset();
+    resetFilter();
     return () => {
-      reset();
+      resetFilter();
     };
-  }, []);
+  }, [selected, resetFilter]);
 
   useEffect(() => {
-    if (sharedPosts != null) {
+    if (selected === 'hasRoom' && sharedPosts != null) {
       setTotalPageCount(sharedPosts.data.totalPages);
       setPrevSharedPosts(null);
+    } else if (selected === 'dormitory' && dormitorySharedPosts != null) {
+      setTotalPageCount(dormitorySharedPosts.data.totalPages);
+      setPrevSharedPosts(null);
     }
-  }, [sharedPosts]);
-
-  useEffect(() => {
-    if (userData != null) {
-      setAuthUserData(userData);
-      if (userData.initialized) {
-        // router.replace('/profile');
-      }
-    }
-  }, [userData, router, setAuthUserData]);
+  }, [selected, dormitorySharedPosts, sharedPosts]);
 
   return (
     <styles.container>
       <styles.SharedPostsMenu selected={selected} handleSelect={setSelected} />
       <styles.createButtonRow>
         <SharedPostFilters selected={selected} />
-        {selected === 'hasRoom' && (
-          <Link href="/shared/writing">
-            <styles.createButton>작성하기</styles.createButton>
-          </Link>
+        {(selected === 'hasRoom' || selected === 'dormitory') && (
+          <styles.createButton
+            onClick={() => {
+              router.push(
+                `/shared/writing/${selected === 'hasRoom' ? 'room' : 'dormitory'}`,
+              );
+            }}
+          >
+            작성하기
+          </styles.createButton>
         )}
       </styles.createButtonRow>
-      {selected === 'hasRoom' ? (
+      {selected === 'hasRoom' || selected === 'dormitory' ? (
         <>
           <styles.posts>
             {prevSharedPosts != null
               ? prevSharedPosts.data.content.map(post => (
-                  <Link key={post.id} href={`/shared/${post.id}`}>
-                    <PostCard post={post} />
-                  </Link>
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onClick={() => {
+                      router.push(`/shared/${post.id}`);
+                    }}
+                  />
                 ))
-              : sharedPosts?.data.content.map(post => (
-                  <Link key={post.id} href={`/shared/${post.id}`}>
-                    <PostCard post={post} />
-                  </Link>
+              : posts?.data.content.map(post => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onClick={() => {
+                      router.push(
+                        `/shared/${selected === 'hasRoom' ? 'room' : 'dormitory'}/${post.id}`,
+                      );
+                    }}
+                  />
                 ))}
           </styles.posts>
-          {sharedPosts?.data.content.length !== 0 && (
+          {posts != null && posts.data.content.length !== 0 && (
             <styles.pagingRow>
               <styles.CircularButton
                 direction="left"
@@ -254,11 +280,18 @@ export function SharedPostsPage() {
         </>
       ) : (
         <styles.cards>
-          {recommendationMates?.map(({ userId, name, similarity }) => (
-            <Link href={`/profile/${userId}`} key={userId}>
-              <UserCard name={name} percentage={Math.floor(similarity * 100)} />
-            </Link>
-          ))}
+          {recommendationMates?.data?.map(
+            ({ memberId, score, nickname, location, profileImageUrl }) => (
+              <Link href={`/profile/${memberId}`} key={memberId}>
+                <UserCard
+                  name={nickname}
+                  percentage={score}
+                  location={location}
+                  profileImage={profileImageUrl}
+                />
+              </Link>
+            ),
+          )}
         </styles.cards>
       )}
     </styles.container>

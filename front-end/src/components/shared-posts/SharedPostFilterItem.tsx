@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
+import { useIsMobile } from '@/shared/mobile';
+
 const styles = {
   container: styled.div`
     -webkit-user-select: none;
@@ -22,6 +24,10 @@ const styles = {
     border: 2px solid var(--Gray-4, #dfdfdf);
 
     cursor: pointer;
+
+    @media (max-width: 768px) {
+      padding: 0.25rem 1rem;
+    }
   `,
   title: styled.div`
     display: flex;
@@ -34,6 +40,10 @@ const styles = {
     font-style: normal;
     font-weight: 500;
     line-height: normal;
+
+    @media (max-width: 768px) {
+      font-size: 0.75rem;
+    }
   `,
   content: styled.div<{ $hidden: boolean }>`
     visibility: ${({ $hidden }) => ($hidden ? 'hidden' : 'visible')};
@@ -48,6 +58,10 @@ const styles = {
     z-index: 10;
 
     padding: 2.31rem;
+
+    @media (max-width: 768px) {
+      padding: 1.8rem;
+    }
   `,
 };
 
@@ -83,11 +97,20 @@ export function SharedPostFilterItem({
     setHidden(!hidden);
   };
 
+  const isMobile = useIsMobile();
+
   return (
     <styles.container onClick={handleContainerClick} ref={containerRef}>
       <styles.title>
         {title}
-        <img alt="drop-down-button" src="/icon-drop-down_2.svg" />
+        <img
+          style={{
+            width: isMobile ? '1.2rem' : undefined,
+            height: isMobile ? '1.2rem' : undefined,
+          }}
+          alt="drop-down-button"
+          src="/icon-drop-down_2.svg"
+        />
       </styles.title>
       <styles.content
         $hidden={hidden}

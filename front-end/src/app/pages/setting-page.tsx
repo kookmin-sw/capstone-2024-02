@@ -2,27 +2,36 @@
 
 import { type NavigateOptions } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 
-import { VitalSection, OptionSection } from '@/components';
+import { UserInputSection } from '@/components';
+import { useAuthValue } from '@/features/auth';
 import {
-  useProfileData,
   usePutUserCard,
   useUserCard,
+  useUserProfile,
 } from '@/features/profile';
+import Location from '@/public/option-img/location_on.svg';
+import Meeting from '@/public/option-img/meeting_room.svg';
+import Person from '@/public/option-img/person.svg';
+import Visibility from '@/public/option-img/visibility.svg';
 
 const styles = {
   pageContainer: styled.div`
     display: flex;
+    width: 90rem;
+    height: 90rem;
+    padding: 2rem 10rem;
     flex-direction: column;
-    height: 85rem;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
   `,
 
   cardName: styled.p`
-    margin: 4.5625rem 0;
-    color: #000;
-
+    align-self: stretch;
+    color: var(--Black, #35373a);
     font-family: 'Noto Sans KR';
     font-size: 2rem;
     font-style: normal;
@@ -32,18 +41,21 @@ const styles = {
 
   cardContainer: styled.div`
     display: flex;
-    gap: 0.88rem;
+    align-items: flex-start;
+    gap: 1rem;
   `,
   miniCard: styled.div`
-    width: 23.0625rem;
-    height: 17.5rem;
-    flex-shrink: 0;
-    border-radius: 30px;
-    background: #f7f6f9;
-    box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.2);
-    padding: 1.62rem 1.44rem;
     display: flex;
+    width: 22.5rem;
+    padding: 2rem;
     flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    border-radius: 1.875rem;
+    background: #f7f6f9;
+
+    /* button */
+    box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.2);
   `,
   miniCardName: styled.p`
     color: var(--Black, #35373a);
@@ -52,58 +64,77 @@ const styles = {
     font-style: normal;
     font-weight: 500;
     line-height: normal;
-    margin-bottom: 1.69rem;
   `,
-  miniCardKeywordsContainer: styled.div`
-    width: 17.5625rem;
-    height: 5.6875rem;
-    position: relative;
+  miniCardKeywordsContainer: styled.ul`
+    display: flex;
+    width: 18.375rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.2rem;
   `,
-  miniCardKeyword: styled.div`
-    display: inline-flex;
-    padding: 0.5rem 1.5rem;
-    justify-content: center;
+  miniCardList: styled.li`
+    display: flex;
+    height: 2rem;
     align-items: center;
-    gap: 0.5rem;
-    border-radius: 26px;
-    border: 2px solid var(--Main-1, #e15637);
-    background: #fff;
-
-    color: var(--Main-1, #e15637);
+    gap: 2rem;
+    align-self: stretch;
+  `,
+  miniCardPerson: styled(Person)`
+    width: 1.5rem;
+    height: 1.5rem;
+    path {
+      fill: var(--Main-1, #e15637);
+    }
+  `,
+  miniCardLocation: styled(Location)`
+    width: 1.5rem;
+    height: 1.5rem;
+    path {
+      fill: var(--Main-1, #e15637);
+    }
+  `,
+  miniCardMeeting: styled(Meeting)`
+    width: 1.5rem;
+    height: 1.5rem;
+    path {
+      fill: var(--Main-1, #e15637);
+    }
+  `,
+  miniCardVisibility: styled(Visibility)`
+    width: 1.5rem;
+    height: 1.5rem;
+    path {
+      fill: var(--Main-1, #e15637);
+    }
+  `,
+  miniCardText: styled.p`
+    flex: 1 0 0;
+    display: flex;
+    height: 3rem;
+    align-items: center;
     font-family: 'Noto Sans KR';
     font-size: 1rem;
     font-style: normal;
     font-weight: 500;
     line-height: normal;
-    position: absolute;
+    color: var(--Main-1, #e15637);
   `,
   checkContainer: styled.div`
-    width: 51.0625rem;
-    height: 95.8125rem;
-    flex-shrink: 0;
-    border-radius: 30px;
+    display: flex;
+    width: 50rem;
+    padding: 2rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2rem;
+    border-radius: 1.875rem;
     background: var(--background, #f7f6f9);
-    padding: 3.56rem 0 0 1.56rem;
-    margin-bottom: 7.5rem;
   `,
-
-  lineContainer: styled.div`
-    margin: 2.69rem 0;
-    padding: 0 4.37rem 0 1.38rem;
-  `,
-  horizontalLine: styled.hr`
-    width: 100%;
-    height: 0rem;
-    flex-shrink: 0;
-    stroke-width: 1px;
-    stroke: #d3d0d7;
+  horizontalLine: styled.div`
+    width: 43.75rem;
+    height: 0.0625rem;
+    background: var(--Gray-9, #d3d0d7);
   `,
 };
-
-interface SelectedState {
-  smoking: string | undefined;
-  room: string | undefined;
-}
 
 interface UserProps {
   name: string;
@@ -111,109 +142,143 @@ interface UserProps {
   birthYear: string;
 }
 
-type SelectedOptions = Record<string, boolean>;
-
-const miniCardKeywordStyle = {
-  border: 'none',
-  background: 'var(--Gray-5, #828282)',
-  color: '#fff',
-};
-
 export function SettingPage({ cardId }: { cardId: number }) {
   const params = useSearchParams();
   const memberIdParams = params.get('memberId');
   const memberId = memberIdParams ?? '';
   const isMySelfStr = params.get('isMySelf');
   const isMySelf = isMySelfStr === 'true';
+  const type = params.get('type') ?? '';
 
-  const user = useProfileData(memberId);
+  const auth = useAuthValue();
+  const { mutate: mutateProfile, data: profileData } = useUserProfile(memberId);
   const [userData, setUserData] = useState<UserProps | null>(null);
 
   useEffect(() => {
-    if (user.data !== undefined) {
-      const userProfileData = user.data.data.authResponse;
+    mutateProfile();
+  }, [auth]);
+
+  useEffect(() => {
+    if (profileData?.data !== undefined) {
+      const userProfileData = profileData.data.authResponse;
       if (userProfileData !== undefined) {
         const { name, birthYear, gender } = userProfileData;
         setUserData({ name, gender, birthYear });
       }
     }
-  }, [user.data]);
+  }, [profileData]);
 
   const card = useUserCard(cardId);
-  const [features, setFeatures] = useState<string[] | null>(null);
+
+  const [locationInput, setLocation] = useState<string | undefined>(
+    card.data?.data.location,
+  );
+
+  useEffect(() => {
+    if (card.data?.data.location !== undefined) {
+      setLocation(card.data.data.location);
+    }
+  }, [card.data?.data.location]);
+
+  const [features, setFeatures] = useState<{
+    smoking?: string;
+    roomSharingOption?: string;
+    mateAge?: number;
+    options?: Set<string>;
+  }>({ options: new Set() });
+
+  const [initialMbti, setInitialMbti] = useState('');
+  const [initialMajor, setInitialMajor] = useState('');
+  const [initialBudget, setInitialBudget] = useState('');
+
+  const majorArray = ['공학', '교육', '인문', '사회', '자연', '예체능', '의약'];
+
+  const [mbti, setMbti] = useState<string | undefined>('');
+  const [major, setMajor] = useState<string | undefined>('');
+  const [budget, setBudget] = useState<string | undefined>('');
+  const [mateAge, setMateAge] = useState<number | undefined>(0);
 
   useEffect(() => {
     if (isMySelf) {
-      if (card !== undefined) {
-        const featuresData = card.data?.data.myFeatures ?? null;
-        setFeatures(featuresData);
+      if (card != null) {
+        const featuresData = card.data?.data.myFeatures;
+        if (featuresData != null) {
+          const options = JSON.parse(featuresData.options);
+          const optionsSet = new Set<string>();
+          options.forEach((option: string) => {
+            if (
+              !option.includes('E') &&
+              !option.includes('I') &&
+              !option.includes(',') &&
+              !majorArray.includes(option)
+            ) {
+              optionsSet.add(option);
+            }
+            if (option.includes('E') || option.includes('I'))
+              setInitialMbti(option);
+            if (option.includes(',')) {
+              setInitialBudget(option);
+            }
+            if (majorArray.includes(option)) setInitialMajor(option);
+          });
+          const data = {
+            smoking: featuresData.smoking,
+            roomSharingOption: featuresData.roomSharingOption,
+            mateAge: featuresData.mateAge,
+            options: optionsSet,
+          };
+          setMateAge(featuresData.mateAge);
+          setFeatures(data);
+        }
       }
     }
-  }, [card, isMySelf]);
+  }, [isMySelf, card.data?.data.myFeatures]);
 
-  const [selectedState, setSelectedState] = useState<SelectedState>({
-    smoking: undefined,
-    room: undefined,
-  });
+  const handleEssentialFeatureChange = useCallback(
+    (
+      key: 'smoking' | 'roomSharingOption' | 'mateAge',
+      value: string | number,
+    ) => {
+      setFeatures(prev => {
+        if (prev?.[key] === value) {
+          return { ...prev, [key]: undefined };
+        }
+        return { ...prev, [key]: value };
+      });
+    },
+    [],
+  );
 
-  useEffect(() => {
-    if (isMySelf) {
-      if (features !== null) {
-        setSelectedState({
-          ...selectedState,
-          smoking: features[0],
-          room: features[1],
-        });
-      }
-    }
-  }, [features, isMySelf]);
+  const handleOptionalFeatureChange = useCallback((option: string) => {
+    setFeatures(prev => {
+      const { options } = prev;
+      const newOptions = new Set(options);
 
-  const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({});
+      if (options != null && options.has(option)) {
+        newOptions.delete(option);
+        console.log(newOptions);
+      } else newOptions.add(option);
 
-  useEffect(() => {
-    if (isMySelf) {
-      if (features !== null) {
-        const initialOptions: SelectedOptions = {};
-        features.slice(2).forEach(option => {
-          initialOptions[option] = true;
-        });
-        setSelectedOptions(initialOptions);
-      }
-    }
-  }, [features, isMySelf]);
-
-  const handleFeatureChange = (
-    optionName: keyof SelectedState,
-    item: string | number,
-  ) => {
-    if (isMySelf) {
-      setSelectedState(prevState => ({
-        ...prevState,
-        [optionName]: prevState[optionName] === item ? null : item,
-      }));
-    }
-  };
-  const handleOptionClick = (option: string) => {
-    if (isMySelf) {
-      setSelectedOptions(prevSelectedOptions => ({
-        ...prevSelectedOptions,
-        [option]: !prevSelectedOptions[option],
-      }));
-    }
-  };
+      return { ...prev, options: newOptions };
+    });
+  }, []);
 
   const { mutate } = usePutUserCard(cardId);
   const router = useRouter();
 
   const saveData = () => {
-    const array = Object.keys(selectedOptions).filter(
-      key => selectedOptions[key],
-    );
+    const location = locationInput ?? '';
+    const options: string[] = [mbti ?? '', major ?? '', budget ?? ''];
+    features?.options?.forEach(option => options.push(option));
 
-    const location = '성북 길음동';
-    const myFeatures = [selectedState.smoking, selectedState.room, ...array];
+    const myFeatures = {
+      smoking: features?.smoking ?? '상관없어요',
+      roomSharingOption: features?.roomSharingOption ?? '상관없어요',
+      mateAge: mateAge ?? 0,
+      options: JSON.stringify(options.filter(value => value !== '')),
+    };
 
-    mutate({ location: location, features: myFeatures });
+    mutate({ location, features: myFeatures });
   };
 
   const handleBeforeUnload = () => {
@@ -258,41 +323,103 @@ export function SettingPage({ cardId }: { cardId: number }) {
     };
   }, [handlePopState]);
 
+  let ageString: string;
+
+  if (type === 'myCard') {
+    ageString = `${userData?.birthYear.slice(2)}년생`;
+  } else {
+    switch (mateAge) {
+      case 0:
+        ageString = '동갑';
+        break;
+      case 11:
+        ageString = '상관없어요';
+        break;
+      default:
+        ageString = `±${mateAge}년생`;
+    }
+  }
+
   return (
     <styles.pageContainer>
-      <styles.cardName>내 카드 &gt; {userData?.name}</styles.cardName>
+      <styles.cardName>
+        {type === 'myCard' ? `마이 카드` : '메이트 카드'}
+      </styles.cardName>
       <styles.cardContainer>
         <styles.miniCard>
-          <styles.miniCardName>내카드</styles.miniCardName>
+          <styles.miniCardName>
+            {type === 'myCard' ? '내카드' : '메이트카드'}
+          </styles.miniCardName>
           <styles.miniCardKeywordsContainer>
-            <styles.miniCardKeyword style={miniCardKeywordStyle}>
-              {userData?.gender === 'MALE' ? '남성' : '여성'}
-            </styles.miniCardKeyword>
-            {features?.[0] !== null && features !== null ? (
-              <styles.miniCardKeyword style={{ right: '0' }}>
-                {features[0]}
-              </styles.miniCardKeyword>
-            ) : null}
+            <styles.miniCardList>
+              <styles.miniCardPerson />
+              <styles.miniCardText>
+                {userData?.gender === 'MALE' ? '남성' : '여성'} · {ageString} ·{' '}
+                {features?.smoking}
+              </styles.miniCardText>
+            </styles.miniCardList>
+            <styles.miniCardList>
+              <styles.miniCardLocation />
+              <styles.miniCardText>{locationInput}</styles.miniCardText>
+            </styles.miniCardList>
+            <styles.miniCardList>
+              <styles.miniCardMeeting />
+              <styles.miniCardText>
+                메이트와 {features?.roomSharingOption}
+              </styles.miniCardText>
+            </styles.miniCardList>
+            <styles.miniCardList>
+              <styles.miniCardVisibility />
+              <styles.miniCardText>
+                {features?.options != null && features.options.has('아침형')
+                  ? '아침형'
+                  : null}
+                {features?.options != null && features.options.has('올빼미형')
+                  ? '올빼미형'
+                  : null}
+              </styles.miniCardText>
+            </styles.miniCardList>
           </styles.miniCardKeywordsContainer>
         </styles.miniCard>
-        <styles.checkContainer>
-          <VitalSection
+        {type === 'myCard' ? (
+          <UserInputSection
             gender={userData?.gender}
             birthYear={userData?.birthYear}
-            smoking={selectedState.smoking}
-            room={selectedState.room}
-            onFeatureChange={handleFeatureChange}
+            location={card.data?.data.location}
+            features={features}
             isMySelf={isMySelf}
+            type="myCard"
+            mbti={initialMbti}
+            major={initialMajor}
+            budget={initialBudget}
+            onVitalChange={handleEssentialFeatureChange}
+            onOptionChange={handleOptionalFeatureChange}
+            onLocationChange={setLocation}
+            onMateAgeChange={setMateAge}
+            onMbtiChange={setMbti}
+            onMajorChange={setMajor}
+            onBudgetChange={setBudget}
           />
-          <styles.lineContainer>
-            <styles.horizontalLine />
-          </styles.lineContainer>
-          <OptionSection
-            optionFeatures={features}
-            onFeatureChange={handleOptionClick}
+        ) : (
+          <UserInputSection
+            gender={userData?.gender}
+            birthYear={userData?.birthYear}
+            location={card.data?.data.location}
+            features={features}
             isMySelf={isMySelf}
+            type="mateCard"
+            mbti={initialMbti}
+            major={initialMajor}
+            budget={initialBudget}
+            onVitalChange={handleEssentialFeatureChange}
+            onOptionChange={handleOptionalFeatureChange}
+            onLocationChange={setLocation}
+            onMateAgeChange={setMateAge}
+            onMbtiChange={setMbti}
+            onMajorChange={setMajor}
+            onBudgetChange={setBudget}
           />
-        </styles.checkContainer>
+        )}
       </styles.cardContainer>
     </styles.pageContainer>
   );

@@ -59,6 +59,13 @@ const styles = {
     left: 65%;
 
     z-index: 2;
+
+    @media (max-width: 768px) {
+      width: 1.6875rem;
+      height: 1.75rem;
+      padding: 0.75rem 0.375rem;
+      font-size: 0.75rem;
+    }
   `,
 };
 
@@ -74,12 +81,6 @@ export function CircularProfileImage({
   return (
     <styles.container $diameter={diameter}>
       <styles.backgroundContainer $url={url} />
-      <styles.CircularProgressBar
-        diameter={diameter}
-        percentage={percentage}
-        strokeWidth={10}
-      />
-      <styles.percentage>{percentage}%</styles.percentage>
     </styles.container>
   );
 }

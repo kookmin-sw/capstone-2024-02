@@ -16,6 +16,18 @@ const styles = {
     line-height: normal;
 
     cursor: pointer;
+
+    align-items: center;
+
+    div {
+      display: flex;
+      align-items: center;
+    }
+
+    user-select: none;
+    -ms-user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
   `,
 };
 
@@ -33,10 +45,25 @@ function ToggleIcon() {
   );
 }
 
-export function CardToggleButton({ label }: { label: string }) {
+export function CardToggleButton({
+  label,
+  isOpen,
+  onClick,
+}: {
+  label: string;
+  isOpen: boolean;
+  onClick: () => void;
+}) {
   return (
-    <styles.container>
-      <ToggleIcon />
+    <styles.container onClick={onClick}>
+      <div
+        style={{
+          transition: '0.2s transform ease-in-out',
+          transform: isOpen ? 'rotate(0)' : 'rotate(-90deg)',
+        }}
+      >
+        <ToggleIcon />
+      </div>
       {label}
     </styles.container>
   );

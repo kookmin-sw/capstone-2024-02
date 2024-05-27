@@ -1,17 +1,51 @@
-import { type RentalType, type RoomType } from '@/shared/types';
-
 export interface GetSharedPostsFilter {
-  roomType?: RoomType[];
-  rentalType?: RentalType[];
+  roomTypes?: number[];
+  rentalTypes?: number[];
+  expectedPaymentRange?: { start: number; end: number };
+  hasLivingRoom?: boolean;
+  numberOfRoom?: number;
+  numberOfRestRoom?: number;
+  roomSizeRange?: { start: number; end: number };
+  floorTypes?: number[];
+  canPark?: boolean;
+  hasAirConditioner?: boolean;
+  hasRefrigerator?: boolean;
+  hasWasher?: boolean;
+  hasTerrace?: boolean;
 }
 
 export interface GetSharedPostsProps {
   filter?: GetSharedPostsFilter;
   search?: string;
+  cardOption: 'my' | 'mate';
   page: number;
 }
 
-export interface CreateSharedPostProps {
+export interface SelectedOptions {
+  budget?: string;
+  roomType?: string;
+  livingRoom?: string;
+  roomCount?: string;
+  restRoomCount?: string;
+  floorType?: string;
+}
+
+export interface SelectedExtraOptions {
+  canPark?: boolean;
+  hasAirConditioner?: boolean;
+  hasRefrigerator?: boolean;
+  hasTerrace?: boolean;
+  hasWasher?: boolean;
+}
+
+export interface ImageFile {
+  url: string;
+  uploaded: boolean;
+  file?: File;
+  extension?: string;
+}
+
+export interface SharedPostProps {
   imageFilesData: Array<{
     fileName: string;
     isThumbNail: boolean;
@@ -21,27 +55,41 @@ export interface CreateSharedPostProps {
     title: string;
     content: string;
   };
-  transactionData: {
-    rentalType: string;
-    price: number;
-    monthlyFee: number;
-    managementFee: number;
+  transactionData?: {
+    rentalType: number;
+    expectedPayment: number;
   };
-  roomDetailData: {
-    roomType: string;
+  roomDetailData?: {
+    roomType: number;
+    floorType: number;
     size: number;
     numberOfRoom: number;
+    numberOfBathRoom: number;
+    hasLivingRoom: boolean;
     recruitmentCapacity: number;
+    extraOption: {
+      canPark: boolean;
+      hasAirConditioner: boolean;
+      hasRefrigerator: boolean;
+      hasWasher: boolean;
+      hasTerrace: boolean;
+    };
   };
   locationData: {
-    city: string;
     oldAddress: string;
     roadAddress: string;
-    stationName: string;
-    stationTime: number;
-    busStopTime: number;
-    schoolName: string;
-    schoolTime: number;
-    convenienceStoreTime: number;
+  };
+  roomMateCardData: {
+    location: string;
+    features: {
+      smoking: string;
+      roomSharingOption: string;
+      mateAge: number | undefined; // 0 ~ 10: +- 범위 값, null: 상관 없어요.
+      options: string;
+    };
+  };
+  participationData: {
+    recruitmentCapacity: number;
+    participationMemberIds: string[];
   };
 }

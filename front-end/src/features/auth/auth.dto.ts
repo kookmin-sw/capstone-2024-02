@@ -11,6 +11,7 @@ export interface GetUserDataDTO extends SuccessBaseDTO {
     initialized: boolean;
     myCardId: number;
     mateCardId: number;
+    univCertified: boolean;
   };
 }
 

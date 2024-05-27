@@ -22,6 +22,12 @@ const styles = {
   container: styled.div`
     display: flex;
     gap: 1rem;
+
+    @media (max-width: 768px) {
+      width: 70%;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
   `,
 };
 
@@ -37,16 +43,20 @@ export function SharedPostFilters({
   const { filter } = useSharedPostsFilter();
 
   const mateCardFilterTitle = useMemo(() => {
+    if (selected === 'homeless' && filter.cardType === 'mate')
+      return '메이트카드';
+    if (selected === 'homeless' && filter.cardType === 'my') return '마이카드';
+
     if (filter.cardType == null) return SharedPostsFilterTypeValue.cardType;
     if (filter.cardType === 'mate') return `${userData?.name}님이 원하는 방`;
     if (filter.cardType === 'my') return `${userData?.name}님을 원하는 방`;
     return 'error';
-  }, [userData?.name, filter.cardType]);
+  }, [selected, filter.cardType, userData?.name]);
 
   return (
     <styles.container className={className}>
       <SharedPostFilterItem title={mateCardFilterTitle}>
-        <MateCardFilter />
+        <MateCardFilter selected={selected} />
       </SharedPostFilterItem>
       {selected === 'hasRoom' && (
         <>
