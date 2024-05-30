@@ -125,7 +125,7 @@ const styles = {
   `,
   value: styled.div`
     display: flex;
-    width: 6.8rem;
+    width: 7rem;
     padding: 0.5rem 1.5rem;
     justify-content: center;
     align-items: center;

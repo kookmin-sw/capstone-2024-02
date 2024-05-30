@@ -13,6 +13,7 @@ import { ChattingRoom } from './chat/ChattingRoom';
 import { useAuthValue, useUserData } from '@/features/auth';
 import { chatOpenState, type GetChatRoomDTO } from '@/features/chat';
 import { useIsMobile } from '@/shared/mobile';
+import { useToast } from '@/features/toast';
 
 const styles = {
   chattingButton: styled.div`
@@ -74,7 +75,7 @@ const styles = {
     background: var(--background, #f7f6f9);
   `,
   title: styled.span`
-    font-family: 'Baloo 2';
+    font-family: 'Pretendard';
     font-size: 1.575rem;
     font-style: normal;
     font-weight: 700;
@@ -140,6 +141,8 @@ interface Message {
 }
 
 function FloatingChattingBox() {
+  const { createToast } = useToast();
+
   const [isChatRoomOpen, setIsChatRoomOpen] = useState<boolean>(false);
   const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
   const [message, setMessage] = useState<Message>();
@@ -170,10 +173,15 @@ function FloatingChattingBox() {
           heartbeatOutgoing: 4000,
         });
         setStompClient(stomp);
-        stomp.activate();
 
         stomp.onConnect = () => {
-          console.log('WebSocket 연결이 열렸습니다.');
+          createToast({
+            message: '채팅 연결에 성공했습니다.',
+            option: {
+              duration: 3000,
+            },
+          });
+
           stomp.subscribe(`/roomList/${userId}`, frame => {
             try {
               const newMessage: Message = JSON.parse(frame.body);
@@ -183,8 +191,19 @@ function FloatingChattingBox() {
             }
           });
         };
+
+        stomp.onWebSocketError = () => {
+          createToast({
+            message: '연결에 실패했습니다. 다시 시도합니다.',
+            option: {
+              duration: 3000,
+            },
+          });
+        };
+
+        stomp.activate();
       } catch (error) {
-        console.error('채팅 룸 생성 중 오류가 발생했습니다:', error);
+        console.error('채팅 방 생성 중 오류가 발생했습니다:', error);
       }
     };
 
@@ -197,7 +216,7 @@ function FloatingChattingBox() {
         stompClient.deactivate();
       }
     };
-  }, [auth?.accessToken, userId]);
+  }, [auth?.accessToken]);
 
   useEffect(() => {
     if (data !== undefined) {

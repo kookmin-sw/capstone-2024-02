@@ -29,7 +29,7 @@ const styles = {
 
   title: styled.p`
     color: var(--Main-1, #e15637);
-    font-family: 'Baloo 2';
+    font-family: 'Pretendard';
     font-size: 1.875rem;
     font-style: normal;
     font-weight: 700;

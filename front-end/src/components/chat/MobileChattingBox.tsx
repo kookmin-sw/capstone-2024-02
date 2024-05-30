@@ -36,7 +36,7 @@ const styles = {
     background: var(--background, #f7f6f9);
   `,
   title: styled.span`
-    font-family: 'Baloo 2';
+    font-family: 'Pretendard';
     font-size: 1.575rem;
     font-style: normal;
     font-weight: 700;

@@ -321,6 +321,34 @@ export function SettingPage({ cardId }: { cardId: number }) {
   };
 
   useEffect(() => {
+    if (card.data == null) return;
+
+    const { smoking, mateAge, roomSharingOption, options } =
+      card.data.data.myFeatures;
+
+    const temp = JSON.parse(options) as string[];
+
+    setFeatures({
+      smoking,
+      mateAge,
+      roomSharingOption,
+      options:
+        temp == null
+          ? new Set()
+          : temp.reduce<Set<string>>((prev, curr) => {
+              try {
+                if (Array.isArray(JSON.parse(curr))) {
+                  setBudget(curr.slice(1, -1));
+                }
+              } catch {
+                prev.add(curr);
+              }
+              return prev;
+            }, new Set()),
+    });
+  }, [card.data]);
+
+  useEffect(() => {
     const originalPush = router.push.bind(router);
     const newPush = (
       href: string,

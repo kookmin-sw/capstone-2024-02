@@ -10,6 +10,7 @@ import { SenderMessage } from './SenderMessage';
 
 import { useAuthValue } from '@/features/auth';
 import { useEnterChatRoom, useExitChatRoom } from '@/features/chat';
+import { useToast } from '@/features/toast';
 
 const styles = {
   container: styled.div`
@@ -187,6 +188,8 @@ export function ChattingRoom({
   lastTime: string;
   onRoomClick: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
+  const { createToast } = useToast();
+
   const [messages, setMessages] = useState<Content[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [stompClient, setStompClient] = useState<Client | null>(null);
@@ -234,10 +237,15 @@ export function ChattingRoom({
           heartbeatOutgoing: 4000,
         });
         setStompClient(stomp);
-        stomp.activate();
 
         stomp.onConnect = () => {
-          console.log('WebSocket 연결이 열렸습니다.');
+          createToast({
+            message: `[${roomName}] 방 연결에 성공했습니다.`,
+            option: {
+              duration: 3000,
+            },
+          });
+
           stomp.subscribe(`/room/${roomId}`, frame => {
             try {
               setTime(new Date().toISOString());
@@ -249,6 +257,17 @@ export function ChattingRoom({
             }
           });
         };
+
+        stomp.onWebSocketError = () => {
+          createToast({
+            message: '연결에 실패했습니다. 다시 시도합니다.',
+            option: {
+              duration: 3000,
+            },
+          });
+        };
+
+        stomp.activate();
       } catch (error) {
         console.error('채팅 룸 생성 중 오류가 발생했습니다:', error);
       }
