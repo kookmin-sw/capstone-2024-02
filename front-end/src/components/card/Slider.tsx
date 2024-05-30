@@ -94,6 +94,7 @@ interface SliderProps {
   step: number;
   initialMin: number;
   initialMax: number;
+  isMySelf: boolean;
   onChange: (minValue: number, maxValue: number) => void;
 }
 
@@ -103,6 +104,7 @@ export function Slider({
   step,
   initialMin,
   initialMax,
+  isMySelf,
   onChange,
 }: SliderProps) {
   const inputMinRef = useRef<HTMLInputElement>(null);
@@ -163,7 +165,9 @@ export function Slider({
           max={max}
           step={step}
           value={minValue ?? min}
-          onChange={handleMinChange}
+          onChange={e => {
+            if (isMySelf) handleMinChange(e);
+          }}
         />
         <styles.slider
           type="range"
@@ -172,7 +176,9 @@ export function Slider({
           max={max}
           step={step}
           value={maxValue ?? max}
-          onChange={handleMaxChange}
+          onChange={e => {
+            if (isMySelf) handleMaxChange(e);
+          }}
         />
       </styles.sliderContainer>
     </styles.container>

@@ -21,29 +21,29 @@ const styles = {
     flex-direction: column;
     justify-content: center;
     align-items: flex-end;
-    gap: 0.25rem;
-    align-self: stretch;
   `,
   messageBody: styled.div`
     display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-  `,
-  message: styled.div`
-    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.625rem;
+    align-items: flex-end;
+    max-width: 20rem;
+    gap: 0.25rem;
+  `,
+  message: styled.p`
+    width: 100%;
+    max-width: 20rem;
     color: var(--White, #fff);
     font-family: 'Noto Sans KR';
     font-size: 0.875rem;
     font-style: normal;
     font-weight: 400;
     line-height: 1.25rem;
+    word-break: break-word;
+    white-space: pre-wrap;
   `,
   messageInfo: styled.div`
     display: flex;
-    margin-top: 2rem;
+    width: 3.5rem;
     align-items: flex-end;
     gap: 0.25rem;
     align-self: stretch;
@@ -96,9 +96,7 @@ export function SenderMessage({
         <styles.messageFrame>
           <styles.messageBody>
             <styles.message>{message} </styles.message>
-            <styles.messageInfo>
-              <styles.time>{getLocalTime(time, type)}</styles.time>
-            </styles.messageInfo>
+            <styles.time>{getLocalTime(time, type)}</styles.time>
           </styles.messageBody>
         </styles.messageFrame>
       </styles.right>

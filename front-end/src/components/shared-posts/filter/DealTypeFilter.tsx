@@ -22,7 +22,7 @@ const styles = {
     width: 20rem;
 
     @media (max-width: 768px) {
-      width: 10rem;
+      width: 13rem;
       gap: 1rem;
     }
   `,
@@ -32,6 +32,18 @@ const styles = {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+
+    .slider-value {
+      font-size: 0.95rem;
+      color: #808080;
+    }
+
+    @media (max-width: 768px) {
+      .slider-value {
+        font-size: 0.75rem;
+        color: #808080;
+      }
+    }
 
     h1 {
       color: #000;
@@ -48,7 +60,7 @@ const styles = {
 
     div {
       display: flex;
-      align-items: flex-start;
+      align-items: flex-end;
       gap: 0.5rem;
 
       button {
@@ -148,11 +160,21 @@ export function DealTypeFilter() {
         </div>
       </styles.item>
       <styles.item>
-        <h1>희망 월 분담금</h1>
+        <div>
+          <h1>희망 월 분담금</h1>
+          {filter.dealInfo.expectedFee != null ? (
+            <p className="slider-value">
+              {filter.dealInfo.expectedFee?.low}만원 ~{' '}
+              {filter.dealInfo.expectedFee?.high}만원
+            </p>
+          ) : (
+            <p className="slider-value">0만원 ~ 무제한</p>
+          )}
+        </div>
         <RangeSlider
           min={0}
-          max={3500000}
-          step={50000}
+          max={350}
+          step={5}
           onChange={({ low, high }) => {
             setFilter(prev => ({
               ...prev,

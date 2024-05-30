@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRecoilState } from 'recoil';
@@ -497,26 +498,6 @@ export function SharedPostPage({
       enabled: type === 'dormitory' && auth?.accessToken != null,
     });
 
-  useEffect(() => {
-    if (sharedPost?.data.address.roadAddress != null) {
-      fromAddrToCoord({ query: sharedPost?.data.address.roadAddress }).then(
-        res => {
-          const address = res.data.addresses.shift();
-          if (address != null && mapRef.current != null) {
-            const center = new naver.maps.LatLng(+address.y, +address.x);
-            setMap(
-              new naver.maps.Map(mapRef.current, {
-                center,
-                disableKineticPan: false,
-                scrollWheel: false,
-              }),
-            );
-          }
-        },
-      );
-    }
-  }, [sharedPost]);
-
   const [, setIsChatOpen] = useRecoilState(chatOpenState);
 
   const { mutate: chattingMutate } = useCreateChatRoom();
@@ -531,6 +512,26 @@ export function SharedPostPage({
     () => (type === 'hasRoom' ? sharedPost : dormitorySharedPost),
     [type, sharedPost, dormitorySharedPost],
   );
+
+  useEffect(() => {
+    if (post == null) return;
+
+    if (post.data.address.roadAddress != null) {
+      fromAddrToCoord({ query: post.data.address.roadAddress }).then(res => {
+        const address = res.shift();
+        if (address != null && mapRef.current != null) {
+          const center = new naver.maps.LatLng(+address.y, +address.x);
+          setMap(
+            new naver.maps.Map(mapRef.current, {
+              center,
+              disableKineticPan: false,
+              scrollWheel: false,
+            }),
+          );
+        }
+      });
+    }
+  }, [post]);
 
   const [showMateCard, setShowMateCard] = useState(false);
 
@@ -549,6 +550,17 @@ export function SharedPostPage({
       }
     | undefined
   >(post != null ? post.data.participants[0] : undefined);
+
+  useEffect(() => {
+    if (post?.data.participants.length === 0 && selected == null)
+      setSelected({
+        memberId: post.data.publisherAccount.memberId,
+        birthYear: post.data.publisherAccount.birthYear,
+        nickname: post.data.publisherAccount.nickname,
+        profileImageFileName: post.data.publisherAccount.profileImageFileName,
+        isScrapped: false,
+      });
+  });
 
   useEffect(() => {
     if (post == null || selected != null) return;
@@ -574,6 +586,22 @@ export function SharedPostPage({
     setFollowList(newFollowList);
   }, [post]);
 
+  const queryClient = useQueryClient();
+
+  const option = useMemo(() => {
+    if (post == null) return '없어요';
+    const value = JSON.parse(post.data.roomMateFeatures.options) as string[];
+    if (value == null) return '없어요';
+    return value
+      .map(elem =>
+        ['상', '평범보통', '천하태평'].includes(elem)
+          ? `깔끔 정도: ${elem}`
+          : elem,
+      )
+      .filter(elem => !Array.isArray(elem))
+      .join(', ');
+  }, [post]);
+
   if (isLoading || post == null) return <></>;
 
   return (
@@ -590,7 +618,18 @@ export function SharedPostPage({
                 hasBorder={false}
                 marked={post.data.isScrapped}
                 onToggle={() => {
-                  scrapPost(postId);
+                  scrapPost(postId, {
+                    onSuccess: () => {
+                      if (type === 'hasRoom')
+                        queryClient.invalidateQueries({
+                          queryKey: [`/shared/posts/studio/${postId}`],
+                        });
+                      else
+                        queryClient.invalidateQueries({
+                          queryKey: [`/shared/posts/dormitory/${postId}`],
+                        });
+                    },
+                  });
                 }}
                 color="black"
               />
@@ -743,8 +782,9 @@ export function SharedPostPage({
                   if (selected == null) return;
 
                   chattingMutate({
-                    roomName: selected.nickname,
+                    roomName: `${selected.nickname}, ${auth?.user?.name}`,
                     members: [selected.memberId],
+                    myID: auth?.user?.memberId ?? '',
                   });
 
                   setTimeout(() => {
@@ -764,8 +804,32 @@ export function SharedPostPage({
                       followList[selected.memberId] == null
                     )
                       return;
-                    if (followList[selected.memberId]) unfollow();
-                    else follow();
+                    if (followList[selected.memberId])
+                      unfollow(undefined, {
+                        onSuccess: () => {
+                          if (type === 'hasRoom')
+                            queryClient.invalidateQueries({
+                              queryKey: [`/shared/posts/studio/${postId}`],
+                            });
+                          else
+                            queryClient.invalidateQueries({
+                              queryKey: [`/shared/posts/dormitory/${postId}`],
+                            });
+                        },
+                      });
+                    else
+                      follow(undefined, {
+                        onSuccess: () => {
+                          if (type === 'hasRoom')
+                            queryClient.invalidateQueries({
+                              queryKey: [`/shared/posts/studio/${postId}`],
+                            });
+                          else
+                            queryClient.invalidateQueries({
+                              queryKey: [`/shared/posts/dormitory/${postId}`],
+                            });
+                        },
+                      });
                   }}
                   hasBorder
                   color="#888"
@@ -775,7 +839,7 @@ export function SharedPostPage({
           </styles.selectedMateContainer>
           <styles.mateCardContainer>
             <CardToggleButton
-              label="메이트카드"
+              label="메이트 카드"
               isOpen={showMateCard}
               onClick={() => {
                 setShowMateCard(prev => !prev);
@@ -797,11 +861,7 @@ export function SharedPostPage({
                 </div>
                 <div>
                   <h3>선택 옵션</h3>
-                  <p>
-                    {(
-                      JSON.parse(post.data.roomMateFeatures.options) as string[]
-                    ).join(', ')}
-                  </p>
+                  <p>{option}</p>
                 </div>
               </div>
             )}

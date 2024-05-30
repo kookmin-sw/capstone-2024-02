@@ -471,7 +471,7 @@ export function OptionSection({
                 <styles.cleanTestContainer>
                   <styles.cleanTestDescription
                     onClick={() => {
-                      toggleTestVisibility();
+                      if (isMySelf) toggleTestVisibility();
                     }}
                   >
                     {isTestVisible ? '결과 확인하기' : '테스트 하기'}
@@ -604,6 +604,7 @@ export function OptionSection({
                   step={5}
                   initialMin={initialMin}
                   initialMax={initialMax}
+                  isMySelf={isMySelf}
                   onChange={handleBudgetChange}
                 />
                 <styles.value>

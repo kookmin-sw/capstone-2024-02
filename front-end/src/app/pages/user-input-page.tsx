@@ -1,12 +1,13 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 
 import { VitalSection, OptionSection } from '@/components';
 import { useAuthValue, useUserData } from '@/features/auth';
 import { usePutUserCard } from '@/features/profile';
+import { useToast } from '@/features/toast';
 import Location from '@/public/option-img/location_on.svg';
 import Meeting from '@/public/option-img/meeting_room.svg';
 import Person from '@/public/option-img/person.svg';
@@ -15,17 +16,23 @@ import Visibility from '@/public/option-img/visibility.svg';
 const styles = {
   pageContainer: styled.div`
     display: flex;
-    width: 90rem;
-    height: 90rem;
-    padding: 2rem 10rem;
+    width: 100%;
+    padding: 0rem 2rem;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    gap: 2rem;
+    justify-content: center;
     background: #fff;
+    gap: 1rem;
+    padding: 2rem;
+  `,
+  contentContainer: styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   `,
   pageDescription: styled.p`
     align-self: stretch;
+    text-align: left;
     color: var(--Black, #35373a);
     font-family: 'Noto Sans KR';
     font-size: 2rem;
@@ -40,10 +47,12 @@ const styles = {
   `,
   miniCardContainer: styled.div`
     display: flex;
-    width: 22.5rem;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.625rem;
+    min-width: 20rem;
+    max-width: 20rem;
+    gap: 1rem;
+    align-self: stretch;
   `,
   cardNameSection: styled.div`
     display: flex;
@@ -90,7 +99,6 @@ const styles = {
   `,
   miniCardKeywordsContainer: styled.ul`
     display: flex;
-    width: 18.375rem;
     flex-direction: column;
     align-items: flex-start;
     gap: 1.2rem;
@@ -160,7 +168,6 @@ const styles = {
   `,
   checkSection: styled.div`
     display: flex;
-    width: 50rem;
     padding: 2rem;
     flex-direction: column;
     align-items: flex-start;
@@ -171,7 +178,6 @@ const styles = {
   `,
   checkContainer: styled.div<CardActiveProps>`
     display: flex;
-    width: 50rem;
     padding: 2rem;
     flex-direction: column;
     align-items: flex-start;
@@ -186,7 +192,6 @@ const styles = {
         : 'none'};
   `,
   horizontalLine: styled.div`
-    width: 43.75rem;
     height: 0.0625rem;
     background: var(--Gray-9, #d3d0d7);
   `,
@@ -282,6 +287,8 @@ export function UserInputPage() {
   const { data } = useUserData(auth?.accessToken !== undefined);
   const [user, setUserData] = useState<UserProps | null>(null);
 
+  const router = useRouter();
+
   useEffect(() => {
     if (data !== undefined) {
       const { name, gender, birthYear, memberId, myCardId, mateCardId } = data;
@@ -312,7 +319,18 @@ export function UserInputPage() {
 
   const [mateAge, setMateAge] = useState<number | undefined>(0);
 
+  const { createToast } = useToast();
+
   const handleButtonClick = () => {
+    if (locationInput == null || locationInput === '') {
+      createToast({
+        message: '필수 항목을 입력하셔야 합니다.',
+        option: {
+          duration: 3000,
+        },
+      });
+      return;
+    }
     const location = locationInput ?? '';
     const myOptions: string[] = [mbti ?? '', major ?? '', budget ?? ''];
     myFeatures?.options?.forEach(option => myOptions.push(option));
@@ -347,6 +365,7 @@ export function UserInputPage() {
         location,
         features: mutateMateFeatures,
       });
+      router.replace('/');
     } catch (error) {
       console.error(error);
     }
@@ -367,7 +386,7 @@ export function UserInputPage() {
     case 0:
       ageString = '동갑';
       break;
-    case 11:
+    case undefined:
       ageString = '상관없어요';
       break;
     default:
@@ -376,167 +395,173 @@ export function UserInputPage() {
 
   return (
     <styles.pageContainer>
-      <styles.pageDescription>
-        {user?.name} 님과 희망 메이트에 대해서 알려주세요
-      </styles.pageDescription>
-      <styles.cardContainer>
-        <styles.miniCardContainer>
-          <styles.cardNameSection>
-            <styles.miniCard
-              onClick={handleMyCardClick}
-              $active={activeContainer === 'my'}
-            >
-              <styles.miniCardName $active={activeContainer === 'my'}>
-                내카드
-              </styles.miniCardName>
-              <styles.miniCardKeywordsContainer>
-                <styles.miniCardList>
-                  <styles.miniCardPerson $active={activeContainer === 'my'} />
-                  <styles.miniCardText $active={activeContainer === 'my'}>
-                    {user?.gender === 'MALE' ? '남성' : '여성'} ·{' '}
-                    {user?.birthYear?.slice(2)}년생 · {myFeatures?.smoking}
-                  </styles.miniCardText>
-                </styles.miniCardList>
-                <styles.miniCardList>
-                  <styles.miniCardLocation $active={activeContainer === 'my'} />
-                  <styles.miniCardText $active={activeContainer === 'my'}>
-                    {locationInput}
-                  </styles.miniCardText>
-                </styles.miniCardList>
-                <styles.miniCardList>
-                  <styles.miniCardMeeting $active={activeContainer === 'my'} />
-                  <styles.miniCardText $active={activeContainer === 'my'}>
-                    메이트와 {myFeatures?.roomSharingOption}
-                  </styles.miniCardText>
-                </styles.miniCardList>
-                <styles.miniCardList>
-                  <styles.miniCardVisibility
-                    $active={activeContainer === 'my'}
-                  />
-                  <styles.miniCardText $active={activeContainer === 'my'}>
-                    {myFeatures?.options != null &&
-                    myFeatures.options.has('아침형')
-                      ? '아침형'
-                      : null}
-                    {myFeatures?.options != null &&
-                    myFeatures.options.has('올빼미형')
-                      ? '올빼미형'
-                      : null}
-                  </styles.miniCardText>
-                </styles.miniCardList>
-              </styles.miniCardKeywordsContainer>
-            </styles.miniCard>
-            <styles.miniCard
-              onClick={handleMateCardClick}
-              $active={activeContainer === 'mate'}
-            >
-              <styles.miniCardName $active={activeContainer === 'mate'}>
-                메이트카드
-              </styles.miniCardName>
-              <styles.miniCardKeywordsContainer>
-                <styles.miniCardList>
-                  <styles.miniCardPerson $active={activeContainer === 'mate'} />
-                  <styles.miniCardText $active={activeContainer === 'mate'}>
-                    {user?.gender === 'MALE' ? '남성' : '여성'} · {ageString} ·{' '}
-                    {mateFeatures?.smoking}
-                  </styles.miniCardText>
-                </styles.miniCardList>
-                <styles.miniCardList>
-                  <styles.miniCardLocation
-                    $active={activeContainer === 'mate'}
-                  />
-                  <styles.miniCardText $active={activeContainer === 'mate'}>
-                    {locationInput}
-                  </styles.miniCardText>
-                </styles.miniCardList>
-                <styles.miniCardList>
-                  <styles.miniCardMeeting
-                    $active={activeContainer === 'mate'}
-                  />
-                  <styles.miniCardText $active={activeContainer === 'mate'}>
-                    메이트와 {mateFeatures?.roomSharingOption}
-                  </styles.miniCardText>
-                </styles.miniCardList>
-                <styles.miniCardList>
-                  <styles.miniCardVisibility
-                    $active={activeContainer === 'mate'}
-                  />
-                  <styles.miniCardText $active={activeContainer === 'mate'}>
-                    {mateFeatures?.options != null &&
-                    mateFeatures.options.has('아침형')
-                      ? '아침형'
-                      : null}
-                    {mateFeatures?.options != null &&
-                    mateFeatures.options.has('올빼미형')
-                      ? '올빼미형'
-                      : null}
-                  </styles.miniCardText>
-                </styles.miniCardList>
-              </styles.miniCardKeywordsContainer>
-            </styles.miniCard>
-          </styles.cardNameSection>
-        </styles.miniCardContainer>
-        <styles.checkContainer $active={activeContainer === 'my'}>
-          <VitalSection
-            gender={user?.gender}
-            birthYear={user?.birthYear}
-            location={undefined}
-            vitalFeatures={undefined}
-            onFeatureChange={handleFeatureChange}
-            onLocationChange={setLocation}
-            onMateAgeChange={() => {}}
-            isMySelf
-            type="myCard"
-          />
-          <styles.horizontalLine />
-          <OptionSection
-            mbti={undefined}
-            major={undefined}
-            budget={undefined}
-            optionFeatures={undefined}
-            onFeatureChange={handleOptionClick}
-            onMbtiChange={setMbti}
-            onMajorChange={setMajor}
-            onBudgetChange={setBudget}
-            isMySelf
-            type="myCard"
-          />
-        </styles.checkContainer>
-        <styles.checkContainer $active={activeContainer === 'mate'}>
-          <VitalSection
-            gender={user?.gender}
-            birthYear={undefined}
-            location={locationInput}
-            vitalFeatures={undefined}
-            onFeatureChange={handleMateFeatureChange}
-            onLocationChange={setLocation}
-            onMateAgeChange={setMateAge}
-            isMySelf
-            type="mateCard"
-          />
-          <styles.horizontalLine />
-          <OptionSection
-            mbti={undefined}
-            major={undefined}
-            budget={undefined}
-            optionFeatures={undefined}
-            onFeatureChange={handleMateOptionClick}
-            onMbtiChange={setMateMbti}
-            onMajorChange={setMateMajor}
-            onBudgetChange={setMateBudget}
-            isMySelf
-            type="mateCard"
-          />
-        </styles.checkContainer>
-      </styles.cardContainer>
-      <Link href="/">
-        <styles.mateButtonContainer onClick={handleButtonClick}>
-          <styles.mateButtonDescription>
-            나의 메이트 확인하기
-          </styles.mateButtonDescription>
-          <styles.mateButtonIcon src="/chevron-right.svg" />
-        </styles.mateButtonContainer>
-      </Link>
+      <styles.contentContainer>
+        <styles.pageDescription>
+          {user?.name} 님과 희망 메이트에 대해서 알려주세요
+        </styles.pageDescription>
+        <styles.cardContainer>
+          <styles.miniCardContainer>
+            <styles.cardNameSection>
+              <styles.miniCard
+                onClick={handleMyCardClick}
+                $active={activeContainer === 'my'}
+              >
+                <styles.miniCardName $active={activeContainer === 'my'}>
+                  내 카드
+                </styles.miniCardName>
+                <styles.miniCardKeywordsContainer>
+                  <styles.miniCardList>
+                    <styles.miniCardPerson $active={activeContainer === 'my'} />
+                    <styles.miniCardText $active={activeContainer === 'my'}>
+                      {user?.gender === 'MALE' ? '남성' : '여성'} ·{' '}
+                      {user?.birthYear?.slice(2)}년생 · {myFeatures?.smoking}
+                    </styles.miniCardText>
+                  </styles.miniCardList>
+                  <styles.miniCardList>
+                    <styles.miniCardLocation
+                      $active={activeContainer === 'my'}
+                    />
+                    <styles.miniCardText $active={activeContainer === 'my'}>
+                      {locationInput}
+                    </styles.miniCardText>
+                  </styles.miniCardList>
+                  <styles.miniCardList>
+                    <styles.miniCardMeeting
+                      $active={activeContainer === 'my'}
+                    />
+                    <styles.miniCardText $active={activeContainer === 'my'}>
+                      메이트와 {myFeatures?.roomSharingOption}
+                    </styles.miniCardText>
+                  </styles.miniCardList>
+                  <styles.miniCardList>
+                    <styles.miniCardVisibility
+                      $active={activeContainer === 'my'}
+                    />
+                    <styles.miniCardText $active={activeContainer === 'my'}>
+                      {myFeatures?.options != null &&
+                      myFeatures.options.has('아침형')
+                        ? '아침형'
+                        : null}
+                      {myFeatures?.options != null &&
+                      myFeatures.options.has('올빼미형')
+                        ? '올빼미형'
+                        : null}
+                    </styles.miniCardText>
+                  </styles.miniCardList>
+                </styles.miniCardKeywordsContainer>
+              </styles.miniCard>
+              <styles.miniCard
+                onClick={handleMateCardClick}
+                $active={activeContainer === 'mate'}
+              >
+                <styles.miniCardName $active={activeContainer === 'mate'}>
+                  메이트 카드
+                </styles.miniCardName>
+                <styles.miniCardKeywordsContainer>
+                  <styles.miniCardList>
+                    <styles.miniCardPerson
+                      $active={activeContainer === 'mate'}
+                    />
+                    <styles.miniCardText $active={activeContainer === 'mate'}>
+                      {user?.gender === 'MALE' ? '남성' : '여성'} · {ageString}{' '}
+                      · {mateFeatures?.smoking}
+                    </styles.miniCardText>
+                  </styles.miniCardList>
+                  <styles.miniCardList>
+                    <styles.miniCardLocation
+                      $active={activeContainer === 'mate'}
+                    />
+                    <styles.miniCardText $active={activeContainer === 'mate'}>
+                      {locationInput}
+                    </styles.miniCardText>
+                  </styles.miniCardList>
+                  <styles.miniCardList>
+                    <styles.miniCardMeeting
+                      $active={activeContainer === 'mate'}
+                    />
+                    <styles.miniCardText $active={activeContainer === 'mate'}>
+                      메이트와 {mateFeatures?.roomSharingOption}
+                    </styles.miniCardText>
+                  </styles.miniCardList>
+                  <styles.miniCardList>
+                    <styles.miniCardVisibility
+                      $active={activeContainer === 'mate'}
+                    />
+                    <styles.miniCardText $active={activeContainer === 'mate'}>
+                      {mateFeatures?.options != null &&
+                      mateFeatures.options.has('아침형')
+                        ? '아침형'
+                        : null}
+                      {mateFeatures?.options != null &&
+                      mateFeatures.options.has('올빼미형')
+                        ? '올빼미형'
+                        : null}
+                    </styles.miniCardText>
+                  </styles.miniCardList>
+                </styles.miniCardKeywordsContainer>
+              </styles.miniCard>
+            </styles.cardNameSection>
+          </styles.miniCardContainer>
+          <styles.checkContainer $active={activeContainer === 'my'}>
+            <VitalSection
+              gender={user?.gender}
+              birthYear={user?.birthYear}
+              location={undefined}
+              vitalFeatures={undefined}
+              onFeatureChange={handleFeatureChange}
+              onLocationChange={setLocation}
+              onMateAgeChange={() => {}}
+              isMySelf
+              type="myCard"
+            />
+            <styles.horizontalLine />
+            <OptionSection
+              mbti={undefined}
+              major={undefined}
+              budget={undefined}
+              optionFeatures={undefined}
+              onFeatureChange={handleOptionClick}
+              onMbtiChange={setMbti}
+              onMajorChange={setMajor}
+              onBudgetChange={setBudget}
+              isMySelf
+              type="myCard"
+            />
+          </styles.checkContainer>
+          <styles.checkContainer $active={activeContainer === 'mate'}>
+            <VitalSection
+              gender={user?.gender}
+              birthYear={undefined}
+              location={locationInput}
+              vitalFeatures={undefined}
+              onFeatureChange={handleMateFeatureChange}
+              onLocationChange={setLocation}
+              onMateAgeChange={setMateAge}
+              isMySelf
+              type="mateCard"
+            />
+            <styles.horizontalLine />
+            <OptionSection
+              mbti={undefined}
+              major={undefined}
+              budget={undefined}
+              optionFeatures={undefined}
+              onFeatureChange={handleMateOptionClick}
+              onMbtiChange={setMateMbti}
+              onMajorChange={setMateMajor}
+              onBudgetChange={setMateBudget}
+              isMySelf
+              type="mateCard"
+            />
+          </styles.checkContainer>
+        </styles.cardContainer>
+      </styles.contentContainer>
+      <styles.mateButtonContainer onClick={handleButtonClick}>
+        <styles.mateButtonDescription>
+          나의 메이트 확인하기
+        </styles.mateButtonDescription>
+        <styles.mateButtonIcon src="/chevron-right.svg" />
+      </styles.mateButtonContainer>
     </styles.pageContainer>
   );
 }

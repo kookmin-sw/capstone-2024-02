@@ -189,12 +189,12 @@ function FloatingChattingBox() {
     };
 
     if (auth?.accessToken != null) {
-      void initializeChat();
+      initializeChat();
     }
 
     return () => {
       if (stompClient != null && stompClient.connected) {
-        void stompClient.deactivate();
+        stompClient.deactivate();
       }
     };
   }, [auth?.accessToken, userId]);
@@ -246,10 +246,6 @@ function FloatingChattingBox() {
     }
   }, [message, isChatRoomOpen]);
 
-  // const roomName = 'test2';
-  // const members = ['naver_hW_CDCYdU3NNTQWq_TV_MkpldnMZI6fOD1mnPo-V1NE'];
-  // const { mutate: chattingCreate } = useCreateChatRoom(roomName, members);
-
   return (
     <>
       <styles.container>
@@ -262,20 +258,9 @@ function FloatingChattingBox() {
               chat
             </styles.title>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <styles.searchInput />
-            <styles.searchButton src="/icon-search.svg" />
-          </div>
         </styles.chattingHeader>
 
         <styles.chattingSection>
-          {/* <button
-            onClick={() => {
-              chattingCreate();
-            }}
-          >
-            생성
-          </button> */}
           {chatRooms.map((room, index) => (
             <ChattingList
               key={index}

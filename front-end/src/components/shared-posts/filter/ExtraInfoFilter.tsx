@@ -10,7 +10,7 @@ import {
 const styles = {
   container: styled.div`
     display: flex;
-    width: 31.25rem;
+    width: 20rem;
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;

@@ -2,11 +2,15 @@
 
 import axios from 'axios';
 import Link from 'next/link';
-import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef } from 'react';
+import { atom, useRecoilState, useRecoilValue } from 'recoil';
 import styled from 'styled-components';
 
 import { Bookmark } from '@/components';
 import { useAuthValue, useUserData } from '@/features/auth';
+import { chatOpenState, useCreateChatRoom } from '@/features/chat';
+import { getImageURL, putImage } from '@/features/image';
 import {
   type GetFollowingListDTO,
   useCertification,
@@ -14,7 +18,9 @@ import {
   useGetCode,
   useUnfollowUser,
   useUserProfile,
+  useProfileSetting,
 } from '@/features/profile';
+import { convertPhoneNumber } from '@/shared';
 
 const styles = {
   container: styled.div`
@@ -70,7 +76,7 @@ const styles = {
     display: inline-flex;
     width: 100%;
     align-items: flex-start;
-    gap: 2rem;
+    gap: 1rem;
   `,
   userName: styled.div`
     color: #000;
@@ -290,6 +296,69 @@ const styles = {
     font-weight: 400;
     line-height: normal;
   `,
+
+  chattingButton: styled.button`
+    all: unset;
+    cursor: pointer;
+
+    display: flex;
+    padding: 0.5rem 1.5rem;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+    align-self: stretch;
+
+    border-radius: 8px;
+    background: var(--Black, #35373a);
+
+    color: #fff;
+    font-family: Pretendard;
+    font-size: 1.125rem;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 1.5rem;
+  `,
+
+  postContainer: styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    align-self: stretch;
+
+    h1 {
+      color: #000;
+      font-family: 'Noto Sans KR';
+      font-size: 1.25rem;
+      font-style: normal;
+      font-weight: 700;
+      line-height: normal;
+    }
+  `,
+
+  posts: styled.div`
+    display: flex;
+    padding: 2rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    align-self: stretch;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.25);
+  `,
+
+  postName: styled.p`
+    color: #000;
+
+    font-family: 'Noto Sans KR';
+    font-size: 0.875rem;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+
+    cursor: pointer;
+  `,
 };
 
 interface UserProfileInfoProps {
@@ -300,6 +369,10 @@ interface UserProfileInfoProps {
   memberId: string;
   isMySelf: boolean;
   certification?: boolean;
+  myID: string;
+  myName: string;
+  recommendOn: boolean;
+  onProfileImageChanged: () => void;
 }
 
 function UserInfo({
@@ -310,14 +383,28 @@ function UserInfo({
   memberId,
   isMySelf,
   certification,
+  myID,
+  myName,
+  recommendOn,
+  onProfileImageChanged,
 }: UserProfileInfoProps) {
-  const [isChecked, setIsChecked] = useState(false);
+  const [isChecked, setIsChecked] = useState(recommendOn);
 
-  const [followList, setFollowList] = useState<Record<string, string[]>>();
+  useEffect(() => {
+    setIsChecked(recommendOn);
+  }, [recommendOn]);
+
+  const [followList, setFollowList] = useState<
+    Array<{
+      memberId: string;
+      nickname: string;
+      profileImage: string;
+    }>
+  >();
   const [isMarked, setIsMarked] = useState(false);
 
   useEffect(() => {
-    if (followList?.[memberId] != null) {
+    if (followList?.find(elem => elem.memberId === memberId) != null) {
       setIsMarked(true);
     } else setIsMarked(false);
   }, [followList]);
@@ -338,24 +425,68 @@ function UserInfo({
     })();
   }, [setIsMarked]);
 
+  const { mutate: settingRecommend } = useProfileSetting();
+
   const toggleSwitch = () => {
+    settingRecommend(!isChecked);
     setIsChecked(!isChecked);
   };
 
   const { mutate: follow } = useFollowUser(memberId);
   const { mutate: unfollow } = useUnfollowUser(memberId);
 
+  const [, setIsChatOpen] = useRecoilState(chatOpenState);
+
+  const { mutate: chattingMutate } = useCreateChatRoom();
+
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const handleImageInputClicked = () => {
+    if (isMySelf) imageInputRef.current?.click();
+  };
+
+  const changeProfileImage = async (file: File) => {
+    try {
+      const result = await getImageURL(`.${file.type.split('/')[1]}`);
+
+      await putImage(result.data.data.url, file);
+
+      await axios.patch('/maru-api/profile/image', result.data.data.fileName, {
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+      });
+    } catch (error) {
+      console.error(error);
+    }
+    onProfileImageChanged();
+  };
+
   return (
     <styles.userProfileContainer>
       <styles.userProfileWithoutInfo>
-        <styles.userPicContainer>
+        <styles.userPicContainer onClick={handleImageInputClicked}>
+          <input
+            type="file"
+            ref={imageInputRef}
+            onChange={e => {
+              const file = e.target.files?.[0];
+              if (file != null) {
+                changeProfileImage(file);
+              }
+            }}
+            style={{ display: 'none' }}
+          />
           <styles.userPic src={src} alt="User Profile Pic" />
         </styles.userPicContainer>
-        <Auth certification={certification} />
+        <Auth certification={certification} isMySelf={isMySelf} />
       </styles.userProfileWithoutInfo>
       <styles.userInfoContainer>
         <styles.userName>{name}</styles.userName>
-        <ToggleSwitch isChecked={isChecked} onToggle={toggleSwitch} />
+        <ToggleSwitch
+          isChecked={isChecked}
+          onToggle={toggleSwitch}
+          isMySelf={isMySelf}
+        />
         <styles.userDetailedContainer>
           <div
             style={{
@@ -364,20 +495,40 @@ function UserInfo({
               gap: '0.25rem',
             }}
           >
-            <styles.userDetailedInfo>{phoneNum}</styles.userDetailedInfo>
+            <styles.userDetailedInfo>
+              {phoneNum != null && convertPhoneNumber(phoneNum)}
+            </styles.userDetailedInfo>
             <styles.userDetailedInfo>{email}</styles.userDetailedInfo>
           </div>
           {!isMySelf && (
-            <Bookmark
-              marked={isMarked}
-              onToggle={() => {
-                if (isMarked) unfollow();
-                else follow();
-                setIsMarked(prev => !prev);
-              }}
-              hasBorder
-              color="#888"
-            />
+            <>
+              <styles.chattingButton
+                onClick={() => {
+                  if (name != null)
+                    chattingMutate({
+                      roomName: `${name}, ${myName}`,
+                      members: [memberId],
+                      myID,
+                    });
+
+                  setTimeout(() => {
+                    setIsChatOpen(true);
+                  }, 200);
+                }}
+              >
+                채팅
+              </styles.chattingButton>
+              <Bookmark
+                marked={isMarked}
+                onToggle={() => {
+                  if (isMarked) unfollow();
+                  else follow();
+                  setIsMarked(prev => !prev);
+                }}
+                hasBorder
+                color="#888"
+              />
+            </>
           )}
         </styles.userDetailedContainer>
       </styles.userInfoContainer>
@@ -388,16 +539,19 @@ function UserInfo({
 interface ToggleSwitchProps {
   isChecked: boolean;
   onToggle: () => void;
+  isMySelf: boolean;
 }
 
-function ToggleSwitch({ isChecked, onToggle }: ToggleSwitchProps) {
+function ToggleSwitch({ isChecked, onToggle, isMySelf }: ToggleSwitchProps) {
   return (
     <styles.switchContainer>
       <styles.switchWrapper>
         <styles.switchInput
           type="checkbox"
           checked={isChecked}
-          onChange={onToggle}
+          onChange={() => {
+            if (isMySelf) onToggle();
+          }}
         />
         <styles.slider
           style={{
@@ -416,7 +570,13 @@ function ToggleSwitch({ isChecked, onToggle }: ToggleSwitchProps) {
   );
 }
 
-function Auth({ certification }: { certification?: boolean }) {
+function Auth({
+  certification,
+  isMySelf,
+}: {
+  certification?: boolean;
+  isMySelf: boolean;
+}) {
   const [univName, setUnivName] = useState<string>();
   const [email, setEmail] = useState<string>();
   const [code, setCode] = useState<number>();
@@ -442,7 +602,7 @@ function Auth({ certification }: { certification?: boolean }) {
     <>
       <styles.authContainer
         onClick={() => {
-          setIsCertificationClick(prev => !prev);
+          if (isMySelf) setIsCertificationClick(prev => !prev);
         }}
       >
         <styles.authCheckImg
@@ -553,6 +713,27 @@ function Card({
   );
 }
 
+function Posts({ posts }: { posts?: PostsProps[] }) {
+  return (
+    <styles.postContainer>
+      <h1>게시글</h1>
+      <styles.posts>
+        {posts?.length === 0 && (
+          <styles.postName>게시글이 없습니다.</styles.postName>
+        )}
+        {posts?.map(post => (
+          <Link
+            key={post.id}
+            href={`/shared/${post.type === 'studio' ? 'room' : 'dormitory'}/${post.id}`}
+          >
+            <styles.postName>{post.title}</styles.postName>
+          </Link>
+        ))}
+      </styles.posts>
+    </styles.postContainer>
+  );
+}
+
 interface UserProps {
   memberId: string;
   email: string;
@@ -566,21 +747,40 @@ interface UserProps {
   univCertified: boolean;
 }
 
+interface PostsProps {
+  id: number;
+  title: string;
+  type: string;
+  createdAt: string;
+  modifiedAt: string;
+}
+
 export function MobileProfilePage({ memberId }: { memberId: string }) {
   const auth = useAuthValue();
   const { data } = useUserData(auth?.accessToken !== undefined);
+  const router = useRouter();
 
   const authId = data?.memberId;
 
   const [userData, setUserData] = useState<UserProps | null>(null);
   const [isMySelf, setIsMySelf] = useState(false);
 
-  const { mutate: mutateProfile, data: profileData } = useUserProfile(memberId);
+  const {
+    mutate: mutateProfile,
+    data: profileData,
+    error,
+  } = useUserProfile(memberId);
   const [profileImg, setProfileImg] = useState<string>('');
+  const [posts, setPosts] = useState<PostsProps[]>();
+  const [recommendOn, setRecommendOn] = useState(false);
+
+  useEffect(() => {
+    if (error != null) router.replace('/error');
+  }, [error]);
 
   useEffect(() => {
     mutateProfile();
-  }, [auth]);
+  }, [auth, mutateProfile]);
 
   useEffect(() => {
     if (profileData?.data !== undefined) {
@@ -609,6 +809,8 @@ export function MobileProfilePage({ memberId }: { memberId: string }) {
         univCertified,
       });
       setProfileImg(profileData.data.profileImage);
+      setPosts(profileData.data.posts);
+      setRecommendOn(profileData.data.recommendOn);
       if (authId === memberId) {
         setIsMySelf(true);
       }
@@ -625,6 +827,12 @@ export function MobileProfilePage({ memberId }: { memberId: string }) {
         memberId={memberId}
         isMySelf={isMySelf}
         certification={userData?.univCertified}
+        myID={authId ?? ''}
+        myName={auth?.user?.name ?? ''}
+        recommendOn={recommendOn}
+        onProfileImageChanged={() => {
+          mutateProfile();
+        }}
       />
       <Card
         name={userData?.name}
@@ -633,6 +841,7 @@ export function MobileProfilePage({ memberId }: { memberId: string }) {
         mateCardId={userData?.mateCardId}
         isMySelf={isMySelf}
       />
+      <Posts posts={posts} />
     </styles.container>
   );
 }

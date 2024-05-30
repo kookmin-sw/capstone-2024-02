@@ -61,7 +61,7 @@ interface UserInputProps {
   ) => void;
   onOptionChange: (option: string) => void;
   onLocationChange: React.Dispatch<React.SetStateAction<string | undefined>>;
-  onMateAgeChange: React.Dispatch<React.SetStateAction<number | undefined>>;
+  onMateAgeChange: (mateAge?: number) => void;
   onMbtiChange: React.Dispatch<React.SetStateAction<string | undefined>>;
   onMajorChange: React.Dispatch<React.SetStateAction<string | undefined>>;
   onBudgetChange: React.Dispatch<React.SetStateAction<string | undefined>>;

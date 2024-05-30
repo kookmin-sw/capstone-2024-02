@@ -6,3 +6,4 @@ export * from './setting-page';
 export * from './user-input-page';
 export * from './writing-post-page';
 export * from './shared-posts-page';
+export * from './error-page';

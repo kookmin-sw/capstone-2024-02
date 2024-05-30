@@ -12,6 +12,10 @@ export const sharedPostPropState = atom<{
   title: string;
   content: string;
   images: ImageFile[];
+  mates: Record<
+    string,
+    { memberId: string; nickname: string; profileImage: string }
+  >;
   address?: NaverAddress;
   mateLimit: number;
   expectedMonthlyFee: number;
@@ -38,6 +42,7 @@ export const sharedPostPropState = atom<{
     title: '',
     content: '',
     images: [],
+    mates: {},
     address: undefined,
     mateLimit: 0,
     expectedMonthlyFee: 0,

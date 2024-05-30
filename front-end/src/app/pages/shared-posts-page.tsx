@@ -19,18 +19,21 @@ import {
 import { useAuthValue } from '@/features/auth';
 import { useRecommendMates } from '@/features/profile';
 import {
+  getDormitorySharedPosts,
+  getSharedPosts,
   useDormitorySharedPosts,
   usePaging,
   useSharedPosts,
-  type GetDormitorySharedPostsDTO,
-  type GetSharedPostsDTO,
 } from '@/features/shared';
+import { MagnifyingGlass } from 'react-loader-spinner';
+import { useQueryClient } from '@tanstack/react-query';
 
 const styles = {
   container: styled.div`
-    padding-top: 4.12rem;
-    padding-inline: 16rem;
+    padding-block: 4.12rem;
+    padding-inline: 10rem;
     width: 100%;
+    max-width: 1440px;
     height: fit-content;
 
     display: flex;
@@ -69,7 +72,6 @@ const styles = {
   posts: styled.div`
     display: flex;
     flex-direction: column;
-    padding-inline: 2rem;
     gap: 2rem;
   `,
   CircularButton: styled(CircularButton)`
@@ -108,22 +110,38 @@ const styles = {
     }
   `,
   cards: styled.div`
-    padding-left: 2.62rem;
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    align-content: center;
+    gap: 2rem;
+    align-self: stretch;
     flex-wrap: wrap;
-    gap: 2rem 2.62rem;
+  `,
+  noRecommendation: styled.div`
+    font-family: 'Noto Sans KR';
+    font-size: 1.25rem;
+    font-style: normal;
+    font-weight: 500;
+
+    display: flex;
+    width: 100%;
+    justify-content: center;
+  `,
+  loadingIndicatorContainer: styled.div`
+    display: flex;
+    width: 100%;
+    justify-content: center;
   `,
 };
 
 export function SharedPostsPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const auth = useAuthValue();
   const [selected, setSelected] = useState<SharedPostsType>('hasRoom');
   const [totalPageCount, setTotalPageCount] = useState(0);
-  const [prevSharedPosts, setPrevSharedPosts] = useState<
-    GetSharedPostsDTO | GetDormitorySharedPostsDTO | null
-  >(null);
 
   const { filter, derivedFilter, reset: resetFilter } = useSharedPostsFilter();
 
@@ -141,14 +159,19 @@ export function SharedPostsPage() {
     sliceSize: 10,
   });
 
-  const { data: sharedPosts } = useSharedPosts({
-    filter: derivedFilter,
-    cardOption: filter.cardType ?? 'my',
-    enabled: auth?.accessToken != null && selected === 'hasRoom',
-    page: page - 1,
-  });
+  const { isLoading: isSharedPostsLoading, data: sharedPosts } = useSharedPosts(
+    {
+      filter: derivedFilter,
+      cardOption: filter.cardType ?? 'my',
+      enabled: auth?.accessToken != null && selected === 'hasRoom',
+      page: page - 1,
+    },
+  );
 
-  const { data: dormitorySharedPosts } = useDormitorySharedPosts({
+  const {
+    isLoading: isDormitorySharedPostsLoading,
+    data: dormitorySharedPosts,
+  } = useDormitorySharedPosts({
     filter: derivedFilter,
     cardOption: filter.cardType ?? 'my',
     enabled: auth?.accessToken != null && selected === 'dormitory',
@@ -160,10 +183,11 @@ export function SharedPostsPage() {
     [selected, sharedPosts, dormitorySharedPosts],
   );
 
-  const { data: recommendationMates } = useRecommendMates({
-    enabled: auth?.accessToken != null && selected === 'homeless',
-    cardOption: filter.cardType ?? 'my',
-  });
+  const { isLoading: isMatesLoading, data: recommendationMates } =
+    useRecommendMates({
+      enabled: auth?.accessToken != null && selected === 'homeless',
+      cardOption: filter.cardType ?? 'my',
+    });
 
   useEffect(() => {
     resetFilter();
@@ -174,13 +198,140 @@ export function SharedPostsPage() {
 
   useEffect(() => {
     if (selected === 'hasRoom' && sharedPosts != null) {
-      setTotalPageCount(sharedPosts.data.totalPages);
-      setPrevSharedPosts(null);
+      setTotalPageCount(sharedPosts.totalPages);
     } else if (selected === 'dormitory' && dormitorySharedPosts != null) {
-      setTotalPageCount(dormitorySharedPosts.data.totalPages);
-      setPrevSharedPosts(null);
+      setTotalPageCount(dormitorySharedPosts.totalPages);
     }
   }, [selected, dormitorySharedPosts, sharedPosts]);
+
+  useEffect(() => {
+    if (!isLastPage) {
+      if (selected === 'hasRoom') {
+        queryClient.prefetchQuery({
+          queryKey: [
+            '/shared/posts/studio',
+            {
+              cardOption: filter.cardType ?? 'my',
+              debounceFilter: derivedFilter,
+              page,
+            },
+          ],
+          queryFn: async () =>
+            await getSharedPosts({
+              cardOption: filter.cardType ?? 'my',
+              filter: derivedFilter,
+              page,
+            }).then(res => res),
+        });
+      } else if (selected === 'dormitory') {
+        queryClient.prefetchQuery({
+          queryKey: [
+            '/shared/posts/dormitory',
+            {
+              cardOption: filter.cardType ?? 'my',
+              debounceFilter: derivedFilter,
+              page,
+            },
+          ],
+          queryFn: async () =>
+            await getDormitorySharedPosts({
+              cardOption: filter.cardType ?? 'my',
+              filter: derivedFilter,
+              page,
+            }).then(res => res),
+        });
+      }
+    }
+  }, [page, selected, filter.cardType, derivedFilter, queryClient, isLastPage]);
+
+  const renderPosts = useMemo(() => {
+    if (isSharedPostsLoading || isDormitorySharedPostsLoading) {
+      return (
+        <styles.loadingIndicatorContainer>
+          <MagnifyingGlass
+            visible={true}
+            height="80"
+            width="80"
+            ariaLabel="magnifying-glass-loading"
+            wrapperStyle={{}}
+            wrapperClass="magnifying-glass-wrapper"
+            glassColor="#c0efff"
+            color="#e15b64"
+          />
+        </styles.loadingIndicatorContainer>
+      );
+    }
+
+    if (posts == null || posts.data.length === 0) {
+      return (
+        <styles.noRecommendation>
+          <p>추천되는 게시글이 없습니다.</p>
+        </styles.noRecommendation>
+      );
+    }
+
+    return posts.data.map(post => (
+      <PostCard
+        key={post.id}
+        post={post}
+        onClick={() => {
+          router.push(
+            `/shared/${selected === 'hasRoom' ? 'room' : 'dormitory'}/${post.id}`,
+          );
+        }}
+      />
+    ));
+  }, [
+    isDormitorySharedPostsLoading,
+    isSharedPostsLoading,
+    posts?.data,
+    router,
+    selected,
+  ]);
+
+  const renderMates = useMemo(() => {
+    if (isMatesLoading) {
+      return (
+        <styles.loadingIndicatorContainer>
+          <MagnifyingGlass
+            visible={true}
+            height="80"
+            width="80"
+            ariaLabel="magnifying-glass-loading"
+            wrapperStyle={{}}
+            wrapperClass="magnifying-glass-wrapper"
+            glassColor="#c0efff"
+            color="#e15b64"
+          />
+        </styles.loadingIndicatorContainer>
+      );
+    }
+
+    if (recommendationMates == null || recommendationMates.length === 0) {
+      return (
+        <styles.noRecommendation>
+          <p>추천되는 메이트가 없습니다.</p>
+        </styles.noRecommendation>
+      );
+    }
+
+    return recommendationMates.map(
+      ({ memberId, score, nickname, location, profileImageUrl, options }) => (
+        <Link href={`/profile/${memberId}`} key={memberId}>
+          <UserCard
+            name={nickname}
+            percentage={score}
+            profileImage={profileImageUrl}
+            location={location}
+            smoking={options.smoking}
+            roomSharingOption={options.roomSharingOption}
+            mateAge={options.mateAge}
+            hideScore={false}
+          />
+        </Link>
+      ),
+    );
+  }, [isMatesLoading, recommendationMates]);
 
   return (
     <styles.container>
@@ -201,38 +352,13 @@ export function SharedPostsPage() {
       </styles.createButtonRow>
       {selected === 'hasRoom' || selected === 'dormitory' ? (
         <>
-          <styles.posts>
-            {prevSharedPosts != null
-              ? prevSharedPosts.data.content.map(post => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onClick={() => {
-                      router.push(`/shared/${post.id}`);
-                    }}
-                  />
-                ))
-              : posts?.data.content.map(post => (
-                  <PostCard
-                    key={post.id}
-                    post={post}
-                    onClick={() => {
-                      router.push(
-                        `/shared/${selected === 'hasRoom' ? 'room' : 'dormitory'}/${post.id}`,
-                      );
-                    }}
-                  />
-                ))}
-          </styles.posts>
-          {posts != null && posts.data.content.length !== 0 && (
+          <styles.posts>{renderPosts}</styles.posts>
+          {posts != null && posts.data.length !== 0 && (
             <styles.pagingRow>
               <styles.CircularButton
                 direction="left"
                 disabled={isFirstPage}
                 onClick={() => {
-                  if (sharedPosts != null) {
-                    setPrevSharedPosts(sharedPosts);
-                  }
                   handlePrevPage();
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
@@ -247,9 +373,6 @@ export function SharedPostsPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (sharedPosts != null) {
-                        setPrevSharedPosts(sharedPosts);
-                      }
                       handleSetPage(index + 1 + currentSlice * sliceSize);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
@@ -268,9 +391,6 @@ export function SharedPostsPage() {
                 direction="right"
                 disabled={isLastPage}
                 onClick={() => {
-                  if (sharedPosts != null) {
-                    setPrevSharedPosts(sharedPosts);
-                  }
                   handleNextPage();
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
@@ -279,20 +399,7 @@ export function SharedPostsPage() {
           )}
         </>
       ) : (
-        <styles.cards>
-          {recommendationMates?.data?.map(
-            ({ memberId, score, nickname, location, profileImageUrl }) => (
-              <Link href={`/profile/${memberId}`} key={memberId}>
-                <UserCard
-                  name={nickname}
-                  percentage={score}
-                  location={location}
-                  profileImage={profileImageUrl}
-                />
-              </Link>
-            ),
-          )}
-        </styles.cards>
+        <styles.cards>{renderMates}</styles.cards>
       )}
     </styles.container>
   );

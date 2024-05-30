@@ -24,9 +24,11 @@ const styles = {
 };
 
 export function SearchBox({
+  placeholder,
   onContentChange,
   onEnter,
 }: {
+  placeholder?: string;
   onContentChange: React.Dispatch<React.SetStateAction<string>>;
   onEnter: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
@@ -46,6 +48,7 @@ export function SearchBox({
     <styles.container>
       <img alt="" src="/icon-search.svg" />
       <styles.input
+        placeholder={placeholder}
         value={content}
         onChange={e => {
           setContent(e.target.value);

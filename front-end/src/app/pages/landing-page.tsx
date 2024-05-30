@@ -11,6 +11,7 @@ const styles = {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
     padding: 0rem 13.75rem;
   `,
   img: styled.img`
@@ -24,9 +25,9 @@ const styles = {
   description: styled.div`
     display: flex;
     flex-direction: column;
-    align-items: end;
+    align-items: flex-end;
     gap: 1.75rem;
-    width: 27.8125rem;
+    width: 21.875rem;
     margin-top: 6.25rem;
     flex-shrink: 0;
 
@@ -38,8 +39,8 @@ const styles = {
       font-style: normal;
       font-weight: 700;
       line-height: normal;
-      margin-bottom: 2rem;
     }
+
     p {
       color: #000;
       text-align: right;
@@ -48,7 +49,6 @@ const styles = {
       font-style: normal;
       font-weight: 500;
       line-height: normal;
-      margin-bottom: 6.5rem;
     }
   `,
   loginButtons: styled.div`
@@ -71,19 +71,15 @@ const styles = {
       object-fit: cover;
     }
   `,
-  section2: styled.div`
-    position: relative;
-    width: 100dvw;
-    height: 31.25rem;
-    flex-shrink: 0;
-    background: #f7f6f9;
-  `,
   section3: styled.div`
     display: flex;
-    justify-content: end;
+    height: 30rem;
+    padding-left: 50%;
+    justify-content: center;
+    align-items: center;
 
-    height: 31.25rem;
-    padding-right: 21.25rem;
+    background: #f7f6f9;
+    overflow-y: hidden;
   `,
   imageBox: styled.div`
     display: flex;
@@ -112,35 +108,7 @@ const styles = {
     flex-shrink: 0;
 
     border-radius: 16px;
-    background: rgba(247, 246, 249, 0.5);
-  `,
-  section4: styled.div`
-    display: flex;
-    position: relative;
-    width: 100dvw;
-    height: 17.9375rem;
-    padding: 10.0625rem 38.71875rem 5.0625rem 39.90625rem;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-    background: #f7f6f9;
-  `,
-  findMateButton: styled.button`
-    all: unset;
-    flex-shrink: 0;
-    padding: 0.5rem 1.5rem;
-    flex-shrink: 0;
-
-    border-radius: 8px;
-    background: #e15637;
-
-    color: #fff;
-    font-family: 'Noto Sans KR';
-    font-size: 1.25rem;
-    font-style: normal;
-    font-weight: 700;
-    line-height: normal;
-    cursor: pointer;
+    background: white;
   `,
 };
 
@@ -191,7 +159,6 @@ export function LandingPage() {
           </styles.loginButtons>
         </styles.description>
       </styles.section1>
-      <styles.section2 />
       <styles.section3>
         <styles.imageBox>
           {images.map((column, i) => (
@@ -209,9 +176,6 @@ export function LandingPage() {
           ))}
         </styles.imageBox>
       </styles.section3>
-      <styles.section4>
-        <styles.findMateButton>메이트 찾아보기</styles.findMateButton>
-      </styles.section4>
     </styles.container>
   );
 }

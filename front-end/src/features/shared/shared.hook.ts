@@ -120,7 +120,7 @@ export const useSharedPostProps = ({
     }: GetSharedPostDTO | GetDormitorySharedPostDTO) => {
       fromAddrToCoord({ query: data.address.roadAddress })
         .then(res => {
-          const address = res.data.addresses.shift();
+          const address = res.shift();
           if (address != null) setState(prev => ({ ...prev, address }));
         })
         .catch(err => {
@@ -146,6 +146,22 @@ export const useSharedPostProps = ({
             url: fileName,
             uploaded: true,
           })),
+          mates: data.participants.reduce<
+            Record<
+              string,
+              { memberId: string; nickname: string; profileImage: string }
+            >
+          >(
+            (
+              prev,
+              { memberId, nickname, profileImageFileName: profileImage },
+            ) => {
+              const next = { ...prev };
+              next[memberId] = { memberId, nickname, profileImage };
+              return next;
+            },
+            {},
+          ),
           mateLimit: data.roomInfo.recruitmentCapacity,
           expectedMonthlyFee: data.roomInfo.expectedPayment,
           houseSize: data.roomInfo.size,
@@ -189,6 +205,22 @@ export const useSharedPostProps = ({
             url: fileName,
             uploaded: true,
           })),
+          mates: data.participants.reduce<
+            Record<
+              string,
+              { memberId: string; nickname: string; profileImage: string }
+            >
+          >(
+            (
+              prev,
+              { memberId, nickname, profileImageFileName: profileImage },
+            ) => {
+              const next = { ...prev };
+              next[memberId] = { memberId, nickname, profileImage };
+              return next;
+            },
+            {},
+          ),
           mateLimit: data.recruitmentCapacity,
           expectedMonthlyFee: 0,
           houseSize: 0,
@@ -324,9 +356,28 @@ export const useSharedPostProps = ({
     }
   }, [user, setState]);
 
+  const isCreatable = useMemo(
+    () =>
+      state.title.trim().length > 0 &&
+      state.content.trim().length > 0 &&
+      state.images.length >= 2 &&
+      state.address != null &&
+      state.mateLimit > 0 &&
+      state.expectedMonthlyFee > 0 &&
+      state.houseSize > 0 &&
+      state.selectedOptions.budget != null &&
+      state.selectedOptions.roomType != null &&
+      state.selectedOptions.livingRoom != null &&
+      state.selectedOptions.roomCount != null &&
+      state.selectedOptions.restRoomCount != null &&
+      state.selectedOptions.floorType != null,
+    [state],
+  );
+
   return {
     ...state,
     derivedMateCardFeatures,
+    isCreatable,
     setSharedPostProps: setState,
     reset,
     handleOptionClick,
@@ -354,7 +405,7 @@ export const useSharedPosts = ({
 
   return useQuery({
     queryKey: [
-      '/api/shared/posts/studio',
+      '/shared/posts/studio',
       { cardOption, debounceFilter, search, page },
     ],
     queryFn: async () =>
@@ -363,7 +414,7 @@ export const useSharedPosts = ({
         filter: debounceFilter,
         search,
         page,
-      }).then(response => response.data),
+      }).then(res => res),
     enabled,
   });
 };
@@ -376,7 +427,7 @@ export const useSharedPost = ({
   enabled: boolean;
 }) =>
   useQuery({
-    queryKey: [`/api/shared/posts/studio/${postId}`],
+    queryKey: [`/shared/posts/studio/${postId}`],
     queryFn: async () =>
       await getSharedPost(postId).then(response => response.data),
     enabled,
@@ -417,7 +468,7 @@ export const useDormitorySharedPosts = ({
 
   return useQuery({
     queryKey: [
-      '/api/shared/posts/dormitory',
+      '/shared/posts/dormitory',
       { cardOption, debounceFilter, search, page },
     ],
     queryFn: async () =>
@@ -426,7 +477,7 @@ export const useDormitorySharedPosts = ({
         filter: debounceFilter,
         search,
         page,
-      }).then(response => response.data),
+      }).then(res => res),
     enabled,
   });
 };
@@ -439,7 +490,7 @@ export const useDormitorySharedPost = ({
   enabled: boolean;
 }) =>
   useQuery({
-    queryKey: [`/api/shared/posts/dormitory/${postId}`],
+    queryKey: [`/shared/posts/dormitory/${postId}`],
     queryFn: async () =>
       await getDormitorySharedPost(postId).then(response => response.data),
     enabled,

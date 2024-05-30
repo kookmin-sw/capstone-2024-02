@@ -19,7 +19,7 @@ const styles = {
     gap: 1.56rem;
 
     @media (max-width: 768px) {
-      height: 11rem;
+      height: 12rem;
     }
   `,
   thumbnail: styled.img`
@@ -186,7 +186,10 @@ export function PostCard({
         <styles.thumbnail
           onClick={onClick}
           alt=""
-          src={post.thumbnail.fileName}
+          src={
+            post.thumbnail.fileName ??
+            'https://s3-alpha-sig.figma.com/img/2d52/bfda/0a900d41e2a6d77dd731fac06577540c?Expires=1717372800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=QubhQP10C3kK32EIvoJz1tbAibiA8DJfdTGBZ~jzrB2cOTvkJgi~LhRSRZom-uzGVLPLxHYcpSWupCTaWnzfWBYtSzj0FrxBnNbd-0jjdNWd8UE1-U-9Uzaz6C4pwJyM6PRcgD-AdUj10b8RMu-s9T0oVCeGx6SXs3Z2mrYjp5jmj7KfRgVTcbK6HiFcFGDdDRwbTmEd1KhuKEXueeaj5KvmFChZV~elb1-6nQgSyeGlwM3m23h9uukODdRbzsTgSdizQuHiZ1EM7gauByII~AKbvR27qXTlPn3e0oPFOXrN3b3vQ7hvefd5~yhWSh2KWBzk5uHHv2hv0LAGwI2zzg__'
+          }
         />
         <styles.content onClick={onClick}>
           <div>
@@ -220,8 +223,9 @@ export function PostCard({
               >
                 <img alt="" src={post.publisherAccount.profileImageFileName} />
                 <styles.percentage>
-                  <p>{post.score}</p>
+                  <p style={{ color: '#e15637' }}>{post.score}%</p>
                 </styles.percentage>
+                <p>{post.publisherAccount.nickname}</p>
               </styles.writer>
             ) : null}
           </div>

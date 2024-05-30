@@ -46,7 +46,7 @@ const styles = {
   `,
   message: styled.p`
     color: #666;
-
+    width: 80%;
     text-overflow: ellipsis;
     white-space: nowrap;
     font-family: Pretendard;
@@ -93,7 +93,11 @@ export function ChattingList({
         <styles.userProfile />
         <styles.textSection>
           <styles.roomName>{name}</styles.roomName>
-          <styles.message>{lastMessage}</styles.message>
+          <styles.message>
+            {lastMessage.length > 15
+              ? `${lastMessage.slice(0, 15)}…`
+              : lastMessage}
+          </styles.message>
         </styles.textSection>
       </styles.infoSection>
       <styles.newMessageCount>{unreadCount}</styles.newMessageCount>

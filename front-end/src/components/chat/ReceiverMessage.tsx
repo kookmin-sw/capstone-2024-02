@@ -6,8 +6,8 @@ import { getLocalTime } from '@/shared';
 
 const styles = {
   container: styled.div`
-    display: flex;
-    align-items: flex-start;
+    display: inline-flex;
+    width: 100%;
     gap: 0.25rem;
     flex-shrink: 0;
   `,
@@ -74,17 +74,17 @@ const styles = {
     justify-content: center;
     align-items: flex-end;
     gap: 0.25rem;
-    align-self: stretch;
   `,
   messageBody: styled.div`
     display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-  `,
-  message: styled.div`
-    display: flex;
     flex-direction: column;
     align-items: flex-start;
+    max-width: 20rem;
+    gap: 0.25rem;
+  `,
+  message: styled.div`
+    width: 100%;
+    max-width: 20rem;
     gap: 0.625rem;
     color: var(--Text-gray, #666668);
     font-family: 'Noto Sans KR';
@@ -92,6 +92,8 @@ const styles = {
     font-style: normal;
     font-weight: 400;
     line-height: 1.25rem;
+    word-break: break-word;
+    white-space: pre-wrap;
   `,
   time: styled.p`
     color: var(--Text-gray, #666668);
@@ -103,6 +105,7 @@ const styles = {
   `,
   messageInfo: styled.div`
     display: flex;
+    width: 3.5rem;
     margin-top: 2rem;
     align-items: flex-end;
     gap: 0.25rem;
@@ -137,9 +140,7 @@ export function ReceiverMessage({
           <styles.messageFrame>
             <styles.messageBody>
               <styles.message>{message}</styles.message>
-              <styles.messageInfo>
-                <styles.time>{getLocalTime(time, type)}</styles.time>
-              </styles.messageInfo>
+              <styles.time>{getLocalTime(time, type)}</styles.time>
             </styles.messageBody>
           </styles.messageFrame>
         </styles.right>

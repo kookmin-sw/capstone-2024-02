@@ -12,6 +12,7 @@ const styles = {
   container: styled.div<StyleProps>`
     position: relative;
     width: 100%;
+    margin-block: 1rem;
 
     div {
       position: absolute;
@@ -41,7 +42,7 @@ const styles = {
     }
 
     input[type='range']::-moz-range-thumb {
-      -webkit-appearance: none;
+      appearance: none;
       pointer-events: all;
       width: 24px;
       height: 24px;

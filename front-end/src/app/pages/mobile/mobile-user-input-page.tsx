@@ -1,12 +1,13 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { useState, useEffect, useCallback } from 'react';
 import styled from 'styled-components';
 
 import { VitalSection, OptionSection } from '@/components';
 import { useAuthValue, useUserData } from '@/features/auth';
 import { usePutUserCard } from '@/features/profile';
+import { useToast } from '@/features/toast';
 
 const styles = {
   pageContainer: styled.div`
@@ -218,6 +219,8 @@ export function MobileUserInputPage() {
   const { data } = useUserData(auth?.accessToken !== undefined);
   const [user, setUserData] = useState<UserProps | null>(null);
 
+  const router = useRouter();
+
   useEffect(() => {
     if (data !== undefined) {
       const { name, gender, birthYear, memberId, myCardId, mateCardId } = data;
@@ -248,7 +251,18 @@ export function MobileUserInputPage() {
 
   const [mateAge, setMateAge] = useState<number | undefined>(0);
 
+  const { createToast } = useToast();
+
   const handleButtonClick = () => {
+    if (locationInput == null || locationInput === '') {
+      createToast({
+        message: '필수 항목을 입력하셔야 합니다.',
+        option: {
+          duration: 3000,
+        },
+      });
+      return;
+    }
     const location = locationInput ?? '';
     const myOptions: string[] = [mbti ?? '', major ?? '', budget ?? ''];
     myFeatures?.options?.forEach(option => myOptions.push(option));
@@ -283,6 +297,7 @@ export function MobileUserInputPage() {
         location,
         features: mutateMateFeatures,
       });
+      router.replace('/');
     } catch (error) {
       console.error(error);
     }
@@ -311,7 +326,7 @@ export function MobileUserInputPage() {
               $active={activeContainer === 'my'}
             >
               <styles.miniCardName $active={activeContainer === 'my'}>
-                내카드
+                내 카드
               </styles.miniCardName>
             </styles.miniCard>
             <styles.miniCard
@@ -319,7 +334,7 @@ export function MobileUserInputPage() {
               $active={activeContainer === 'mate'}
             >
               <styles.miniCardName $active={activeContainer === 'mate'}>
-                메이트카드
+                메이트 카드
               </styles.miniCardName>
             </styles.miniCard>
           </styles.cardNameSection>
@@ -377,14 +392,12 @@ export function MobileUserInputPage() {
           />
         </styles.checkContainer>
       </styles.cardContainer>
-      <Link href="/">
-        <styles.mateButtonContainer onClick={handleButtonClick}>
-          <styles.mateButtonDescription>
-            나의 메이트 확인하기
-          </styles.mateButtonDescription>
-          <styles.mateButtonIcon src="/chevron-right.svg" />
-        </styles.mateButtonContainer>
-      </Link>
+      <styles.mateButtonContainer onClick={handleButtonClick}>
+        <styles.mateButtonDescription>
+          나의 메이트 확인하기
+        </styles.mateButtonDescription>
+        <styles.mateButtonIcon src="/chevron-right.svg" />
+      </styles.mateButtonContainer>
     </styles.pageContainer>
   );
 }

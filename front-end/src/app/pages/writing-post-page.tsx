@@ -316,7 +316,7 @@ const styles = {
     width: 14.4375rem;
     height: 9.875rem;
     background: #ededed;
-    background-image: url(https://s3-alpha-sig.figma.com/img/7307/09fa/b5d93c9ac77c2570ffbee89fe8a76c98?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Xr~6xrrHnQFb6NwdPlxTuJ2wd7kTnRZ-9kpTlGxYQL-bU7ZVcN8IMQ4k6yEAj~x3y2roX-poLo4XP4x6-adpxlciddzg0ZUuWg0B3VrMgMwbl~sTasgqAe~0SL9E4kkEx7OilanZoC5fJlVBglfb8kE1nZBaG5wEp3FCbLZhzZTnl~29Loisbo1pwteh~2ABpLSVttEztULov1lzws4qcrHY5QpGb8KM4PxBTBTfQDMa8an5QmG~uUlt-bYgVEFMuA2vsKHc-aY8HoiF7v03UDHSGNOVrX1Ajt7ARWqJtOiM~epvCYTkVJPmkNe6WcCgRm37xGKbH2LEzn9aEZJyFA__);
+    background-image: url('/icon-plus.png');
     background-position: center;
     background-repeat: no-repeat;
   `,
@@ -433,6 +433,7 @@ export function WritingPostPage({
     title,
     content,
     images,
+    mates,
     mateLimit,
     houseSize,
     address,
@@ -441,6 +442,7 @@ export function WritingPostPage({
     selectedExtraOptions,
     expectedMonthlyFee,
     derivedMateCardFeatures,
+    isCreatable,
     setSharedPostProps,
     handleOptionClick,
     handleExtraOptionClick,
@@ -525,6 +527,16 @@ export function WritingPostPage({
   };
 
   const handleCreatePost = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (!isCreatable) {
+      createToast({
+        message: '필수 항목들이 입력되어야 합니다.',
+        option: {
+          duration: 3000,
+        },
+      });
+      return;
+    }
+
     const extractFileName = (url: string): string => {
       const regex =
         /\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\.\w+)/;
@@ -655,7 +667,12 @@ export function WritingPostPage({
                 participationData: {
                   recruitmentCapacity: mateLimit,
                   participationMemberIds:
-                    auth?.user != null ? [auth.user.memberId] : [],
+                    auth?.user != null
+                      ? [
+                          auth.user.memberId,
+                          ...Object.values(mates).map(mate => mate.memberId),
+                        ]
+                      : [],
                 },
               },
               {
@@ -718,7 +735,12 @@ export function WritingPostPage({
                   participationData: {
                     recruitmentCapacity: mateLimit,
                     participationMemberIds:
-                      auth?.user != null ? [auth.user.memberId] : [],
+                      auth?.user != null
+                        ? [
+                            auth.user.memberId,
+                            ...Object.values(mates).map(mate => mate.memberId),
+                          ]
+                        : [],
                   },
                 },
               },
@@ -760,7 +782,12 @@ export function WritingPostPage({
                 participationData: {
                   recruitmentCapacity: mateLimit,
                   participationMemberIds:
-                    auth?.user != null ? [auth.user.memberId] : [],
+                    auth?.user != null
+                      ? [
+                          auth.user.memberId,
+                          ...Object.values(mates).map(mate => mate.memberId),
+                        ]
+                      : [],
                 },
               },
               {
@@ -801,7 +828,12 @@ export function WritingPostPage({
                   participationData: {
                     recruitmentCapacity: mateLimit,
                     participationMemberIds:
-                      auth?.user != null ? [auth.user.memberId] : [],
+                      auth?.user != null
+                        ? [
+                            auth.user.memberId,
+                            ...Object.values(mates).map(mate => mate.memberId),
+                          ]
+                        : [],
                   },
                 },
               },
@@ -952,6 +984,13 @@ export function WritingPostPage({
             <div className="column">
               <styles.option>메이트</styles.option>
               <styles.mates>
+                {Object.values(mates).map(user => (
+                  <styles.mate
+                    key={user.memberId}
+                    alt="Profile"
+                    src={user.profileImage}
+                  />
+                ))}
                 <styles.mateAddButton
                   onClick={() => {
                     setShowMateSearchBox(true);
@@ -959,6 +998,24 @@ export function WritingPostPage({
                 />
                 {showMateSearchBox && (
                   <MateSearchBox
+                    selectedMates={
+                      new Set(Object.values(mates).map(mate => mate.memberId))
+                    }
+                    onMateSelected={user => {
+                      setSharedPostProps(prev => {
+                        const next = { ...prev.mates };
+
+                        if (user.memberId in next) {
+                          const { [user.memberId]: _, ...rest } = next;
+                          return { ...prev, mates: rest };
+                        }
+
+                        return {
+                          ...prev,
+                          mates: { ...next, [user.memberId]: user },
+                        };
+                      });
+                    }}
                     setHidden={() => {
                       setShowMateSearchBox(false);
                     }}
@@ -998,7 +1055,15 @@ export function WritingPostPage({
                 onVitalChange={handleMateCardEssentialFeatureChange}
                 onOptionChange={handleMateCardOptionalFeatureChange}
                 onLocationChange={() => {}}
-                onMateAgeChange={() => {}}
+                onMateAgeChange={mateAge => {
+                  setSharedPostProps(prev => ({
+                    ...prev,
+                    mateCard: {
+                      ...prev.mateCard,
+                      features: { ...prev.mateCard.features, mateAge },
+                    },
+                  }));
+                }}
                 onMbtiChange={() => {}}
                 onMajorChange={() => {}}
                 onBudgetChange={() => {}}

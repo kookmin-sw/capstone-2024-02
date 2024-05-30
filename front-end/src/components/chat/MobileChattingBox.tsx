@@ -209,10 +209,6 @@ export function MobileChattingBox() {
     }
   }, [message, isChatRoomOpen]);
 
-  // const roomName = 'test2';
-  // const members = ['naver_htT4VdDRPKqGqKpnncpa71HCA4CVg5LdRC1cWZhCnF8'];
-  // const { mutate: chattingCreate } = useCreateChatRoom(roomName, members);
-
   return (
     <>
       <styles.container>
@@ -225,19 +221,8 @@ export function MobileChattingBox() {
               chat
             </styles.title>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <styles.searchInput />
-            <styles.searchButton src="/icon-search.svg" />
-          </div>
         </styles.chattingHeader>
         <styles.chattingSection>
-          {/* <button
-          onClick={() => {
-            chattingCreate();
-          }}
-        >
-          생성
-        </button> */}
           {chatRooms.map((room, index) => (
             <ChattingList
               key={index}

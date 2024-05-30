@@ -55,7 +55,7 @@ export const useAuthActions = () => {
 
 export const useUserData = (enabled: boolean) =>
   useQuery({
-    queryKey: ['/api/auth/initial/info'],
+    queryKey: ['/auth/initial/info'],
     queryFn: async () => await getUserData().then(response => response.data),
     enabled,
   });

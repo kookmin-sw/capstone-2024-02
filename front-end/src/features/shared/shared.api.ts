@@ -20,24 +20,23 @@ export const getSharedPosts = async ({
     const baseURL = '/maru-api/shared/posts/studio';
     let query = '';
 
-    if (
-      filter != null &&
-      Object.keys(filter).length > 0 &&
-      JSON.stringify(filter).length > 2
-    ) {
-      query += `filter=${JSON.stringify(filter)}`;
+    query += `page=${page}`;
+
+    if (filter != null) {
+      query += `&filter=${JSON.stringify(filter)}`;
     }
 
     if (search != null) {
       query += `&search=${search}`;
     }
 
-    query += `&page=${page}`;
-
-    return `${baseURL}?${encodeURIComponent(query)}&cardOption=${cardOption}`;
+    return `${baseURL}?${encodeURI(query)}&cardOption=${cardOption}`;
   };
 
-  return await axios.get<GetSharedPostsDTO>(getURI());
+  return await axios.get<GetSharedPostsDTO>(getURI()).then(res => ({
+    totalPages: res.data.data.totalPages,
+    data: res.data.data.content,
+  }));
 };
 
 export const createSharedPost = async (postData: SharedPostProps) =>
@@ -76,24 +75,23 @@ export const getDormitorySharedPosts = async ({
     const baseURL = '/maru-api/shared/posts/dormitory';
     let query = '';
 
-    if (
-      filter != null &&
-      Object.keys(filter).length > 0 &&
-      JSON.stringify(filter).length > 2
-    ) {
-      query += `filter=${JSON.stringify(filter)}`;
+    query += `page=${page}`;
+
+    if (filter != null) {
+      query += `&filter=${JSON.stringify(filter)}`;
     }
 
     if (search != null) {
       query += `&search=${search}`;
     }
 
-    query += `&page=${page}`;
-
-    return `${baseURL}?${encodeURIComponent(query)}&cardOption=${cardOption}`;
+    return `${baseURL}?${encodeURI(query)}&cardOption=${cardOption}`;
   };
 
-  return await axios.get<GetDormitorySharedPostsDTO>(getURI());
+  return await axios.get<GetDormitorySharedPostsDTO>(getURI()).then(res => ({
+    totalPages: res.data.data.totalPages,
+    data: res.data.data.content,
+  }));
 };
 
 export const createDormitorySharedPost = async (postData: SharedPostProps) =>

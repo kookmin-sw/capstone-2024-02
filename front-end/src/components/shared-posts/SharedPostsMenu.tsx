@@ -8,7 +8,6 @@ import { useAuthValue, useUserData } from '@/features/auth';
 const styles = {
   container: styled.div`
     width: 100%;
-    padding: 0 2.75rem;
 
     display: flex;
     justify-content: space-evenly;

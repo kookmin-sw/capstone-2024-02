@@ -1,5 +1,6 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
@@ -301,7 +302,7 @@ const styles = {
     .name {
       color: #000;
       font-family: 'Noto Sans KR';
-      font-size: 1rem;
+      font-size: 0.875rem;
       font-style: normal;
       font-weight: 500;
       line-height: normal;
@@ -445,26 +446,6 @@ export function MobileSharedPostPage({
       enabled: type === 'dormitory' && auth?.accessToken != null,
     });
 
-  useEffect(() => {
-    if (sharedPost?.data.address.roadAddress != null) {
-      fromAddrToCoord({ query: sharedPost?.data.address.roadAddress }).then(
-        res => {
-          const address = res.data.addresses.shift();
-          if (address != null && mapRef.current != null) {
-            const center = new naver.maps.LatLng(+address.y, +address.x);
-            setMap(
-              new naver.maps.Map(mapRef.current, {
-                center,
-                disableKineticPan: false,
-                scrollWheel: false,
-              }),
-            );
-          }
-        },
-      );
-    }
-  }, [sharedPost]);
-
   const { mutate: chattingMutate } = useCreateChatRoom();
 
   const isLoading = useMemo(
@@ -478,6 +459,26 @@ export function MobileSharedPostPage({
     [type, sharedPost, dormitorySharedPost],
   );
 
+  useEffect(() => {
+    if (post == null) return;
+
+    if (post.data.address.roadAddress != null) {
+      fromAddrToCoord({ query: post.data.address.roadAddress }).then(res => {
+        const address = res.shift();
+        if (address != null && mapRef.current != null) {
+          const center = new naver.maps.LatLng(+address.y, +address.x);
+          setMap(
+            new naver.maps.Map(mapRef.current, {
+              center,
+              disableKineticPan: false,
+              scrollWheel: false,
+            }),
+          );
+        }
+      });
+    }
+  }, [post]);
+
   const [selected, setSelected] = useState<
     | {
         memberId: string;
@@ -488,6 +489,17 @@ export function MobileSharedPostPage({
       }
     | undefined
   >(post != null ? post.data.participants[0] : undefined);
+
+  useEffect(() => {
+    if (post?.data.participants.length === 0 && selected == null)
+      setSelected({
+        memberId: post.data.publisherAccount.memberId,
+        birthYear: post.data.publisherAccount.birthYear,
+        nickname: post.data.publisherAccount.nickname,
+        profileImageFileName: post.data.publisherAccount.profileImageFileName,
+        isScrapped: false,
+      });
+  });
 
   useEffect(() => {
     if (post == null || selected != null) return;
@@ -513,6 +525,8 @@ export function MobileSharedPostPage({
     setFollowList(newFollowList);
   }, [post]);
 
+  const queryClient = useQueryClient();
+
   if (isLoading || post == null) return <></>;
 
   return (
@@ -525,7 +539,7 @@ export function MobileSharedPostPage({
                 <CircularProfileImage
                   diameter={89}
                   percentage={50}
-                  url="https://s3-alpha-sig.figma.com/img/59a5/3c6f/ae49249b51c7d5d81ab89eeb0bf610f1?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=Ou47yOoRJ57c0QqtWD~w0S6BP1UYWpmpCOCgsq9YTqfbNq~TmwfAI2T24-fYxpKSiBDv8y1Tkup68OTc5v2ZHIG~~CLwn6NCBF7QqTu7sQB0oPCvdRFdBm~y4wI8VEIErYhPsCuV2k7L0GVlJss4KkeM1tt1RX0kwfINvh03yzFf8wtjd0xsUJjMaKjNxU3muS2Cj8BZymckjgNGrTvafiGbAfHt0Bw2fTkH8tctfNNXpnZgqrEeDldEuENV~g-fSsLSFbMceZGN5ILEd9gd6fnY2YYeB7qtb9xozvczwTbz6kYIzzHJc7veYTsvxjqx~qTiKF2Yrn45cn5pXvOv1w__"
+                  url={selected?.profileImageFileName ?? ''}
                 />
                 <styles.profileInfo>
                   <p className="name">{selected?.nickname}</p>
@@ -547,8 +561,36 @@ export function MobileSharedPostPage({
                           followList[selected.memberId] == null
                         )
                           return;
-                        if (followList[selected.memberId]) unfollow();
-                        else follow();
+                        if (followList[selected.memberId])
+                          unfollow(undefined, {
+                            onSuccess: () => {
+                              if (type === 'hasRoom')
+                                queryClient.invalidateQueries({
+                                  queryKey: [`/shared/posts/studio/${postId}`],
+                                });
+                              else
+                                queryClient.invalidateQueries({
+                                  queryKey: [
+                                    `/shared/posts/dormitory/${postId}`,
+                                  ],
+                                });
+                            },
+                          });
+                        else
+                          follow(undefined, {
+                            onSuccess: () => {
+                              if (type === 'hasRoom')
+                                queryClient.invalidateQueries({
+                                  queryKey: [`/shared/posts/studio/${postId}`],
+                                });
+                              else
+                                queryClient.invalidateQueries({
+                                  queryKey: [
+                                    `/shared/posts/dormitory/${postId}`,
+                                  ],
+                                });
+                            },
+                          });
                       }}
                       hasBorder
                       color="#888"
@@ -559,8 +601,9 @@ export function MobileSharedPostPage({
                       if (selected == null) return;
 
                       chattingMutate({
-                        roomName: selected.nickname,
+                        roomName: `${selected.nickname}, ${auth?.user?.name}`,
                         members: [selected.memberId],
+                        myID: auth?.user?.memberId ?? '',
                       });
                     }}
                   >
@@ -593,7 +636,18 @@ export function MobileSharedPostPage({
                 hasBorder={false}
                 marked={post.data.isScrapped}
                 onToggle={() => {
-                  scrapPost(postId);
+                  scrapPost(postId, {
+                    onSuccess: () => {
+                      if (type === 'hasRoom')
+                        queryClient.invalidateQueries({
+                          queryKey: [`/shared/posts/studio/${postId}`],
+                        });
+                      else
+                        queryClient.invalidateQueries({
+                          queryKey: [`/shared/posts/dormitory/${postId}`],
+                        });
+                    },
+                  });
                 }}
                 color="black"
               />

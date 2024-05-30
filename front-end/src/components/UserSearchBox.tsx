@@ -12,7 +12,11 @@ export function UserSearchBox() {
   const router = useRouter();
   const [email, setEmail] = useState<string>('');
 
-  const { mutate: search, data: searchUser } = useSearchUser(email);
+  const {
+    mutate: search,
+    data: searchUser,
+    error: searchError,
+  } = useSearchUser(email);
 
   const { createToast } = useToast();
 
@@ -42,5 +46,16 @@ export function UserSearchBox() {
     if (searchUserProfile != null)
       router.replace(`/profile/${searchUser?.data.memberId}`);
   }, [searchUserProfile, error]);
-  return <SearchBox onContentChange={setEmail} onEnter={handleEnter} />;
+
+  useEffect(() => {
+    if (searchError != null) router.replace('/error');
+  }, [searchError]);
+
+  return (
+    <SearchBox
+      placeholder="찾을 사람의 이메일 입력"
+      onContentChange={setEmail}
+      onEnter={handleEnter}
+    />
+  );
 }

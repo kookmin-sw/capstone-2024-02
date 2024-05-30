@@ -35,6 +35,16 @@ export interface PostUserProfileDTO extends SuccessBaseDTO {
         options: string;
       };
     };
+    posts: [
+      {
+        id: number;
+        title: string;
+        type: string;
+        createdAt: string;
+        modifiedAt: string;
+      },
+    ];
+    recommendOn: boolean;
   };
 }
 
@@ -65,7 +75,21 @@ export interface PutUserCardDTO extends SuccessBaseDTO {
 
 export interface GetFollowingListDTO extends SuccessBaseDTO {
   data: {
-    followingList: Record<string, string[]>;
+    followingList: Array<{
+      memberId: string;
+      nickname: string;
+      profileImage: string;
+    }>;
+  };
+}
+
+export interface GetMutualFollowUsersDTO extends SuccessBaseDTO {
+  data: {
+    followingList: Array<{
+      memberId: string;
+      nickname: string;
+      profileImage: string;
+    }>;
   };
 }
 

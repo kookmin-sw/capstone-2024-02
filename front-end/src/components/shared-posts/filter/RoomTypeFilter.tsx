@@ -121,6 +121,32 @@ const styles = {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+
+    div {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 0.5rem;
+
+      p {
+        font-size: 0.9rem;
+        color: #808080;
+      }
+    }
+
+    @media (max-width: 768px) {
+      div {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
+        gap: 0.5rem;
+
+        p {
+          font-size: 0.75rem;
+          color: #808080;
+        }
+      }
+    }
   `,
   floor: styled.div`
     display: flex;
@@ -345,7 +371,16 @@ export function RoomTypeFilter() {
         </div>
       </styles.restRoomCount>
       <styles.size>
-        <h1>면적</h1>
+        <div>
+          <h1>면적</h1>
+          {filter.roomInfo.size != null ? (
+            <p>
+              {filter.roomInfo.size.low}평 ~ {filter.roomInfo.size.high}평
+            </p>
+          ) : (
+            <p>0평 ~ 무제한</p>
+          )}
+        </div>
         <RangeSlider
           min={1}
           max={100}

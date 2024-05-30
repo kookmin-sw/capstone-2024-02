@@ -12,6 +12,7 @@ import {
   useUserCard,
   useUserProfile,
 } from '@/features/profile';
+import { useToast } from '@/features/toast';
 
 const styles = {
   pageContainer: styled.div`
@@ -187,7 +188,19 @@ export function MobileSettingPage({ cardId }: { cardId: number }) {
   const { mutate } = usePutUserCard(cardId);
   const router = useRouter();
 
+  const { createToast } = useToast();
+
   const saveData = () => {
+    if (locationInput == null || locationInput === '') {
+      createToast({
+        message: '필수 항목을 입력하셔야 합니다.',
+        option: {
+          duration: 3000,
+        },
+      });
+      return;
+    }
+
     const location = locationInput ?? '';
     const options: string[] = [mbti ?? '', major ?? '', budget ?? ''];
     features?.options?.forEach(option => options.push(option));

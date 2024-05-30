@@ -12,6 +12,7 @@ import {
   useUserCard,
   useUserProfile,
 } from '@/features/profile';
+import { useToast } from '@/features/toast';
 import Location from '@/public/option-img/location_on.svg';
 import Meeting from '@/public/option-img/meeting_room.svg';
 import Person from '@/public/option-img/person.svg';
@@ -20,12 +21,18 @@ import Visibility from '@/public/option-img/visibility.svg';
 const styles = {
   pageContainer: styled.div`
     display: flex;
-    width: 90rem;
-    height: 90rem;
+    width: 100%;
+    height: 100%;
     padding: 2rem 10rem;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 2rem;
+  `,
+
+  contentContainer: styled.div`
+    display: flex;
+    flex-direction: column;
     gap: 2rem;
   `,
 
@@ -185,7 +192,12 @@ export function SettingPage({ cardId }: { cardId: number }) {
     roomSharingOption?: string;
     mateAge?: number;
     options?: Set<string>;
-  }>({ options: new Set() });
+  }>({
+    smoking: '상관없어요',
+    roomSharingOption: '상관없어요',
+    mateAge: 0,
+    options: new Set(),
+  });
 
   const [initialMbti, setInitialMbti] = useState('');
   const [initialMajor, setInitialMajor] = useState('');
@@ -239,34 +251,50 @@ export function SettingPage({ cardId }: { cardId: number }) {
       key: 'smoking' | 'roomSharingOption' | 'mateAge',
       value: string | number,
     ) => {
-      setFeatures(prev => {
-        if (prev?.[key] === value) {
-          return { ...prev, [key]: undefined };
-        }
-        return { ...prev, [key]: value };
-      });
+      if (isMySelf) {
+        setFeatures(prev => {
+          if (prev?.[key] === value) {
+            return { ...prev, [key]: undefined };
+          }
+          return { ...prev, [key]: value };
+        });
+      }
     },
     [],
   );
 
   const handleOptionalFeatureChange = useCallback((option: string) => {
-    setFeatures(prev => {
-      const { options } = prev;
-      const newOptions = new Set(options);
+    if (isMySelf) {
+      setFeatures(prev => {
+        const { options } = prev;
+        const newOptions = new Set(options);
 
-      if (options != null && options.has(option)) {
-        newOptions.delete(option);
-        console.log(newOptions);
-      } else newOptions.add(option);
+        if (options != null && options.has(option)) {
+          newOptions.delete(option);
+          console.log(newOptions);
+        } else newOptions.add(option);
 
-      return { ...prev, options: newOptions };
-    });
+        return { ...prev, options: newOptions };
+      });
+    }
   }, []);
 
   const { mutate } = usePutUserCard(cardId);
   const router = useRouter();
 
+  const { createToast } = useToast();
+
   const saveData = () => {
+    if (locationInput == null || locationInput === '') {
+      createToast({
+        message: '필수 항목을 입력하셔야 합니다.',
+        option: {
+          duration: 3000,
+        },
+      });
+      return;
+    }
+
     const location = locationInput ?? '';
     const options: string[] = [mbti ?? '', major ?? '', budget ?? ''];
     features?.options?.forEach(option => options.push(option));
@@ -278,7 +306,7 @@ export function SettingPage({ cardId }: { cardId: number }) {
       options: JSON.stringify(options.filter(value => value !== '')),
     };
 
-    mutate({ location, features: myFeatures });
+    if (isMySelf) mutate({ location, features: myFeatures });
   };
 
   const handleBeforeUnload = () => {
@@ -332,7 +360,7 @@ export function SettingPage({ cardId }: { cardId: number }) {
       case 0:
         ageString = '동갑';
         break;
-      case 11:
+      case undefined:
         ageString = '상관없어요';
         break;
       default:
@@ -342,85 +370,87 @@ export function SettingPage({ cardId }: { cardId: number }) {
 
   return (
     <styles.pageContainer>
-      <styles.cardName>
-        {type === 'myCard' ? `마이 카드` : '메이트 카드'}
-      </styles.cardName>
-      <styles.cardContainer>
-        <styles.miniCard>
-          <styles.miniCardName>
-            {type === 'myCard' ? '내카드' : '메이트카드'}
-          </styles.miniCardName>
-          <styles.miniCardKeywordsContainer>
-            <styles.miniCardList>
-              <styles.miniCardPerson />
-              <styles.miniCardText>
-                {userData?.gender === 'MALE' ? '남성' : '여성'} · {ageString} ·{' '}
-                {features?.smoking}
-              </styles.miniCardText>
-            </styles.miniCardList>
-            <styles.miniCardList>
-              <styles.miniCardLocation />
-              <styles.miniCardText>{locationInput}</styles.miniCardText>
-            </styles.miniCardList>
-            <styles.miniCardList>
-              <styles.miniCardMeeting />
-              <styles.miniCardText>
-                메이트와 {features?.roomSharingOption}
-              </styles.miniCardText>
-            </styles.miniCardList>
-            <styles.miniCardList>
-              <styles.miniCardVisibility />
-              <styles.miniCardText>
-                {features?.options != null && features.options.has('아침형')
-                  ? '아침형'
-                  : null}
-                {features?.options != null && features.options.has('올빼미형')
-                  ? '올빼미형'
-                  : null}
-              </styles.miniCardText>
-            </styles.miniCardList>
-          </styles.miniCardKeywordsContainer>
-        </styles.miniCard>
-        {type === 'myCard' ? (
-          <UserInputSection
-            gender={userData?.gender}
-            birthYear={userData?.birthYear}
-            location={card.data?.data.location}
-            features={features}
-            isMySelf={isMySelf}
-            type="myCard"
-            mbti={initialMbti}
-            major={initialMajor}
-            budget={initialBudget}
-            onVitalChange={handleEssentialFeatureChange}
-            onOptionChange={handleOptionalFeatureChange}
-            onLocationChange={setLocation}
-            onMateAgeChange={setMateAge}
-            onMbtiChange={setMbti}
-            onMajorChange={setMajor}
-            onBudgetChange={setBudget}
-          />
-        ) : (
-          <UserInputSection
-            gender={userData?.gender}
-            birthYear={userData?.birthYear}
-            location={card.data?.data.location}
-            features={features}
-            isMySelf={isMySelf}
-            type="mateCard"
-            mbti={initialMbti}
-            major={initialMajor}
-            budget={initialBudget}
-            onVitalChange={handleEssentialFeatureChange}
-            onOptionChange={handleOptionalFeatureChange}
-            onLocationChange={setLocation}
-            onMateAgeChange={setMateAge}
-            onMbtiChange={setMbti}
-            onMajorChange={setMajor}
-            onBudgetChange={setBudget}
-          />
-        )}
-      </styles.cardContainer>
+      <styles.contentContainer>
+        <styles.cardName>
+          {type === 'myCard' ? `마이 카드` : '메이트 카드'}
+        </styles.cardName>
+        <styles.cardContainer>
+          <styles.miniCard>
+            <styles.miniCardName>
+              {type === 'myCard' ? '내 카드' : '메이트 카드'}
+            </styles.miniCardName>
+            <styles.miniCardKeywordsContainer>
+              <styles.miniCardList>
+                <styles.miniCardPerson />
+                <styles.miniCardText>
+                  {userData?.gender === 'MALE' ? '남성' : '여성'} · {ageString}{' '}
+                  · {features?.smoking}
+                </styles.miniCardText>
+              </styles.miniCardList>
+              <styles.miniCardList>
+                <styles.miniCardLocation />
+                <styles.miniCardText>{locationInput}</styles.miniCardText>
+              </styles.miniCardList>
+              <styles.miniCardList>
+                <styles.miniCardMeeting />
+                <styles.miniCardText>
+                  메이트와 {features?.roomSharingOption}
+                </styles.miniCardText>
+              </styles.miniCardList>
+              <styles.miniCardList>
+                <styles.miniCardVisibility />
+                <styles.miniCardText>
+                  {features?.options != null && features.options.has('아침형')
+                    ? '아침형'
+                    : null}
+                  {features?.options != null && features.options.has('올빼미형')
+                    ? '올빼미형'
+                    : null}
+                </styles.miniCardText>
+              </styles.miniCardList>
+            </styles.miniCardKeywordsContainer>
+          </styles.miniCard>
+          {type === 'myCard' ? (
+            <UserInputSection
+              gender={userData?.gender}
+              birthYear={userData?.birthYear}
+              location={card.data?.data.location}
+              features={features}
+              isMySelf={isMySelf}
+              type="myCard"
+              mbti={initialMbti}
+              major={initialMajor}
+              budget={initialBudget}
+              onVitalChange={handleEssentialFeatureChange}
+              onOptionChange={handleOptionalFeatureChange}
+              onLocationChange={setLocation}
+              onMateAgeChange={setMateAge}
+              onMbtiChange={setMbti}
+              onMajorChange={setMajor}
+              onBudgetChange={setBudget}
+            />
+          ) : (
+            <UserInputSection
+              gender={userData?.gender}
+              birthYear={userData?.birthYear}
+              location={card.data?.data.location}
+              features={features}
+              isMySelf={isMySelf}
+              type="mateCard"
+              mbti={initialMbti}
+              major={initialMajor}
+              budget={initialBudget}
+              onVitalChange={handleEssentialFeatureChange}
+              onOptionChange={handleOptionalFeatureChange}
+              onLocationChange={setLocation}
+              onMateAgeChange={setMateAge}
+              onMbtiChange={setMbti}
+              onMajorChange={setMajor}
+              onBudgetChange={setBudget}
+            />
+          )}
+        </styles.cardContainer>
+      </styles.contentContainer>
     </styles.pageContainer>
   );
 }
