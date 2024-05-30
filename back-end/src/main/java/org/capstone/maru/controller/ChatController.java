@@ -3,6 +3,7 @@ package org.capstone.maru.controller;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.capstone.maru.dto.request.ChatRoomNameRequest;
 import org.springframework.data.domain.Pageable;
 import org.capstone.maru.dto.request.ChatRoomMemberRequest;
 import org.capstone.maru.dto.request.ChatRoomRequest;
@@ -16,7 +17,9 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -114,6 +117,25 @@ public class ChatController {
         chatService.exitChatRoom(roomId, memberPrincipal.memberId());
 
         return ResponseEntity.ok(APIResponse.success("success"));
+    }
+
+    @DeleteMapping("/{roomId}/exit")
+    public ResponseEntity<APIResponse> leaveChatRoom(
+        @PathVariable Long roomId,
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal
+    ) {
+        chatService.leaveChatRoom(roomId, memberPrincipal.memberId());
+        return ResponseEntity.ok(APIResponse.success());
+    }
+
+    @PatchMapping("/{roomId}")
+    public ResponseEntity<APIResponse> updateChatRoomName(
+        @PathVariable Long roomId,
+        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
+        @RequestBody ChatRoomNameRequest chatRoomNameRequest
+    ) {
+        chatService.updateChatRoomName(roomId, chatRoomNameRequest.roomName());
+        return ResponseEntity.ok(APIResponse.success());
     }
 }
 

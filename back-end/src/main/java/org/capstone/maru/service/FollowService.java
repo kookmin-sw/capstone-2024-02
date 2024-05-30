@@ -3,6 +3,7 @@ package org.capstone.maru.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,36 +44,36 @@ public class FollowService {
 
         log.info("followerAccount: {}", followerAccount.getFollowings());
 
-        Map<String, List<String>> followingList = followerAccount
-            .getFollowings().stream().collect(
-                Collectors.toMap(
-                    follow -> follow.getFollowing().getMemberId(),
-                    follow -> List.of(
-                        follow.getFollowing().getNickname(),
-                        s3FileService.getPreSignedUrlForLoad(
-                            follow.getFollowing().getProfileImage().getFileName()))));
+        List<Follow> followingList = followerAccount.getFollowings().stream().toList();
+        followingList.forEach(follow -> follow
+            .getFollowing()
+            .getProfileImage()
+            .updateFileName(
+                s3FileService.getMemberPreSignedUrlForLoad(
+                    followerAccount.getGender(),
+                    follow.getFollowing().getProfileImage().getFileName())
+            )
+        );
 
-        log.info("followingList: {}", followingList);
-
-        return FollowingDto.from(followingList);
+        return FollowingDto.fromFollow(followingList);
     }
 
     @Transactional(readOnly = true)
     public FollowingDto getMutualFollower(String memberId) {
-        return FollowingDto.from(
-            followRepository
-                .findAllMutualFollower(memberId)
-                .stream()
-                .collect(
-                    Collectors.toMap(
-                        MemberAccount::getMemberId,
-                        follow -> List.of(
-                            follow.getNickname(),
-                            s3FileService.getPreSignedUrlForLoad(
-                                follow.getProfileImage().getFileName())
-                        )
-                    )
+        List<MemberAccount> followingList = followRepository.findAllMutualFollower(memberId)
+            .stream().toList();
+        followingList.forEach(memberAccount -> memberAccount
+            .getProfileImage()
+            .updateFileName(
+                s3FileService.getMemberPreSignedUrlForLoad(
+                    memberAccount.getGender(),
+                    memberAccount.getProfileImage().getFileName()
                 )
+            )
+        );
+
+        return FollowingDto.fromMemberAccount(
+            followingList
         );
     }
 

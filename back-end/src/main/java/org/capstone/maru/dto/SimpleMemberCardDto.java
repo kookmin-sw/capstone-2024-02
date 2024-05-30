@@ -18,11 +18,11 @@ public record SimpleMemberCardDto(
 ) {
 
     public static SimpleMemberCardDto from(MemberAccount memberAccount, FeatureCard featureCard,
-        ProfileImage profileImage, Integer score) {
+        String profileImageUrl, Integer score) {
         return SimpleMemberCardDto.builder()
             .memberId(memberAccount.getMemberId())
             .nickname(memberAccount.getNickname())
-            .profileImageUrl(profileImage.getFileName())
+            .profileImageUrl(profileImageUrl)
             .location(featureCard.getLocation())
             .options(featureCard.getMemberFeatures())
             .score(score)

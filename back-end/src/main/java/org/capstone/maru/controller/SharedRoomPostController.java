@@ -68,7 +68,7 @@ public class SharedRoomPostController {
             .map(StudioRoomRecommendPostResponse::from);
 
         log.info("result size : {}", result.getSize());
-        
+
         return ResponseEntity.ok(APIResponse.success(result));
     }
 
@@ -78,8 +78,11 @@ public class SharedRoomPostController {
         @PathVariable("postId") Long postId
     ) {
         StudioRoomPostDetailResponse result = StudioRoomPostDetailResponse.from(
-            studioRoomPostService.getStudioRoomPostDetail(principal.memberId(), postId,
-                principal.gender())
+            studioRoomPostService.getStudioRoomPostDetail(
+                principal.memberId(),
+                postId,
+                principal.gender()
+            )
         );
 
         return ResponseEntity.ok(APIResponse.success(result));

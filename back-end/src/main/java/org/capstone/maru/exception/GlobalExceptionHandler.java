@@ -3,6 +3,7 @@ package org.capstone.maru.exception;
 import com.google.gson.stream.MalformedJsonException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.capstone.maru.security.exception.MemberAccountNotFoundException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,6 +71,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PostNotFoundException.class)
     public ResponseEntity<RestErrorResponse> handlePostNotFoundException(
         PostNotFoundException ex
+    ) {
+        return ResponseEntity
+            .status(ex.getErrorCode().getStatus())
+            .body(RestErrorResponse.of(ex.getErrorCode(), ex.getReason()));
+    }
+
+    @ExceptionHandler(CertificateException.class)
+    public ResponseEntity<RestErrorResponse> handleCertificateException(
+        CertificateException ex
+    ) {
+        return ResponseEntity
+            .status(ex.getErrorCode().getStatus())
+            .body(RestErrorResponse.of(ex.getErrorCode(), ex.getReason()));
+    }
+
+    @ExceptionHandler(MemberAccountNotFoundException.class)
+    public ResponseEntity<RestErrorResponse> handleMemberAccountNotFoundException(
+        MemberAccountNotFoundException ex
     ) {
         return ResponseEntity
             .status(ex.getErrorCode().getStatus())

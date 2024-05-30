@@ -1,8 +1,10 @@
 package org.capstone.maru.security.exception;
 
+import lombok.Getter;
 import org.capstone.maru.exception.RestErrorCode;
 import org.springframework.security.core.AuthenticationException;
 
+@Getter
 public class MemberAccountNotFoundException extends AuthenticationException {
 
     private final RestErrorCode errorCode;

@@ -179,7 +179,8 @@ public class ChatService {
             memberRoom -> {
                 MemberAccount memberAccount = memberRoom.getMember();
 
-                String profileImageUrl = s3FileService.getPreSignedUrlForLoad(
+                String profileImageUrl = s3FileService.getMemberPreSignedUrlForLoad(
+                    memberAccount.getGender(),
                     memberAccount.getProfileImage().getFileName());
 
                 return ChatMemberProfileResponse.from(
@@ -306,8 +307,31 @@ public class ChatService {
     @Transactional
     public void exitChatRoom(Long roomId, String memberId) {
         log.info("exitChatRoom : {}, {}", roomId, memberId);
-        MemberRoom memberRoom = memberRoomRepository.findByMemberIdAndChatRoomId(memberId, roomId);
+        MemberRoom memberRoom = memberRoomRepository.findByMemberIdAndChatRoomId(memberId, roomId)
+            .orElseThrow(
+                IllegalArgumentException::new);
         log.info("memberRoom : {}", memberRoom.getId());
         memberRoom.updateLastCheckTime();
+    }
+
+    @Transactional
+    public void leaveChatRoom(Long roomId, String memberId) {
+        memberRoomRepository.deleteByMemberIdAndChatRoomId(memberId, roomId);
+
+        if (memberRoomRepository.existsByChatRoomId(roomId)) {
+            return;
+        }
+
+        chatRoomRepository.deleteById(roomId);
+    }
+
+    @Transactional
+    public void updateChatRoomName(Long roomId, String roomName) {
+        // TODO: memberId로 변경 가능한지 확인해야함
+        ChatRoom chatRoom = chatRoomRepository
+            .findById(roomId)
+            .orElseThrow(IllegalArgumentException::new);
+
+        chatRoom.updateChatRoomName(roomName);
     }
 }

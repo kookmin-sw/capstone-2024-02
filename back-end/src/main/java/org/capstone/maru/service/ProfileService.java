@@ -1,5 +1,6 @@
 package org.capstone.maru.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -79,6 +80,7 @@ public class ProfileService {
         log.info("getMyCard - memberId: {}", memberId);
 
         MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
+
         List<SharedRoomPostResponse> memberPosts = sharedRoomPostService
             .getMySharedRoomPosts(memberId)
             .stream()
@@ -97,11 +99,15 @@ public class ProfileService {
         log.info("mateCard: {}", mateCard.getMemberFeatures());
         log.info("profileImage: {}", profileImage.getFileName());
 
-        String imgURL = s3FileService.getPreSignedUrlForLoad(profileImage.getFileName());
+        String imgURL = s3FileService.getMemberPreSignedUrlForLoad(
+            memberAccount.getGender(),
+            profileImage.getFileName()
+        );
 
         AuthResponse authResponse = AuthResponse.from(memberAccount);
 
-        return MemberProfileDto.from(imgURL, myCard, mateCard, authResponse, memberPosts);
+        return MemberProfileDto.from(imgURL, myCard, mateCard, authResponse, memberPosts,
+            memberAccount.getRecommendOn());
     }
 
     @Transactional
@@ -124,9 +130,9 @@ public class ProfileService {
         log.info("getCard - cardId: {}", cardId);
 
         FeatureCard featureCard = memberCardRepository.findById(cardId)
-                                                      .orElseThrow(
-                                                          () -> new IllegalArgumentException(
-                                                              "MemberCard not found"));
+            .orElseThrow(
+                () -> new IllegalArgumentException(
+                    "MemberCard not found"));
 
         return FeatureCardDto.from(featureCard);
     }
@@ -141,22 +147,9 @@ public class ProfileService {
 
         MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
 
-        Optional<ProfileImage> profileImage = profileImageRepository.findById(fileName);
+        ProfileImage profileImage = ProfileImage.of(fileName, memberId);
 
-        if (profileImage.isEmpty()) {
-            throw new IllegalArgumentException("ProfileImage not found");
-        }
-
-        memberAccount.updateProfileImage(profileImage.get());
-    }
-
-    @Transactional
-    public Boolean updateRecommend(String memberId, Boolean recommendOn) {
-        /*
-        내 카드인지 확인
-         */
-        MemberAccount memberAccount = memberAccountService.searchMemberAccount(memberId);
-        return memberAccount.updateRecommendOn(recommendOn);
+        memberAccount.updateProfileImage(profileImage);
     }
 
     /*
@@ -166,7 +159,10 @@ public class ProfileService {
     public SimpleMemberProfileResponse searchProfile(String email) {
         MemberAccount memberAccount = memberAccountService.searchMemberAccountByEmail(email);
         ProfileImage profileImage = memberAccount.getProfileImage();
-        String imgURL = s3FileService.getPreSignedUrlForLoad(profileImage.getFileName());
+        String imgURL = s3FileService.getMemberPreSignedUrlForLoad(
+            memberAccount.getGender(),
+            profileImage.getFileName()
+        );
 
         return SimpleMemberProfileResponse.from(memberAccount.getMemberId(),
             memberAccount.getNickname(), imgURL);
@@ -177,7 +173,10 @@ public class ProfileService {
 
         return memberAccounts.stream().map(memberAccount -> {
             ProfileImage profileImage = memberAccount.getProfileImage();
-            String imgURL = s3FileService.getPreSignedUrlForLoad(profileImage.getFileName());
+            String imgURL = s3FileService.getMemberPreSignedUrlForLoad(
+                memberAccount.getGender(),
+                profileImage.getFileName()
+            );
 
             return SimpleMemberProfileResponse.from(memberAccount.getMemberId(),
                 memberAccount.getNickname(), imgURL);
@@ -194,6 +193,23 @@ public class ProfileService {
             cardOption,
             "member"
         ).block();
+
+//        LocalDateTime now = LocalDateTime.now();
+//
+//        Optional<MemberRecommendUpdate> recommendUpdate = memberRecommendUpdateRepository.findById(
+//            memberId);
+//
+//        if (recommendUpdate.isEmpty() || recommendUpdate.get().haveToUpdate(now)) {
+//            recommendService.updateRecommendation(
+//                memberId,
+//                cardOption,
+//                "member"
+//            ).block();
+//
+//            MemberRecommendUpdate recommendUpdateSave = new MemberRecommendUpdate(memberId, now);
+//
+//            memberRecommendUpdateRepository.save(recommendUpdateSave);
+//        }
 
         String recommendType = "my".equals(cardOption) ? "mate" : "my";
 
@@ -214,7 +230,12 @@ public class ProfileService {
             ProfileImage profileImage = memberAccount.getProfileImage();
             FeatureCard featureCard = memberAccount.getMyCard();
 
-            return SimpleMemberCardDto.from(memberAccount, featureCard, profileImage,
+            String imgURL = s3FileService.getMemberPreSignedUrlForLoad(
+                memberAccount.getGender(),
+                profileImage.getFileName()
+            );
+
+            return SimpleMemberCardDto.from(memberAccount, featureCard, imgURL,
                 recommend.getScore());
         }).toList();
     }

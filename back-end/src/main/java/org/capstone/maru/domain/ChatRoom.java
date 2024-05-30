@@ -25,7 +25,7 @@ public class ChatRoom {
     private String name;
 
     // 채팅방 참여자
-    @OneToMany(mappedBy = "chatRoom", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "chatRoom", fetch = FetchType.EAGER, orphanRemoval = true)
     private List<MemberRoom> roomMembers;
 
     @Builder
@@ -35,7 +35,11 @@ public class ChatRoom {
 
     public static ChatRoom createRoom(String name) {
         return ChatRoom.builder()
-            .name(name)
-            .build();
+                       .name(name)
+                       .build();
+    }
+
+    public void updateChatRoomName(String name) {
+        this.name = name;
     }
 }

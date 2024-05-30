@@ -12,13 +12,15 @@ public record MemberProfileDto(
     String profileImage,
     FeatureCardDto myCard,
     FeatureCardDto mateCard,
-    List<SharedRoomPostResponse> posts
+    List<SharedRoomPostResponse> posts,
+    Boolean recommendOn
 ) {
 
     public static MemberProfileDto from(String imgURL, FeatureCard myCard,
         FeatureCard mateCard,
         AuthResponse authResponse,
-        List<SharedRoomPostResponse> posts
+        List<SharedRoomPostResponse> posts,
+        Boolean recommendOn
     ) {
         return MemberProfileDto
             .builder()
@@ -27,6 +29,7 @@ public record MemberProfileDto(
             .mateCard(FeatureCardDto.from(mateCard))
             .authResponse(authResponse)
             .posts(posts)
+            .recommendOn(recommendOn)
             .build();
     }
 }

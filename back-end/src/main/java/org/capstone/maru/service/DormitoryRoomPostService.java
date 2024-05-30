@@ -1,6 +1,7 @@
 package org.capstone.maru.service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -132,22 +133,49 @@ public class DormitoryRoomPostService {
             .findScrapViewByScrappedIdAndScrapperMemberId(postId, memberId)
             .map(ScrapPostView::getIsScrapped)
             .orElse(false);
+
         final Long scrapCount = scrapPostRepository.countByScrappedIdAndIsScrapped(postId);
 
         List<String> followingIds = followRepository.findFollowingIdsByFollowerId(memberId);
 
         Long viewCount = viewCountService.increaseValue(SharedViewCountCacheKey.from(postId));
 
+        String publisherId = resultEntity.getPublisherAccount().getMemberId();
+
+        resultEntity
+            .getPublisherAccount()
+            .getProfileImage()
+            .updateFileName(
+                s3FileService.getMemberPreSignedUrlForLoad(
+                    resultEntity.getPublisherGender(), resultEntity.getPublisherAccount()
+                                                                   .getProfileImage().getFileName()
+                )
+            );
+
+        resultEntity
+            .getPublisherAccount()
+            .getProfileImage()
+            .updateFileName(
+                s3FileService.getMemberPreSignedUrlForLoad(
+                    resultEntity.getPublisherGender(), resultEntity.getPublisherAccount()
+                        .getProfileImage().getFileName()
+                )
+            );
+
         resultEntity
             .getSharedRoomPostRecruits()
             .stream()
             .map(Participation::getRecruitedMemberAccount)
+            .filter(memberAccount -> !Objects.equals(memberAccount.getMemberId(), publisherId))
             .map(MemberAccount::getProfileImage)
             .forEach(
                 profileImage -> profileImage.updateFileName(
-                    s3FileService.getPreSignedUrlForLoad(profileImage.getFileName())
+                    s3FileService.getMemberPreSignedUrlForLoad(
+                        gender,
+                        profileImage.getFileName())
                 )
             );
+
         resultEntity
             .getRoomImages()
             .forEach(
@@ -155,6 +183,7 @@ public class DormitoryRoomPostService {
                     s3FileService.getPreSignedUrlForLoad(roomImage.getFileName())
                 )
             );
+
         return DormitoryRoomPostDetailDto.from(resultEntity, isScrapped, followingIds,
             scrapCount, viewCount);
     }

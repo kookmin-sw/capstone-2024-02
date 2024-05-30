@@ -36,4 +36,5 @@ public record MemberAccountResponse(
             .modifiedBy(dto.modifiedBy())
             .build();
     }
+
 }

@@ -26,30 +26,31 @@ public class CertificateService {
     }
 
     public void certifyUniv(String univName) throws IOException {
-        boolean success = (boolean) UnivCert
-            .check(univName)
-            .getOrDefault(KEY, false);
+        Map<String, Object> check = UnivCert.check(univName);
+        boolean success = (boolean) check.getOrDefault(KEY, false);
 
         if (!success) {
-            throw new CertificateException(RestErrorCode.INVALID_CERTIFICATE_VALUE);
+            throw new CertificateException(RestErrorCode.INVALID_CERTIFICATE_VALUE,
+                (String) check.get("message"));
         }
     }
 
     public void certifyEmail(String univName, String email) throws IOException {
-        boolean success = (boolean) UnivCert
-            .certify(apiKey, email, univName, true)
-            .getOrDefault(KEY, false);
+        Map<String, Object> certify = UnivCert.certify(apiKey, email, univName, true);
+        boolean success = (boolean) certify.getOrDefault(KEY, false);
 
         if (!success) {
-            throw new CertificateException(RestErrorCode.INVALID_CERTIFICATE_VALUE);
+            throw new CertificateException(RestErrorCode.INVALID_CERTIFICATE_VALUE,
+                (String) certify.get("message"));
         }
     }
 
     public void certifyUnivAndEmail(String email, String univName) {
         try {
+            UnivCert.clear(apiKey);
             certifyUniv(univName);
             certifyEmail(univName, email);
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new CertificateException(RestErrorCode.INVALID_CERTIFICATE_VALUE);
         }
     }
@@ -68,7 +69,7 @@ public class CertificateService {
         if (!success) {
             throw new CertificateException(RestErrorCode.INVALID_CERTIFICATE_VALUE);
         }
-        
+
         MemberAccount memberAccount = memberAccountRepository
             .findByMemberId(memberId)
             .orElseThrow(() -> new MemberAccountNotFoundException(RestErrorCode.MEMBER_NOT_FOUND));

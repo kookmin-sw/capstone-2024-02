@@ -11,6 +11,7 @@ import org.capstone.maru.dto.request.EmailSearchRequest;
 import org.capstone.maru.dto.SimpleMemberCardDto;
 import org.capstone.maru.dto.request.MemberFeatureRequest;
 import org.capstone.maru.dto.request.MemberIdRequest;
+import org.capstone.maru.dto.request.SettingRequest;
 import org.capstone.maru.dto.response.APIResponse;
 import org.capstone.maru.dto.response.SimpleMemberCardResponse;
 import org.capstone.maru.dto.response.SimpleMemberProfileResponse;
@@ -75,20 +76,6 @@ public class ProfileController {
 
         return ResponseEntity.ok(APIResponse.success(result));
     }
-
-    @PatchMapping("/recommend/{recommendOn}")
-    public ResponseEntity<APIResponse> updateMyCardRecommend(
-        @AuthenticationPrincipal MemberPrincipal memberPrincipal,
-        @PathVariable Boolean recommendOn
-    ) {
-        String memberId = memberPrincipal.memberId();
-        log.info("call updateMyRecommend : {}", memberId);
-
-        Boolean result = profileService.updateRecommend(memberId, recommendOn);
-
-        return ResponseEntity.ok(APIResponse.success(result));
-    }
-
 
     @PostMapping
     public ResponseEntity<APIResponse> getMemberProfile(
@@ -244,18 +231,14 @@ public class ProfileController {
         return ResponseEntity.ok(APIResponse.success(result));
     }
 
-    /*
-    추천 on/off
-     */
-    @PatchMapping("/recommend/onoff")
-    public ResponseEntity<APIResponse> updateRecommendOnOff(
+    @PatchMapping("/setting")
+    public ResponseEntity<APIResponse> updateProfileSetting(
         @AuthenticationPrincipal MemberPrincipal memberPrincipal,
-        @RequestParam(name = "recommendOn") Boolean recommendOn
+        @RequestBody SettingRequest settingRequest
     ) {
-        log.info("call updateRecommendOnOff : {}", memberPrincipal.memberId());
-
-        profileService.updateRecommendOnOff(memberPrincipal.memberId(), recommendOn);
-
+        profileService.updateRecommendOnOff(memberPrincipal.memberId(),
+            settingRequest.recommendOn());
         return ResponseEntity.ok(APIResponse.success());
     }
+
 }
